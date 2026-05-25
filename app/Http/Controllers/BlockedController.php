@@ -15,9 +15,11 @@ class BlockedController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'admin_id' => 'required|exists:admins,id',
             'user_id' => 'required|exists:users,id',
-            'blocked_user_id' => 'required|exists:users,id',
-            'reason' => 'nullable|string'
+            'reason' => 'nullable|string',
+            'blocker_date' => 'nullable|date',
+            'status' => 'string|default:active'
         ]);
 
         $blocked = Blocked::create($validated);

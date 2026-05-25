@@ -10,9 +10,11 @@ return new class extends Migration
     {
         Schema::create('blocked', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('admin_id')->constrained('admins')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('blocked_user_id')->constrained('users')->onDelete('cascade');
             $table->text('reason')->nullable();
+            $table->date('blocker_date')->nullable();
+            $table->string('status')->default('active');
             $table->timestamps();
         });
     }

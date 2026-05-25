@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Advertisement extends Model
 {
-    protected $fillable = ['title', 'description', 'image', 'user_id', 'price', 'status'];
+    protected $fillable = ['admin_id', 'title', 'description', 'image', 'company_name', 'start_date', 'end_date', 'status'];
 
-    public function user()
+    public function admin()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Admin::class);
     }
 }

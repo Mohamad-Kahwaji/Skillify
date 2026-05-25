@@ -15,10 +15,10 @@ class MessageController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'sender_id' => 'required|exists:users,id',
-            'receiver_id' => 'required|exists:users,id',
-            'content' => 'required|string',
-            'is_read' => 'boolean|default:false'
+            'conversation_id' => 'required|exists:conversations,id',
+            'user_id' => 'required|exists:users,id',
+            'message_text' => 'required|string',
+            'send_date' => 'nullable|date'
         ]);
 
         $message = Message::create($validated);

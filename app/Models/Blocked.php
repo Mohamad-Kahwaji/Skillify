@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Blocked extends Model
 {
-    protected $fillable = ['user_id', 'blocked_user_id', 'reason'];
+    protected $fillable = ['admin_id', 'user_id', 'reason', 'blocker_date', 'status'];
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class);
+    }
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function blockedUser()
-    {
-        return $this->belongsTo(User::class, 'blocked_user_id');
+        return $this->belongsTo(User::class);
     }
 }

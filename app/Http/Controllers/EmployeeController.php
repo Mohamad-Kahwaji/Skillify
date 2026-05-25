@@ -15,14 +15,11 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:employees',
-            'phone' => 'nullable|string',
-            'position' => 'required|string',
-            'department' => 'nullable|string',
-            'salary' => 'nullable|numeric',
-            'hire_date' => 'nullable|date',
-            'status' => 'string|default:active'
+            'user_id' => 'required|exists:users,id',
+            'profession' => 'nullable|string',
+            'national_id' => 'required|string|unique:employees',
+            'id_card_photo' => 'nullable|string',
+            'emp_image' => 'nullable|string'
         ]);
 
         $employee = Employee::create($validated);

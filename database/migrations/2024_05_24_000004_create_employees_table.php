@@ -10,14 +10,11 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('phone')->nullable();
-            $table->string('position');
-            $table->string('department')->nullable();
-            $table->decimal('salary', 10, 2)->nullable();
-            $table->date('hire_date')->nullable();
-            $table->string('status')->default('active');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('profession')->nullable();
+            $table->string('national_id')->unique();
+            $table->string('id_card_photo')->nullable();
+            $table->string('emp_image')->nullable();
             $table->timestamps();
         });
     }

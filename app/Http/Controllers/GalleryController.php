@@ -15,11 +15,9 @@ class GalleryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'nullable|string',
+            'em_id' => 'required|exists:employees,id',
             'image' => 'required|string',
-            'description' => 'nullable|string',
-            'user_id' => 'required|exists:users,id',
-            'views' => 'integer|default:0'
+            'date' => 'nullable|date'
         ]);
 
         $gallery = Gallery::create($validated);

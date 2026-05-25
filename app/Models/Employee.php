@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Employee extends Model
 {
-    protected $fillable = ['name', 'email', 'phone', 'position', 'department', 'salary', 'hire_date', 'status'];
+    protected $fillable = ['user_id', 'profession', 'national_id', 'id_card_photo', 'emp_image'];
 
-    protected $casts = [
-        'hire_date' => 'date',
-    ];
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function galleries()
+    {
+        return $this->hasMany(Gallery::class, 'em_id');
+    }
 }

@@ -13,6 +13,7 @@ return new class extends Migration
             $table->text('content');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
+            $table->timestamp('comment_date')->nullable();
             $table->integer('likes')->default(0);
             $table->timestamps();
         });

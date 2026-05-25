@@ -10,11 +10,13 @@ return new class extends Migration
     {
         Schema::create('advertisements', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('admin_id')->constrained('admins')->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('image')->nullable();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->decimal('price', 10, 2)->nullable();
+            $table->string('company_name')->nullable();
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
             $table->string('status')->default('active');
             $table->timestamps();
         });

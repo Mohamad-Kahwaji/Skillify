@@ -16,9 +16,10 @@ class PostController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string',
-            'content' => 'required|string',
+            'description' => 'required|string',
             'image' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
+            'post_date' => 'nullable|date',
             'views' => 'integer|default:0',
             'status' => 'string|default:published'
         ]);

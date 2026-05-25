@@ -18,6 +18,7 @@ class CommentController extends Controller
             'content' => 'required|string',
             'user_id' => 'required|exists:users,id',
             'post_id' => 'required|exists:posts,id',
+            'comment_date' => 'nullable|date',
             'likes' => 'integer|default:0'
         ]);
 

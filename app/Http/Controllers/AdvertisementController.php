@@ -15,11 +15,13 @@ class AdvertisementController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'admin_id' => 'required|exists:admins,id',
             'title' => 'required|string',
             'description' => 'nullable|string',
             'image' => 'nullable|string',
-            'user_id' => 'required|exists:users,id',
-            'price' => 'nullable|numeric',
+            'company_name' => 'nullable|string',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
             'status' => 'string|default:active'
         ]);
 

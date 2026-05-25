@@ -11,9 +11,10 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->text('content');
+            $table->text('description');
             $table->string('image')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->timestamp('post_date')->nullable();
             $table->integer('views')->default(0);
             $table->string('status')->default('published');
             $table->timestamps();
