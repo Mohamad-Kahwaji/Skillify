@@ -28,4 +28,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    Public function tokens(){
+        return $this->hasMany(Token::class);
+    }
 }
