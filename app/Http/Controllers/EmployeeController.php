@@ -7,6 +7,13 @@ use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
+    public function showemployees(){
+        return view('');
+    }
+    public function allemployees(){
+        $employees = Employee::all();
+        return view('',compact('employees'));
+    }
     public function index()
     {
         return response()->json(Employee::all(), 200);

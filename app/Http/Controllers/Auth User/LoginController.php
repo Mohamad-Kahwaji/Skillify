@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Login;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
@@ -15,7 +14,7 @@ class LoginController extends Controller
     }
 
     public function login(LoginRequest $request){
-        if(Auth::guard('admins')->attempt($request->only('email', 'password'))){
+        if(Auth::guard('users')->attempt($request->only('email', 'password'))){
             return back()->withErrors([
                 'email' => 'Invalid credentials.',
             ]);

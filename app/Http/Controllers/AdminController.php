@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Admin;
+use App\Models\Business;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -51,5 +53,30 @@ class AdminController extends Controller
 
         $admin->delete();
         return response()->json(['message' => 'Deleted successfully'], 200);
+    }
+
+
+    public function details($id)
+    {
+        $users = User::get([
+            'id',
+            'name',
+            'email',
+        ]);
+        
+
+    }
+
+
+    public function deleteaccountsuser($id){
+        $user = User::findOrFail($id);
+        $user->delete();
+        return redirect()->route('');
+    }
+
+    public function deleteaccountbusiness($id){
+        $business = Business::findOrFail($id);
+        $business->delete();
+        return redirect()->route('');
     }
 }
