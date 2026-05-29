@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AuthMiddleware;
+use App\Http\Middleware\ConfirmAdminPassword;
 use App\Http\Middleware\UserMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth_admin'=>AuthMiddleware::class,
             'auth_user'=>UserMiddleware::class,
+            'confirm_admin_password'=>ConfirmAdminPassword::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

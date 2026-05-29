@@ -9,7 +9,8 @@ class AdvertisementController extends Controller
 {
     public function index()
     {
-        return response()->json(Advertisement::all(), 200);
+        $advertisements = Advertisement::all();
+        return view('',compact('advertisements'));
     }
 
     public function store(Request $request)
@@ -22,35 +23,37 @@ class AdvertisementController extends Controller
             'company_name' => 'nullable|string',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
-            'status' => 'string|default:active'
+            'status' => 'string|default:pending'
         ]);
 
         $advertisement = Advertisement::create($validated);
-        return response()->json($advertisement, 201);
+        return redirect()->route('');
     }
 
-    public function show($id)
-    {
-        $advertisement = Advertisement::find($id);
-        if (!$advertisement) return response()->json(['message' => 'Not found'], 404);
-        return response()->json($advertisement, 200);
-    }
 
     public function update(Request $request, $id)
     {
-        $advertisement = Advertisement::find($id);
-        if (!$advertisement) return response()->json(['message' => 'Not found'], 404);
+        $advertisement = Advertisement::findOrFail($id);
+        if (!$advertisement) return route('', ['message' => 'Not found']);
 
         $advertisement->update($request->all());
-        return response()->json($advertisement, 200);
+        return route('', ['message' => 'Updated successfully']);
     }
 
     public function destroy($id)
     {
-        $advertisement = Advertisement::find($id);
-        if (!$advertisement) return response()->json(['message' => 'Not found'], 404);
+        $advertisement = Advertisement::findOrFail($id);
+        if (!$advertisement) return route('', ['message' => 'Not found']);
 
         $advertisement->delete();
-        return response()->json(['message' => 'Deleted successfully'], 200);
+        return route('', ['message' => 'Deleted successfully']);
+    }
+    public function destroysoft($id)
+    {
+        $advertisement = Advertisement::findOrFail($id)->where('end_date','<',now());
+        if (!$advertisement) return route('', ['message' => 'Not found']);
+
+        $advertisement->delete();
+        return route('', ['message' => 'Deleted successfully']);
     }
 }

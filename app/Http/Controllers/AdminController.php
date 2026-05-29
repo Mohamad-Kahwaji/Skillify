@@ -30,31 +30,6 @@ class AdminController extends Controller
         return response()->json($admin, 201);
     }
 
-    public function show($id)
-    {
-        $admin = Admin::find($id);
-        if (!$admin) return response()->json(['message' => 'Not found'], 404);
-        return response()->json($admin, 200);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $admin = Admin::find($id);
-        if (!$admin) return response()->json(['message' => 'Not found'], 404);
-
-        $admin->update($request->all());
-        return response()->json($admin, 200);
-    }
-
-    public function destroy($id)
-    {
-        $admin = Admin::find($id);
-        if (!$admin) return response()->json(['message' => 'Not found'], 404);
-
-        $admin->delete();
-        return response()->json(['message' => 'Deleted successfully'], 200);
-    }
-
 
     public function details($id)
     {
@@ -63,20 +38,49 @@ class AdminController extends Controller
             'name',
             'email',
         ]);
-        
+        $businesses = Business::get([
+            'number',
+            'location',
+            'description',
+            'activity'
+        ]);
+        return redirect()->route('',compact('businesses','users'));
 
     }
+
 
 
     public function deleteaccountsuser($id){
         $user = User::findOrFail($id);
-        $user->delete();
+        $user->delete()->with('businesses');
         return redirect()->route('');
     }
 
-    public function deleteaccountbusiness($id){
+    public function reviewbusiness($id){
+        $business = Business::findOrFail($id);
+        $business->update([
+            'status' => 'pending'
+        ]);
+        return redirect()->route('');
+    }
+    public function approvebusiness($id){
+        $business = Business::findOrFail($id);
+        $business->update([
+            'status' => 'active'
+        ]);
+        return redirect()->route('');
+    }
+    public function rejectbusiness($id){
+        $business = Business::findOrFail($id);
+        $business->update([
+            'status' => 'rejected'
+        ]);
+        return redirect()->route('');
+    }
+
+    /*ublic function deleteaccountbusiness($id){
         $business = Business::findOrFail($id);
         $business->delete();
         return redirect()->route('');
-    }
+    }*/
 }

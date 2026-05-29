@@ -14,4 +14,18 @@ class UserController extends Controller
         $users = User::all();
         return view('',compact('users'));
     }
+
+    public function active(User $user){
+        $user->update([
+            'status' => 'active'
+        ]);
+        return back();
+    }
+
+    public function inactive(User $user){
+        $user->update([
+            'status' => 'inactive'
+        ]);
+        return back();
+    }
 }

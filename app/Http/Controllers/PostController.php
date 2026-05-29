@@ -9,7 +9,8 @@ class PostController extends Controller
 {
     public function index()
     {
-        return response()->json(Post::all(), 200);
+        $posts = Post::all();
+        return redirect()->route('',compact('posts'));
     }
 
     public function store(Request $request)
@@ -46,10 +47,8 @@ class PostController extends Controller
 
     public function destroy($id)
     {
-        $post = Post::find($id);
-        if (!$post) return response()->json(['message' => 'Not found'], 404);
-
-        $post->delete();
-        return response()->json(['message' => 'Deleted successfully'], 200);
+        $post = Post::findOrFail($id);
+        $post->delete()->whith('reports');
+        return redirect()->route('');
     }
 }

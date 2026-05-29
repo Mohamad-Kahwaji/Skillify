@@ -5,9 +5,10 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
-class UserMiddleware
+class ConfirmAdminPassword
 {
     /**
      * Handle an incoming request.
@@ -16,12 +17,12 @@ class UserMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!Auth::guard('users')->check()){
-            return redirect()->route('loginUser');
+        $password = $request->admin_password;
+        if(!$password){
+            return redirect()->back()->withErrors(['admin_password' => 'Password is required.']);
         }
-        if(Auth::guard('users')->user()->is_active == 'inactive'){
-            Auth::guard('users')->logout();
-            return redirect()->route('loginUser')->withErrors(['Your account is inactive, please contact']);
+        if (!Hash::check($password,Auth::guard('admins')->password)) {
+            return redirect()->back()->withErrors(['admin_password' => 'Incorrect password.']);
         }
         return $next($request);
     }

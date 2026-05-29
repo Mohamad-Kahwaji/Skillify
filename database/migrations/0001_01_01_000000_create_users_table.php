@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('password');
             $table->date('birthdate')->nullable();
             $table->string('gender')->nullable();
+            $table->enum('status', ['inactive', 'active'])->default('active');
             $table->string('city')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
