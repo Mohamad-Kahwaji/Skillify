@@ -14,6 +14,9 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->text('message_text');
             $table->timestamp('send_date')->nullable();
+            $table->string('file_path')->nullable();      // مسار الملف
+            $table->string('file_name')->nullable();      // اسم الملف الأصلي
+            $table->string('file_type')->nullable();      // image / pdf / video ...
             $table->timestamps();
         });
     }

@@ -14,16 +14,21 @@ class CommentController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth('users')->user();
         $validated = $request->validate([
             'content' => 'required|string',
-            'user_id' => 'required|exists:users,id',
             'post_id' => 'required|exists:posts,id',
             'comment_date' => 'nullable|date',
-            'likes' => 'integer|default:0'
         ]);
 
-        $comment = Comment::create($validated);
-        return response()->json($comment, 201);
+        $comment = Comment::create([
+            'content' => $validated['content'],
+            'user_id' => auth('users')->id(),
+            'post_id' => $validated['post_id'],
+            'comment_date' => $request->comment_date ?? now(),
+            'likes' => 0
+        ]);
+        return redirect()->route('posts.show', $comment->post_id)->with('success', 'Comment added.');
     }
 
     public function show($id)

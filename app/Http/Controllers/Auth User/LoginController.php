@@ -14,9 +14,9 @@ class LoginController extends Controller
     }
 
     public function login(LoginRequest $request){
-        if(Auth::guard('users')->attempt($request->only('email', 'password'))){
+        if(Auth::guard('users')->attempt($request->only('phone', 'password'))){
             return back()->withErrors([
-                'email' => 'Invalid credentials.',
+                'phone' => 'Invalid credentials.',
             ]);
         }
         $request->session()->regenerate();

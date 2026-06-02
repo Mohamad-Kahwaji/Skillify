@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('active_type_id')->constrained('active_types')->onDelete('cascade');
             $table->string('title');
             $table->text('description');
             $table->string('image')->nullable();

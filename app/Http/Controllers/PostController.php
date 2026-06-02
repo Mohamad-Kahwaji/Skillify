@@ -9,46 +9,47 @@ class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::all();
-        return redirect()->route('',compact('posts'));
+        $posts = Post::with('user')->latest()->get();
+        return view('admin.posts.index', compact('posts'));
+    }
+
+    public function showmypost(){
+        $posts = Post::where('user_id', auth('users')->id())->latest()->get();
+        return view('posts.myposts', compact('posts'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string',
+            'title'       => 'required|string',
             'description' => 'required|string',
-            'image' => 'nullable|string',
-            'user_id' => 'required|exists:users,id',
-            'post_date' => 'nullable|date',
-            'views' => 'integer|default:0',
-            'status' => 'string|default:published'
+            'image'       => 'nullable|string',
+            'user_id'     => 'required|exists:users,id',
+            'post_date'   => 'nullable|date',
+            'views'       => 'nullable|integer',
+            'status'      => 'nullable|string',
         ]);
 
         $post = Post::create($validated);
-        return response()->json($post, 201);
+        return redirect()->route('admin.posts.index')->with('success', 'Post created.');
     }
 
-    public function show($id)
-    {
-        $post = Post::find($id);
-        if (!$post) return response()->json(['message' => 'Not found'], 404);
-        return response()->json($post, 200);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $post = Post::find($id);
-        if (!$post) return response()->json(['message' => 'Not found'], 404);
-
-        $post->update($request->all());
-        return response()->json($post, 200);
-    }
-
-    public function destroy($id)
+    public function show(int $id)
     {
         $post = Post::findOrFail($id);
-        $post->delete()->whith('reports');
-        return redirect()->route('');
+        return response()->json($post);
+    }
+
+    public function update(Request $request, int $id)
+    {
+        $post = Post::findOrFail($id);
+        $post->update($request->all());
+        return redirect()->route('admin.posts.index')->with('success', 'Post updated.');
+    }
+
+    public function destroy(int $id)
+    {
+        Post::findOrFail($id)->delete();
+        return redirect()->route('admin.posts.index')->with('success', 'Post deleted.');
     }
 }

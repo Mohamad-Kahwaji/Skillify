@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\ConfirmAdminPassword;
+use App\Http\Middleware\SuperAdminMiddleware;
 use App\Http\Middleware\UserMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -11,13 +12,15 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
+        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'auth_admin'=>AuthMiddleware::class,
-            'auth_user'=>UserMiddleware::class,
-            'confirm_admin_password'=>ConfirmAdminPassword::class,
+            'auth_admin'       => AuthMiddleware::class,
+            'auth_super_admin' => SuperAdminMiddleware::class,
+            'auth_user'        => UserMiddleware::class,
+            'confirm_admin_password' => ConfirmAdminPassword::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

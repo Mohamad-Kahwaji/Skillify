@@ -9,51 +9,48 @@ class AdvertisementController extends Controller
 {
     public function index()
     {
-        $advertisements = Advertisement::all();
-        return view('',compact('advertisements'));
+        $advertisements = Advertisement::latest()->get();
+        return view('admin.ads.index', compact('advertisements'));
+    }
+
+    public function create()
+    {
+        return view('admin.ads.create');
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'admin_id' => 'required|exists:admins,id',
-            'title' => 'required|string',
-            'description' => 'nullable|string',
-            'image' => 'nullable|string',
+            'admin_id'     => 'required|exists:admins,id',
+            'title'        => 'required|string',
+            'description'  => 'nullable|string',
+            'image'        => 'nullable|string',
             'company_name' => 'nullable|string',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date',
-            'status' => 'string|default:pending'
+            'start_date'   => 'nullable|date',
+            'end_date'     => 'nullable|date',
+            'status'       => 'nullable|string',
         ]);
 
-        $advertisement = Advertisement::create($validated);
-        return redirect()->route('');
+        Advertisement::create($validated);
+        return redirect()->route('admin.ads.index')->with('success', 'Advertisement created.');
     }
 
-
-    public function update(Request $request, $id)
+    public function edit(int $id)
     {
         $advertisement = Advertisement::findOrFail($id);
-        if (!$advertisement) return route('', ['message' => 'Not found']);
+        return view('admin.ads.edit', compact('advertisement'));
+    }
 
+    public function update(Request $request, int $id)
+    {
+        $advertisement = Advertisement::findOrFail($id);
         $advertisement->update($request->all());
-        return route('', ['message' => 'Updated successfully']);
+        return redirect()->route('admin.ads.index')->with('success', 'Advertisement updated.');
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
-        $advertisement = Advertisement::findOrFail($id);
-        if (!$advertisement) return route('', ['message' => 'Not found']);
-
-        $advertisement->delete();
-        return route('', ['message' => 'Deleted successfully']);
-    }
-    public function destroysoft($id)
-    {
-        $advertisement = Advertisement::findOrFail($id)->where('end_date','<',now());
-        if (!$advertisement) return route('', ['message' => 'Not found']);
-
-        $advertisement->delete();
-        return route('', ['message' => 'Deleted successfully']);
+        Advertisement::findOrFail($id)->delete();
+        return redirect()->route('admin.ads.index')->with('success', 'Advertisement deleted.');
     }
 }

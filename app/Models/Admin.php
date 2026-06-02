@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Admin extends Model
+class Admin extends Authenticatable
 {
     protected $fillable = ['id_number', 'first_name', 'last_name', 'email', 'password', 'phone', 'role'];
 
-    protected $hidden = ['password'];
+    protected $hidden = ['password', 'remember_token'];
+
+    protected function casts(): array
+    {
+        return ['password' => 'hashed'];
+    }
 
     public function advertisements()
     {

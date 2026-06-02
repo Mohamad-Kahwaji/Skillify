@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Advertisement extends Model
 {
-    protected $fillable = ['softDeletes','admin_id', 'title', 'description', 'image', 'company_name', 'start_date', 'end_date', 'status'];
+    protected $fillable = ['admin_id', 'title', 'description', 'image', 'company_name', 'start_date', 'end_date', 'status'];
 
     public function admin()
     {

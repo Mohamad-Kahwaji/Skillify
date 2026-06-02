@@ -13,13 +13,18 @@ return new class extends Migration
     {
         Schema::create('businesses', function (Blueprint $table) {
             $table->id();
-            $table->string('image')->nullable();
-            $table->string('number')->required();
-            $table->geometry('location')->required();
+            $table->foreignId('active_typebusiness_id')->constrained('active_typebusinesses')->onDelete('cascade');
+            $table->string('name');
+            $table->string('name_job');
+            $table->string('number');
+            $table->decimal('latitude', 10, 7);
+            $table->decimal('longitude', 10, 7);
             $table->string('description')->nullable();
-            $table->string('activity')->required();
-            $table->enum('status', ['pending', 'active','rejected'])->default('pending');
+            $table->string('image')->nullable();
+            $table->string('activity');
+            $table->enum('status', ['pending', 'active', 'rejected'])->default('pending');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

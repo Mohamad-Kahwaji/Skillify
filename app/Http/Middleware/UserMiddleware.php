@@ -17,11 +17,11 @@ class UserMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if(!Auth::guard('users')->check()){
-            return redirect()->route('loginUser');
+            return redirect()->route('user.login');
         }
-        if(Auth::guard('users')->user()->is_active == 'inactive'){
+        if(Auth::guard('users')->user()->status === 'inactive'){
             Auth::guard('users')->logout();
-            return redirect()->route('loginUser')->withErrors(['Your account is inactive, please contact']);
+            return redirect()->route('user.login')->withErrors(['account' => 'حسابك موقوف، تواصل مع الدعم.']);
         }
         return $next($request);
     }

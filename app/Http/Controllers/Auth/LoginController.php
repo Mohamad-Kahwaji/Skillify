@@ -1,27 +1,35 @@
 <?php
 
-namespace App\Http\Controllers\Login;
+namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-
-    public function showlogin(){
-        return view('');
-    }
-
-    public function login(LoginRequest $request){
-        if(Auth::guard('admins')->attempt($request->only('email', 'password'))){
-            return back()->withErrors([
-                'email' => 'Invalid credentials.',
-            ]);
+    public function showlogin()
+    {
+        if (Auth::guard('admins')->check()) {
+            return redirect()->route('admin.dashboard');
         }
-        $request->session()->regenerate();
-            return redirect()->route('');
+        return view('auth.admin.login');
     }
 
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required|min:6',
+        ]);
+
+        if (Auth::guard('admins')->attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->route('admin.dashboard');
+        }
+
+        return back()->withErrors([
+            'email' => 'Invalid credentials.',
+        ])->withInput($request->only('email'));
+    }
 }

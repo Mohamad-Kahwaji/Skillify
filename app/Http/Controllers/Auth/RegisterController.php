@@ -16,7 +16,9 @@ class RegisterController extends Controller
 
     public function register(RegisterRequest $request){
         $admin = Admin::Create([
-            'name' => $request->name,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'phone' => $request->phone,
             'email' => $request->email,
             'password' => $request->password,
         ]);

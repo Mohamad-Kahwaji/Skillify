@@ -15,9 +15,17 @@ class RegisterController extends Controller
 
     public function register(RegisterRequest $request){
         $admin = User::Create([
-            'name' => $request->name,
-            'email' => $request->email,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'middle_name' => $request->middle_name,
+            'phone' => $request->phone,
             'password' => $request->password,
+            'birthdate' => $request->birthdate,
+            'gender' => $request->gender,
+            'city' => $request->city,
+            'email' => $request->email,
+
+
         ]);
         Auth::guard('users')->Login($admin);
         return  redirect()->route('');
