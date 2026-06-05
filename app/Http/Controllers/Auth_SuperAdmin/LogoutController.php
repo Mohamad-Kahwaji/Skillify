@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Logout;
+namespace App\Http\Controllers\Auth_SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -8,10 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class LogoutController extends Controller
 {
-    Public function logout(Request $request){
-        Auth::guard('users')->logout();
+    public function logout(Request $request)
+    {
+        Auth::guard('super_admins')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('');
+        return redirect()->route('super_admin.login');
     }
 }

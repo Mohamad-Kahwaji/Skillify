@@ -425,13 +425,21 @@
         <i class="ti ti-tools"></i>
         <span class="lbl">Workers</span>
       </a>
+      <a href="{{ route('admin.verifications.index') }}" class="nav-item {{ request()->routeIs('admin.verifications.*') ? 'active' : '' }}">
+        <i class="ti ti-id-badge"></i>
+        <span class="lbl">Verifications</span>
+      </a>
       <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
         <i class="ti ti-user"></i>
         <span class="lbl">Users</span>
       </a>
-      <a href="{{ route('admin.verifications.index') }}" class="nav-item {{ request()->routeIs('admin.verifications.*') ? 'active' : '' }}">
-        <i class="ti ti-id-badge"></i>
-        <span class="lbl">Verifications</span>
+      <a href="{{ route('admin.blocked.index') }}" class="nav-item {{ request()->routeIs('admin.blocked.*') ? 'active' : '' }}">
+        <i class="ti ti-ban"></i>
+        <span class="lbl">Blocked</span>
+      </a>
+      <a href="{{ route('admin.services.index') }}" class="nav-item {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
+        <i class="ti ti-list-check"></i>
+        <span class="lbl">Services</span>
       </a>
 
       <div class="nav-sep"></div>
@@ -451,11 +459,38 @@
       </a>
 
       <div class="nav-sep"></div>
-      <span class="nav-label-group">System</span>
+      <span class="nav-label-group">Reference Data</span>
 
-      <button class="nav-item"><i class="ti ti-chart-bar"></i><span class="lbl">Analytics</span></button>
-      <button class="nav-item"><i class="ti ti-shield-check"></i><span class="lbl">Fraud Detection</span></button>
-      <button class="nav-item"><i class="ti ti-settings"></i><span class="lbl">Settings</span></button>
+      <a href="{{ route('admin.active_typebusinesses.index') }}"
+         class="nav-item {{ request()->routeIs('admin.active_typebusinesses.*') ? 'active' : '' }}">
+        <i class="ti ti-briefcase"></i>
+        <span class="lbl">Business Types</span>
+      </a>
+      <a href="{{ route('admin.active_types.index') }}"
+         class="nav-item {{ request()->routeIs('admin.active_types.*') ? 'active' : '' }}">
+        <i class="ti ti-tag"></i>
+        <span class="lbl">Activity Types</span>
+      </a>
+      <a href="{{ route('admin.categories.index') }}"
+         class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+        <i class="ti ti-category"></i>
+        <span class="lbl">Categories</span>
+      </a>
+      <a href="{{ route('admin.subcategories.index') }}"
+         class="nav-item {{ request()->routeIs('admin.subcategories.*') ? 'active' : '' }}">
+        <i class="ti ti-category-2"></i>
+        <span class="lbl">Subcategories</span>
+      </a>
+      <a href="{{ route('admin.employees.index') }}"
+         class="nav-item {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}">
+        <i class="ti ti-user-check"></i>
+        <span class="lbl">Employees</span>
+      </a>
+      <a href="{{ route('admin.cities.index') }}"
+         class="nav-item {{ request()->routeIs('admin.cities.*') ? 'active' : '' }}">
+        <i class="ti ti-map-pin"></i>
+        <span class="lbl">Cities</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">

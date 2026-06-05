@@ -1,31 +1,31 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Auth_SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class UserLoginController extends Controller
+class LoginController extends Controller
 {
     public function showLogin()
     {
-        if (Auth::guard('users')->check()) {
-            return redirect()->route('user.dashboard');
+        if (Auth::guard('super_admins')->check()) {
+            return redirect()->route('super_admin.dashboard');
         }
-        return view('auth.user.login');
+        return view('auth.super_admin.login');
     }
 
     public function login(Request $request)
     {
         $credentials = $request->validate([
             'email'    => 'required|email',
-            'password' => 'required',
+            'password' => 'required|min:6',
         ]);
 
-        if (Auth::guard('users')->attempt($credentials)) {
+        if (Auth::guard('super_admins')->attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended(route('user.dashboard'));
+            return redirect()->route('super_admin.dashboard');
         }
 
         return back()->withErrors([
@@ -35,9 +35,9 @@ class UserLoginController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::guard('users')->logout();
+        Auth::guard('super_admins')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('user.login');
+        return redirect()->route('super_admin.login');
     }
 }

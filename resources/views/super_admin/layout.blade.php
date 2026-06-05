@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -241,19 +241,91 @@
     </div>
 
     <nav class="sidebar-nav">
-      <span class="nav-label-group">نظرة عامة</span>
+
+      {{-- ── Super Admin ──────────────────────────────────── --}}
+      <span class="nav-label-group">Overview</span>
       <a href="{{ route('super_admin.dashboard') }}"
          class="nav-item {{ request()->routeIs('super_admin.dashboard') ? 'active' : '' }}">
-        <i class="ti ti-layout-dashboard"></i><span class="lbl">لوحة التحكم</span>
+        <i class="ti ti-layout-dashboard"></i><span class="lbl">Dashboard</span>
       </a>
 
       <div class="nav-sep"></div>
-      <span class="nav-label-group">إدارة</span>
+      <span class="nav-label-group">Super Admin</span>
 
       <a href="{{ route('super_admin.admins.index') }}"
          class="nav-item {{ request()->routeIs('super_admin.admins.*') ? 'active' : '' }}">
-        <i class="ti ti-user-shield"></i><span class="lbl">المديرون</span>
+        <i class="ti ti-user-shield"></i><span class="lbl">Admins</span>
       </a>
+
+      {{-- ── Admin Panel Sections ─────────────────────────── --}}
+      <div class="nav-sep"></div>
+      <span class="nav-label-group">Management</span>
+
+      <a href="{{ route('admin.workers.index') }}"
+         class="nav-item {{ request()->is('admin/workers*') ? 'active' : '' }}">
+        <i class="ti ti-tools"></i><span class="lbl">Workers</span>
+      </a>
+      <a href="{{ route('admin.verifications.index') }}"
+         class="nav-item {{ request()->is('admin/verifications*') ? 'active' : '' }}">
+        <i class="ti ti-id-badge"></i><span class="lbl">Verifications</span>
+      </a>
+      <a href="{{ route('admin.users.index') }}"
+         class="nav-item {{ request()->is('admin/users*') ? 'active' : '' }}">
+        <i class="ti ti-user"></i><span class="lbl">Users</span>
+      </a>
+      <a href="{{ route('admin.blocked.index') }}"
+         class="nav-item {{ request()->is('admin/blocked*') ? 'active' : '' }}">
+        <i class="ti ti-ban"></i><span class="lbl">Blocked</span>
+      </a>
+      <a href="{{ route('admin.services.index') }}"
+         class="nav-item {{ request()->is('admin/services*') ? 'active' : '' }}">
+        <i class="ti ti-list-check"></i><span class="lbl">Services</span>
+      </a>
+
+      <div class="nav-sep"></div>
+      <span class="nav-label-group">Content</span>
+
+      <a href="{{ route('admin.posts.index') }}"
+         class="nav-item {{ request()->is('admin/posts*') ? 'active' : '' }}">
+        <i class="ti ti-file-text"></i><span class="lbl">Posts</span>
+      </a>
+      <a href="{{ route('admin.reports.index') }}"
+         class="nav-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
+        <i class="ti ti-flag"></i><span class="lbl">Reports</span>
+      </a>
+      <a href="{{ route('admin.ads.index') }}"
+         class="nav-item {{ request()->is('admin/ads*') ? 'active' : '' }}">
+        <i class="ti ti-speakerphone"></i><span class="lbl">Ads</span>
+      </a>
+
+      <div class="nav-sep"></div>
+      <span class="nav-label-group">Reference Data</span>
+
+      <a href="{{ route('admin.cities.index') }}"
+         class="nav-item {{ request()->is('admin/cities*') ? 'active' : '' }}">
+        <i class="ti ti-map-pin"></i><span class="lbl">Cities</span>
+      </a>
+      <a href="{{ route('admin.categories.index') }}"
+         class="nav-item {{ request()->is('admin/categories*') ? 'active' : '' }}">
+        <i class="ti ti-category"></i><span class="lbl">Categories</span>
+      </a>
+      <a href="{{ route('admin.subcategories.index') }}"
+         class="nav-item {{ request()->is('admin/subcategories*') ? 'active' : '' }}">
+        <i class="ti ti-category-2"></i><span class="lbl">Subcategories</span>
+      </a>
+      <a href="{{ route('admin.active_typebusinesses.index') }}"
+         class="nav-item {{ request()->is('admin/active-type-businesses*') ? 'active' : '' }}">
+        <i class="ti ti-briefcase"></i><span class="lbl">Business Types</span>
+      </a>
+      <a href="{{ route('admin.active_types.index') }}"
+         class="nav-item {{ request()->is('admin/active-types*') ? 'active' : '' }}">
+        <i class="ti ti-tag"></i><span class="lbl">Activity Types</span>
+      </a>
+      <a href="{{ route('admin.employees.index') }}"
+         class="nav-item {{ request()->is('admin/employees*') ? 'active' : '' }}">
+        <i class="ti ti-user-check"></i><span class="lbl">Employees</span>
+      </a>
+
     </nav>
 
     <div class="sidebar-footer">
@@ -272,7 +344,7 @@
       <form method="POST" action="{{ route('super_admin.logout') }}" style="margin-top:6px;">
         @csrf
         <button type="submit" class="nav-item" style="color:rgba(255,255,255,0.45);">
-          <i class="ti ti-logout"></i><span class="lbl">تسجيل الخروج</span>
+          <i class="ti ti-logout"></i><span class="lbl">Sign Out</span>
         </button>
       </form>
     </div>
@@ -286,7 +358,7 @@
       <span class="current">@yield('breadcrumb', 'Dashboard')</span>
     </nav>
     <div class="header-actions">
-      <a href="{{ route('admin.login') }}" class="icon-btn" title="لوحة الأدمن">
+      <a href="{{ route('admin.login') }}" class="icon-btn" title="Admin Panel">
         <i class="ti ti-external-link"></i>
       </a>
     </div>

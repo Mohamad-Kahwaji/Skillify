@@ -1,17 +1,17 @@
 @extends('super_admin.layout')
 
-@section('title', 'المديرون')
-@section('breadcrumb', 'المديرون')
+@section('title', 'Admins')
+@section('breadcrumb', 'Admins')
 
 @section('content')
 
 <div class="page-head">
   <div>
-    <div class="page-title">إدارة المديرين</div>
-    <div class="page-sub">{{ $admins->count() }} مدير مسجل</div>
+    <div class="page-title">Manage Admins</div>
+    <div class="page-sub">{{ $admins->count() }} admin(s) registered</div>
   </div>
   <a href="{{ route('super_admin.admins.create') }}" class="btn-primary">
-    <i class="ti ti-plus"></i> إضافة أدمن
+    <i class="ti ti-plus"></i> Add Admin
   </a>
 </div>
 
@@ -19,10 +19,10 @@
   <table class="data-table">
     <thead>
       <tr>
-        <th>المدير</th>
-        <th>الهاتف</th>
-        <th>الدور</th>
-        <th>تاريخ الإنشاء</th>
+        <th>Admin</th>
+        <th>Phone</th>
+        <th>Role</th>
+        <th>Created</th>
         <th></th>
       </tr>
     </thead>
@@ -45,10 +45,10 @@
         <td style="color:var(--text-muted);">{{ $admin->created_at->format('Y/m/d') }}</td>
         <td>
           <form method="POST" action="{{ route('super_admin.admins.destroy', $admin) }}"
-                onsubmit="return confirm('هل تريد حذف هذا الأدمن؟')">
+                onsubmit="return confirm('Delete this admin?')">
             @csrf @method('DELETE')
             <button type="submit" class="btn-danger">
-              <i class="ti ti-trash"></i> حذف
+              <i class="ti ti-trash"></i> Delete
             </button>
           </form>
         </td>
@@ -57,7 +57,7 @@
       <tr>
         <td colspan="5" style="text-align:center;padding:48px;color:var(--text-muted);">
           <i class="ti ti-user-shield" style="font-size:32px;display:block;margin-bottom:8px;"></i>
-          لا يوجد مديرون بعد
+          No admins yet
         </td>
       </tr>
       @endforelse

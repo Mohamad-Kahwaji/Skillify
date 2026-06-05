@@ -21,6 +21,8 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+
+    protected $guard_name = 'users';
     protected function casts(): array
     {
         return [
@@ -66,7 +68,12 @@ class User extends Authenticatable
     }
     public function businesses()
     {
-        return $this->hasone(Business::class);
+        return $this->hasOne(Business::class);
+    }
+
+    public function services()
+    {
+        return $this->hasMany(Service::class);
     }
 
     public function distanceTo(User $other): float

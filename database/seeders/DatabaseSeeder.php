@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -16,10 +15,15 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            ActiveTypebusinessSeeder::class,
-            CategorySeedeers::class,
-            SubcategorySeedeers::class,
-            ActiveTypeSeeders::class,
+            CitiesSeeder::class,       // مدن سورية
+            ActiveTypebusinessSeeder::class, // مهنة / حرفة / معمل / شركة
+            ActiveTypeSeeders::class,        // أنواع المنشورات
+            CategorySeedeers::class,         // التصنيفات
+            SubcategorySeedeers::class,      // التصنيفات الفرعية
+            SuperAdminSeedeers::class,       // السوبر أدمن
+            UserSeedeers::class,             // المستخدمون + الأعمال + المنشورات
+            ServiceSeedeers::class,          // الخدمات
+            RequestServiceSeedeers::class,   // طلبات الخدمة
         ]);
     }
 }

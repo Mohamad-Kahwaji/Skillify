@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="light">
+<html lang="en" dir="ltr" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>@yield('title', 'حسابي') — Hirfa</title>
+  <title>@yield('title', 'My Account') — Hirfa</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
@@ -113,13 +113,75 @@
     .info-label { width: 140px; color: var(--text-secondary); flex-shrink: 0; }
     .info-value { color: var(--text-primary); font-weight: 500; }
 
+    /* NOTIF BADGE on nav link */
+    .nav-link { position: relative; }
+    .notif-badge {
+      position: absolute; top: 2px; right: 2px;
+      min-width: 17px; height: 17px;
+      background: var(--red-400); color: #fff;
+      border-radius: 20px; font-size: 10px; font-weight: 700;
+      display: none; align-items: center; justify-content: center;
+      padding: 0 4px; border: 2px solid var(--bg-surface);
+      line-height: 1;
+    }
+    .notif-badge.visible { display: inline-flex; }
+
+    /* TOAST CONTAINER */
+    .toast-stack {
+      position: fixed; bottom: 24px; left: 24px;
+      z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-md);
+      border-right: 3px solid var(--accent);
+      border-radius: 12px;
+      padding: 12px 14px 12px 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      min-width: 280px; max-width: 340px;
+      pointer-events: all;
+      cursor: pointer;
+      animation: toastIn 0.3s cubic-bezier(.34,1.56,.64,1) both;
+      transition: opacity 0.25s, transform 0.25s;
+    }
+    .toast.hiding {
+      opacity: 0;
+      transform: translateX(-16px);
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .toast-avatar {
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600; color: #fff;
+    }
+    .toast-body { flex: 1; min-width: 0; }
+    .toast-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .toast-msg {
+      font-size: 12px; color: var(--text-secondary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .toast-close {
+      background: none; border: none; font-size: 16px;
+      color: var(--text-muted); padding: 2px; flex-shrink: 0;
+      border-radius: 4px; transition: color 0.12s;
+    }
+    .toast-close:hover { color: var(--text-primary); }
+
     @media (max-width: 640px) {
       .header-nav { display: none; }
       .user-name, .user-email { display: none; }
+      .toast-stack { left: 12px; right: 12px; bottom: 16px; }
+      .toast { min-width: unset; }
     }
 
-    @yield('styles')
   </style>
+  @yield('styles')
 </head>
 <body>
 
@@ -133,11 +195,24 @@
   <nav class="header-nav">
     <a href="{{ route('user.dashboard') }}"
        class="nav-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
-      <i class="ti ti-home"></i> الرئيسية
+      <i class="ti ti-home"></i> Home
+    </a>
+    <a href="{{ route('user.explore') }}"
+       class="nav-link {{ request()->routeIs('user.explore') ? 'active' : '' }}">
+      <i class="ti ti-search"></i> Explore
+    </a>
+    <a href="{{ route('user.services') }}"
+       class="nav-link {{ request()->routeIs('user.services') ? 'active' : '' }}">
+      <i class="ti ti-briefcase"></i> Services
     </a>
     <a href="{{ route('user.profile') }}"
        class="nav-link {{ request()->routeIs('user.profile') ? 'active' : '' }}">
-      <i class="ti ti-user"></i> ملفي الشخصي
+      <i class="ti ti-user"></i> Profile
+    </a>
+    <a id="nav-messages-link" href="{{ route('user.conversations') }}"
+       class="nav-link {{ request()->routeIs('user.conversations') || request()->routeIs('user.chat') ? 'active' : '' }}">
+      <i class="ti ti-message-circle"></i> Messages
+      <span class="notif-badge" id="notif-badge"></span>
     </a>
   </nav>
 
@@ -169,6 +244,119 @@
 
   @yield('content')
 </main>
+
+{{-- Toast container --}}
+<div class="toast-stack" id="toast-stack"></div>
+
+@vite(['resources/js/app.js'])
+
+<script>
+(function () {
+  const ME_ID       = {{ Auth::guard('users')->id() }};
+  const CSRF        = document.querySelector('meta[name="csrf-token"]').content;
+  const UNREAD_URL  = '{{ route("user.messages.unread") }}';
+  const AVATAR_COLORS = ['#1D9E75','#0F6E56','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899'];
+
+  const badge      = document.getElementById('notif-badge');
+  const toastStack = document.getElementById('toast-stack');
+  const msgLink    = document.getElementById('nav-messages-link');
+
+  // ── Load unread count ──────────────────────────────────
+  async function loadUnread() {
+    try {
+      const r = await fetch(UNREAD_URL, {
+        headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+      });
+      const { count } = await r.json();
+      setbadge(count);
+    } catch (_) {}
+  }
+
+  function setbadge(n) {
+    if (n > 0) {
+      badge.textContent = n > 99 ? '99+' : n;
+      badge.classList.add('visible');
+    } else {
+      badge.classList.remove('visible');
+    }
+  }
+  // alias
+  function setbadgeAlias(n) { setbadge(n); }
+  window.__setNotifBadge = setbadge;
+
+  loadUnread();
+
+  // ── Toast helper ───────────────────────────────────────
+  function showToast({ senderName, preview, conversationId, senderId }) {
+    const color  = AVATAR_COLORS[senderId % AVATAR_COLORS.length];
+    const initial = senderName ? senderName.charAt(0).toUpperCase() : '?';
+
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `
+      <div class="toast-avatar" style="background:${color};">${initial}</div>
+      <div class="toast-body">
+        <div class="toast-title">${escHtml(senderName)}</div>
+        <div class="toast-msg">${escHtml(preview || 'New message')}</div>
+      </div>
+      <button class="toast-close" aria-label="Close"><i class="ti ti-x"></i></button>
+    `;
+
+    // Click → go to chat
+    toast.addEventListener('click', (e) => {
+      if (!e.target.closest('.toast-close')) {
+        window.location.href = '/user/chat/' + conversationId;
+      }
+    });
+
+    // Close button
+    toast.querySelector('.toast-close').addEventListener('click', () => dismissToast(toast));
+
+    toastStack.appendChild(toast);
+
+    // Auto-dismiss after 5 s
+    const timer = setTimeout(() => dismissToast(toast), 5000);
+    toast._timer = timer;
+  }
+
+  function dismissToast(toast) {
+    clearTimeout(toast._timer);
+    toast.classList.add('hiding');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+  }
+
+  function escHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Echo listener ──────────────────────────────────────
+  if (window.Echo) {
+    window.Echo.private(`notifications.${ME_ID}`)
+      .listen('.new.message', (data) => {
+        if (!data) return;
+
+        // Update badge
+        const cur = parseInt(badge.textContent || '0', 10) || 0;
+        setbadge(cur + 1);
+
+        // Update messages link href to this conversation
+        if (data.conversation_id) {
+          msgLink.href = '/user/chat/' + data.conversation_id;
+        }
+
+        showToast({
+          senderName:     data.sender_name || 'User',
+          preview:        data.message_text
+                            ? data.message_text.substring(0, 60)
+                            : (data.file_name ? '📎 ' + data.file_name : 'New message'),
+          conversationId: data.conversation_id,
+          senderId:       data.user_id || 0,
+        });
+      });
+  }
+})();
+</script>
 
 @yield('scripts')
 </body>

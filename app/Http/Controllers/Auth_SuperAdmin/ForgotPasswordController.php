@@ -1,7 +1,7 @@
 <?php
-namespace App\Http\Controllers\ForgotPassword;
+namespace App\Http\Controllers\Auth_SuperAdmin;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -52,7 +52,7 @@ class ForgotPasswordController extends Controller
             return back()->withErrors(['token' => 'link has expired']);
         }
 
-        User::where('email', $request->email)->update([
+        Admin::where('email', $request->email)->update([
             'password' => $request->password
         ]);
 

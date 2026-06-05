@@ -68,6 +68,12 @@ class BusinessController extends Controller
         return redirect()->route('admin.workers.index')->with('success', 'Business updated.');
     }
 
+    public function show(int $id)
+    {
+        $business = Business::withTrashed()->with('user')->findOrFail($id);
+        return view('admin.workers.show', compact('business'));
+    }
+
     public function destroy(int $id)
     {
         Business::findOrFail($id)->delete();

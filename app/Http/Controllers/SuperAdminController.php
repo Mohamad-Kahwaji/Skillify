@@ -7,6 +7,7 @@ use App\Models\Advertisement;
 use App\Models\Business;
 use App\Models\Post;
 use App\Models\Report;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,6 +22,7 @@ class SuperAdminController extends Controller
                 'admins'           => Admin::latest()->get(),
                 'totalUsers'       => User::count(),
                 'newUsersThisWeek' => User::where('created_at', '>=', $now->copy()->subDays(7))->count(),
+                'totalBiz'         => Business::count(),
                 'activeWorkers'    => Business::where('status', 'active')->count(),
                 'pendingWorkers'   => Business::where('status', 'pending')->count(),
                 'totalPosts'       => Post::count(),
@@ -36,6 +38,7 @@ class SuperAdminController extends Controller
                 'admins'           => collect(),
                 'totalUsers'       => 0,
                 'newUsersThisWeek' => 0,
+                'totalBiz'         => 0,
                 'activeWorkers'    => 0,
                 'pendingWorkers'   => 0,
                 'totalPosts'       => 0,
@@ -87,4 +90,73 @@ class SuperAdminController extends Controller
         $admin->delete();
         return back()->with('success', 'تم حذف الأدمن.');
     }
+////////////////////////////businesses/////////////////////////
+    public function businesses_pending()
+    {
+        $businesses = Business::where('status', 'pending')->latest()->get();
+        return view('', compact('businesses'));
+    }
+    public function businessto_approve(Business $business)
+    {
+        $business->update(['status' => 'approved']);
+        return back()->with('success', '');
+    }
+    public function businessto_rejected(Business $business)
+    {
+        $business->update(['status' => 'rejected']);
+        return back()->with('success', '');
+    }
+    public function businessto_pending(Business $business)
+    {
+        $business->update(['status' => 'pending']);
+        return back()->with('success', '');
+    }
+
+    public function businesses_approved(){
+        $businesses = Business::where('status','approved')->get();
+        return view('', compact('businesses'));
+    }
+    public function businesses_rejected(){
+        $businesses = Business::where('status','rejected')->get();
+        return view('', compact('businesses'));
+    }
+/////////////////////////////////////////////////////////////////
+
+
+//////////////////////////services/////////////////////////
+    public function services_pending()
+    {
+        $services = Service::where('status', 'pending')->latest()->get();
+        return view('', compact('services   '));
+    }
+    public function serviceto_approve(Service $service)
+    {
+        $service->update(['status' => 'approved']);
+        return back()->with('success', '');
+    }
+    public function serviceto_rejected(Service $service)
+    {
+        $service->update(['status' => 'rejected']);
+        return back()->with('success', '');
+    }
+    public function serviceto_pending(Service $service)
+    {
+        $service->update(['status' => 'pending']);
+        return back()->with('success', '');
+    }
+
+    public function services_approved(){
+        $services = Service::where('status','approved')->get();
+        return view('', compact('services'));
+    }
+    public function services_rejected(){
+        $services = Service::where('status','rejected')->get();
+        return view('', compact('services'));
+    }
+/////////////////////////////////////////////////////////////////
+
+
+
+
+
 }

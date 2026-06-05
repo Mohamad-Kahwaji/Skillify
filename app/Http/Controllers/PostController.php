@@ -13,9 +13,10 @@ class PostController extends Controller
         return view('admin.posts.index', compact('posts'));
     }
 
-    public function showmypost(){
+    public function showmypost()
+    {
         $posts = Post::where('user_id', auth('users')->id())->latest()->get();
-        return view('posts.myposts', compact('posts'));
+        return view('user.posts', compact('posts'));
     }
 
     public function store(Request $request)

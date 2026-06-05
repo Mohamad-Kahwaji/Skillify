@@ -120,17 +120,17 @@
 <div class="alert-banner">
   <i class="ti ti-alert-triangle"></i>
   <div>
-    <strong>يتطلب انتباهك:</strong>
-    @if($pendingWorkers > 0) {{ $pendingWorkers }} طلب تحقق معلق @endif
+    <strong>Requires your attention:</strong>
+    @if($pendingWorkers > 0) {{ $pendingWorkers }} pending verification request @endif
     @if($pendingWorkers > 0 && $pendingReports > 0) · @endif
-    @if($pendingReports > 0) {{ $pendingReports }} بلاغ بانتظار المراجعة @endif
+    @if($pendingReports > 0) {{ $pendingReports }} report awaiting review @endif
   </div>
   <div class="alert-banner-actions">
     @if($pendingWorkers > 0)
-      <a href="{{ route('admin.verifications.index') }}"><i class="ti ti-id-badge"></i> مراجعة التحقق</a>
+      <a href="{{ route('admin.verifications.index') }}"><i class="ti ti-id-badge"></i> Review Verifications</a>
     @endif
     @if($pendingReports > 0)
-      <a href="{{ route('admin.reports.index') }}"><i class="ti ti-flag"></i> البلاغات</a>
+      <a href="{{ route('admin.reports.index') }}"><i class="ti ti-flag"></i> Reports</a>
     @endif
   </div>
 </div>
@@ -139,12 +139,12 @@
 {{-- Page Header --}}
 <div class="page-head">
   <div>
-    <div class="page-title">لوحة التحكم</div>
-    <div class="page-sub">{{ now()->isoFormat('dddd، D MMMM YYYY') }}</div>
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">{{ now()->isoFormat('dddd, D MMMM YYYY') }}</div>
   </div>
   <div style="display:flex;gap:8px;">
     <a href="{{ route('admin.ads.create') }}" class="btn-primary">
-      <i class="ti ti-plus"></i> إعلان جديد
+      <i class="ti ti-plus"></i> New Ad
     </a>
   </div>
 </div>
@@ -159,11 +159,11 @@
       @if($newUsersThisWeek > 0)
         <span class="stat-delta up"><i class="ti ti-trending-up" style="font-size:10px;"></i> +{{ $newUsersThisWeek }}</span>
       @else
-        <span class="stat-delta neutral">هذا الأسبوع</span>
+        <span class="stat-delta neutral">This week</span>
       @endif
     </div>
     <div class="stat-value">{{ number_format($totalUsers) }}</div>
-    <div class="stat-label">إجمالي المستخدمين</div>
+    <div class="stat-label">Total Users</div>
     <i class="ti ti-users stat-bg-icon"></i>
   </div>
 
@@ -172,11 +172,11 @@
     <div class="stat-top">
       <div class="stat-icon coral"><i class="ti ti-tools"></i></div>
       @if($pendingWorkers > 0)
-        <span class="stat-delta warn"><i class="ti ti-clock" style="font-size:10px;"></i> {{ $pendingWorkers }} معلق</span>
+        <span class="stat-delta warn"><i class="ti ti-clock" style="font-size:10px;"></i> {{ $pendingWorkers }} pending</span>
       @endif
     </div>
     <div class="stat-value">{{ number_format($activeWorkers) }}</div>
-    <div class="stat-label">عمال نشطون</div>
+    <div class="stat-label">Active Workers</div>
     <i class="ti ti-tools stat-bg-icon"></i>
   </div>
 
@@ -185,13 +185,13 @@
     <div class="stat-top">
       <div class="stat-icon amber"><i class="ti ti-id-badge"></i></div>
       @if($pendingWorkers > 0)
-        <span class="stat-delta warn">يتطلب مراجعة</span>
+        <span class="stat-delta warn">Requires review</span>
       @else
-        <span class="stat-delta neutral">لا يوجد معلق</span>
+        <span class="stat-delta neutral">None pending</span>
       @endif
     </div>
     <div class="stat-value">{{ $pendingWorkers }}</div>
-    <div class="stat-label">طلبات التحقق</div>
+    <div class="stat-label">Verification Requests</div>
     <i class="ti ti-id-badge stat-bg-icon"></i>
   </div>
 
@@ -202,7 +202,7 @@
       <span class="stat-delta up">{{ now()->format('M') }}</span>
     </div>
     <div class="stat-value">{{ number_format($postsThisMonth) }}</div>
-    <div class="stat-label">منشورات هذا الشهر</div>
+    <div class="stat-label">Posts This Month</div>
     <i class="ti ti-file-text stat-bg-icon"></i>
   </div>
 
@@ -211,13 +211,13 @@
     <div class="stat-top">
       <div class="stat-icon red"><i class="ti ti-flag"></i></div>
       @if($pendingReports > 0)
-        <span class="stat-delta red">يتطلب إجراء</span>
+        <span class="stat-delta red">Action required</span>
       @else
-        <span class="stat-delta neutral">لا بلاغات</span>
+        <span class="stat-delta neutral">No reports</span>
       @endif
     </div>
     <div class="stat-value">{{ number_format($pendingReports) }}</div>
-    <div class="stat-label">البلاغات</div>
+    <div class="stat-label">Reports</div>
     <i class="ti ti-flag stat-bg-icon"></i>
   </div>
 
@@ -225,10 +225,10 @@
   <div class="stat-card">
     <div class="stat-top">
       <div class="stat-icon amber"><i class="ti ti-speakerphone"></i></div>
-      <span class="stat-delta up">نشط</span>
+      <span class="stat-delta up">Active</span>
     </div>
     <div class="stat-value">{{ $activeAds }}</div>
-    <div class="stat-label">إعلانات نشطة</div>
+    <div class="stat-label">Active Ads</div>
     <i class="ti ti-speakerphone stat-bg-icon"></i>
   </div>
 
@@ -237,28 +237,28 @@
 {{-- Quick Actions --}}
 <div class="quick-actions">
   <a href="{{ route('admin.verifications.index') }}" class="qa-btn">
-    <i class="ti ti-id-badge"></i> التحقق من الحسابات
+    <i class="ti ti-id-badge"></i> Account Verifications
     @if($pendingWorkers > 0)
       <span class="badge pending" style="font-size:10px;padding:1px 7px;">{{ $pendingWorkers }}</span>
     @endif
   </a>
   <a href="{{ route('admin.reports.index') }}" class="qa-btn">
-    <i class="ti ti-flag"></i> البلاغات
+    <i class="ti ti-flag"></i> Reports
     @if($pendingReports > 0)
       <span class="badge blocked" style="font-size:10px;padding:1px 7px;">{{ $pendingReports }}</span>
     @endif
   </a>
   <a href="{{ route('admin.users.index') }}" class="qa-btn">
-    <i class="ti ti-users"></i> إدارة المستخدمين
+    <i class="ti ti-users"></i> Manage Users
   </a>
   <a href="{{ route('admin.workers.index') }}" class="qa-btn">
-    <i class="ti ti-tools"></i> إدارة العمال
+    <i class="ti ti-tools"></i> Manage Workers
   </a>
   <a href="{{ route('admin.ads.create') }}" class="qa-btn">
-    <i class="ti ti-speakerphone"></i> إنشاء إعلان
+    <i class="ti ti-speakerphone"></i> Create Ad
   </a>
   <a href="{{ route('admin.posts.index') }}" class="qa-btn">
-    <i class="ti ti-file-text"></i> المنشورات
+    <i class="ti ti-file-text"></i> Posts
   </a>
 </div>
 
@@ -271,16 +271,16 @@
     {{-- Recent Users --}}
     <div class="card">
       <div class="card-head">
-        <span class="card-title">أحدث المستخدمين المسجلين</span>
-        <a href="{{ route('admin.users.index') }}" class="card-action">عرض الكل</a>
+        <span class="card-title">Latest Registered Users</span>
+        <a href="{{ route('admin.users.index') }}" class="card-action">View All</a>
       </div>
       <table class="data-table">
         <thead>
           <tr>
-            <th>المستخدم</th>
-            <th>المدينة</th>
-            <th>الحالة</th>
-            <th>تاريخ الانضمام</th>
+            <th>User</th>
+            <th>City</th>
+            <th>Status</th>
+            <th>Joined</th>
           </tr>
         </thead>
         <tbody>
@@ -300,7 +300,7 @@
             <td style="color:var(--text-secondary);font-size:12px;">{{ $user->city ?? '—' }}</td>
             <td>
               <span class="badge {{ $user->status ?? 'active' }}">
-                {{ $user->status === 'active' ? 'نشط' : 'موقوف' }}
+                {{ $user->status === 'active' ? 'Active' : 'Inactive' }}
               </span>
             </td>
             <td style="color:var(--text-muted);font-size:12px;">
@@ -310,7 +310,7 @@
           @empty
           <tr>
             <td colspan="4">
-              <div class="empty-state"><i class="ti ti-users"></i>لا يوجد مستخدمون بعد</div>
+              <div class="empty-state"><i class="ti ti-users"></i>No users yet</div>
             </td>
           </tr>
           @endforelse
@@ -321,23 +321,23 @@
     {{-- Recent Posts --}}
     <div class="card">
       <div class="card-head">
-        <span class="card-title">أحدث المنشورات</span>
-        <a href="{{ route('admin.posts.index') }}" class="card-action">عرض الكل</a>
+        <span class="card-title">Latest Posts</span>
+        <a href="{{ route('admin.posts.index') }}" class="card-action">View All</a>
       </div>
       @forelse($recentPosts as $post)
       <div class="post-row">
         <div class="post-icon"><i class="ti ti-file-text"></i></div>
         <div style="flex:1;min-width:0;">
-          <div class="post-title">{{ $post->title ?? 'منشور بدون عنوان' }}</div>
+          <div class="post-title">{{ $post->title ?? 'Untitled Post' }}</div>
           <div class="post-meta">
-            بواسطة {{ $post->user?->first_name ?? 'مجهول' }}
-            @if($post->views) · {{ $post->views }} مشاهدة @endif
+            by {{ $post->user?->first_name ?? 'Unknown' }}
+            @if($post->views) · {{ $post->views }} views @endif
           </div>
         </div>
         <div class="post-time">{{ $post->created_at->diffForHumans(null, true) }}</div>
       </div>
       @empty
-      <div class="empty-state"><i class="ti ti-file-text"></i>لا يوجد منشورات بعد</div>
+      <div class="empty-state"><i class="ti ti-file-text"></i>No posts yet</div>
       @endforelse
     </div>
 
@@ -350,12 +350,12 @@
     <div class="card">
       <div class="card-head">
         <span class="card-title">
-          طلبات التحقق
+          Verification Requests
           @if($pendingVerifications->count() > 0)
             <span class="badge pending" style="margin-right:6px;">{{ $pendingVerifications->count() }}</span>
           @endif
         </span>
-        <a href="{{ route('admin.verifications.index') }}" class="card-action">الكل</a>
+        <a href="{{ route('admin.verifications.index') }}" class="card-action">View All</a>
       </div>
 
       @forelse($pendingVerifications as $biz)
@@ -370,13 +370,13 @@
         <div class="verif-actions">
           <form method="POST" action="{{ route('admin.verifications.approve', $biz->id) }}">
             @csrf @method('PATCH')
-            <button type="submit" class="btn-approve" title="موافقة">
-              <i class="ti ti-check" style="font-size:12px;"></i> موافقة
+            <button type="submit" class="btn-approve" title="Approve">
+              <i class="ti ti-check" style="font-size:12px;"></i> Approve
             </button>
           </form>
           <form method="POST" action="{{ route('admin.verifications.reject', $biz->id) }}">
             @csrf @method('PATCH')
-            <button type="submit" class="btn-reject" title="رفض">
+            <button type="submit" class="btn-reject" title="Reject">
               <i class="ti ti-x" style="font-size:13px;"></i>
             </button>
           </form>
@@ -385,7 +385,7 @@
       @empty
       <div class="empty-state" style="padding:24px;">
         <i class="ti ti-circle-check" style="color:var(--accent);"></i>
-        <div style="font-size:13px;margin-top:6px;">لا يوجد طلبات معلقة</div>
+        <div style="font-size:13px;margin-top:6px;">No pending requests</div>
       </div>
       @endforelse
     </div>
@@ -394,34 +394,34 @@
     <div class="card">
       <div class="card-head">
         <span class="card-title">
-          البلاغات الأخيرة
+          Recent Reports
           @if($recentReports->count() > 0)
             <span class="badge blocked" style="margin-right:6px;">{{ $recentReports->count() }}</span>
           @endif
         </span>
-        <a href="{{ route('admin.reports.index') }}" class="card-action">الكل</a>
+        <a href="{{ route('admin.reports.index') }}" class="card-action">View All</a>
       </div>
 
       @forelse($recentReports as $report)
       <div class="report-item">
         <div class="report-icon"><i class="ti ti-flag"></i></div>
         <div class="report-info">
-          <div class="report-reason">{{ $report->reason ?? 'بلاغ' }}</div>
+          <div class="report-reason">{{ $report->reason ?? 'Report' }}</div>
           <div class="report-meta">
-            منشور #{{ $report->post_id }}
+            Post #{{ $report->post_id }}
             @if($report->user) · {{ $report->user->first_name }} @endif
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
           <span class="report-time">{{ $report->created_at->diffForHumans(null, true) }}</span>
           <a href="{{ route('admin.reports.post', $report->post_id) }}"
-             style="font-size:11px;color:var(--accent);">عرض</a>
+             style="font-size:11px;color:var(--accent);">View</a>
         </div>
       </div>
       @empty
       <div class="empty-state" style="padding:24px;">
         <i class="ti ti-circle-check" style="color:var(--accent);"></i>
-        <div style="font-size:13px;margin-top:6px;">لا يوجد بلاغات</div>
+        <div style="font-size:13px;margin-top:6px;">No reports</div>
       </div>
       @endforelse
     </div>
