@@ -16,13 +16,30 @@ class UserMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!Auth::guard('users')->check()){
+        if (!Auth::guard('users')->check()) {
             return redirect()->route('user.login');
         }
-        if(Auth::guard('users')->user()->status === 'inactive'){
+
+        $user = Auth::guard('users')->user();
+
+        if ($user->status === 'inactive') {
             Auth::guard('users')->logout();
             return redirect()->route('user.login')->withErrors(['account' => 'حسابك موقوف، تواصل مع الدعم.']);
         }
+
+        // Auto-assign default role if user has none
+        if ($user->roles->isEmpty()) {
+            try {
+                $role = $user->businesses()->where('status', 'approved')->exists()
+                    ? 'business_owner'
+                    : 'user';
+                $user->assignRole($role);
+            } catch (\Exception $e) {
+                // Roles not seeded yet — continue without assigning
+            }
+        }
+
+        Auth::setDefaultDriver('users');
         return $next($request);
     }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,7 +24,29 @@
       --radius-sm: 6px;
       --radius-md: 10px;
       --radius-lg: 14px;
-
+    }
+    [data-theme="light"] {
+      --bg-base:       #F1EFE8;
+      --bg-surface:    #ffffff;
+      --bg-sunken:     #F8F7F4;
+      --bg-hover:      #F0EEE8;
+      --border:        rgba(0,0,0,0.08);
+      --border-md:     rgba(0,0,0,0.13);
+      --text-primary:  #1a1a1a;
+      --text-secondary:#5F5E5A;
+      --text-muted:    #B4B2A9;
+      --sidebar-bg:    #04342C;
+      --sidebar-text:  rgba(255,255,255,0.85);
+      --sidebar-dim:   rgba(255,255,255,0.45);
+      --sidebar-rule:  rgba(255,255,255,0.08);
+      --sidebar-active:rgba(255,255,255,0.10);
+      --sidebar-hover: rgba(255,255,255,0.06);
+      --accent:        #1D9E75;
+      --accent-hover:  #0F6E56;
+      --accent-bg:     #E1F5EE;
+      --accent-txt:    #085041;
+    }
+    [data-theme="dark"] {
       --bg-base:       #080f0b;
       --bg-surface:    #0e1a14;
       --bg-sunken:     #0a1510;
@@ -104,7 +126,7 @@
       text-align: right; transition: background 0.12s; cursor: pointer;
     }
     .nav-item:hover  { background: var(--sidebar-hover); }
-    .nav-item.active { background: var(--sidebar-active); color: var(--accent-hover); }
+    .nav-item.active { background: var(--sidebar-active); color: var(--accent-hover); box-shadow: inset 3px 0 0 var(--accent); }
     .nav-item > i    { font-size: 17px; flex-shrink: 0; }
     .nav-item .lbl   { flex: 1; }
     .sidebar-footer {
@@ -144,6 +166,15 @@
       font-size: 17px; transition: background 0.12s;
     }
     .icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .mode-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--bg-sunken); border: 0.5px solid var(--border);
+      border-radius: 8px; padding: 0 12px; height: 34px;
+      font-size: 12px; color: var(--text-secondary); cursor: pointer;
+      transition: border-color 0.12s, color 0.12s;
+    }
+    .mode-pill:hover { border-color: var(--accent); color: var(--accent); }
+    .mode-pill > i { font-size: 15px; }
 
     /* MAIN */
     .main { grid-area: main; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
@@ -219,6 +250,85 @@
     .alert.success { background: rgba(29,158,117,.12); color: var(--accent-hover); border: 0.5px solid rgba(29,158,117,.2); }
     .alert.error   { background: var(--red-50); color: var(--red-800); }
 
+    /* TABLE TOOLBAR */
+    .table-toolbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 20px; border-bottom: 0.5px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .search-field {
+      display: flex; align-items: center;
+      background: rgba(255,255,255,0.04); border: 0.5px solid var(--border);
+      border-radius: 8px; overflow: hidden; width: 220px; flex-shrink: 0;
+      transition: border-color 0.15s;
+    }
+    .search-field:focus-within { border-color: var(--accent); }
+    .search-field > i { padding: 0 10px; font-size: 15px; color: var(--text-muted); flex-shrink: 0; }
+    .search-field input {
+      border: none; outline: none; background: transparent;
+      padding: 7px 8px 7px 0; font-size: 13px;
+      color: var(--text-primary); width: 100%; font-family: var(--font);
+    }
+    .search-field input::placeholder { color: var(--text-muted); }
+    .filter-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+    .chip {
+      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+      border: 0.5px solid rgba(255,255,255,0.10); background: transparent;
+      color: var(--sidebar-dim); cursor: pointer; transition: all 0.12s; font-family: var(--font);
+    }
+    .chip.on { background: rgba(29,158,117,.18); color: var(--accent-hover); border-color: var(--accent); }
+    .chip:not(.on):hover { background: rgba(255,255,255,.06); color: var(--text-primary); }
+    .tbl-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; padding: 0 4px; margin-right: auto; }
+
+    /* MODAL */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:300;
+      background:rgba(0,0,0,.65); backdrop-filter:blur(4px);
+      align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal-box {
+      background:var(--bg-surface); border:0.5px solid var(--border-md);
+      border-radius:16px; width:100%; max-width:560px;
+      overflow:hidden; animation:mfadeUp .2s ease;
+      max-height:90vh; display:flex; flex-direction:column;
+    }
+    @keyframes mfadeUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .modal-head {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 20px; border-bottom:0.5px solid var(--border); flex-shrink:0;
+    }
+    .modal-title { font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px; }
+    .modal-close {
+      width:28px; height:28px; border-radius:8px;
+      border:none; background:none; color:var(--text-secondary);
+      font-size:17px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:background .12s; font-family:var(--font);
+    }
+    .modal-close:hover { background:rgba(255,255,255,.06); }
+    .modal-body { padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:14px; }
+    .modal-foot {
+      padding:14px 20px; border-top:0.5px solid var(--border);
+      display:flex; justify-content:flex-end; gap:8px; flex-shrink:0;
+    }
+    .form-label { display:block; font-size:12px; font-weight:500; color:var(--text-secondary); margin-bottom:6px; }
+    .form-field {
+      display:flex; align-items:center;
+      background:var(--bg-sunken); border:0.5px solid var(--border-md);
+      border-radius:8px; overflow:hidden; transition:border-color .15s;
+    }
+    .form-field:focus-within { border-color:var(--accent); }
+    .form-field > i { padding:0 11px; font-size:16px; color:var(--text-muted); flex-shrink:0; }
+    .form-field input, .form-field select, .form-field textarea {
+      flex:1; border:none; outline:none; background:transparent;
+      padding:10px 12px 10px 0; font-size:13px; color:var(--text-primary);
+      font-family:var(--font); resize:none;
+    }
+    .form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
     @media (max-width: 720px) {
       .shell { grid-template-columns: 1fr; grid-template-areas: "header" "main"; }
       .sidebar { display: none; }
@@ -255,6 +365,18 @@
       <a href="{{ route('super_admin.admins.index') }}"
          class="nav-item {{ request()->routeIs('super_admin.admins.*') ? 'active' : '' }}">
         <i class="ti ti-user-shield"></i><span class="lbl">Admins</span>
+      </a>
+
+      <div class="nav-sep"></div>
+      <span class="nav-label-group">Access Control</span>
+
+      <a href="{{ route('super_admin.roles.index') }}"
+         class="nav-item {{ request()->routeIs('super_admin.roles.*') ? 'active' : '' }}">
+        <i class="ti ti-lock-access"></i><span class="lbl">Roles</span>
+      </a>
+      <a href="{{ route('super_admin.permissions.index') }}"
+         class="nav-item {{ request()->routeIs('super_admin.permissions.*') ? 'active' : '' }}">
+        <i class="ti ti-key"></i><span class="lbl">Permissions</span>
       </a>
 
       {{-- ── Admin Panel Sections ─────────────────────────── --}}
@@ -321,10 +443,6 @@
          class="nav-item {{ request()->is('admin/active-types*') ? 'active' : '' }}">
         <i class="ti ti-tag"></i><span class="lbl">Activity Types</span>
       </a>
-      <a href="{{ route('admin.employees.index') }}"
-         class="nav-item {{ request()->is('admin/employees*') ? 'active' : '' }}">
-        <i class="ti ti-user-check"></i><span class="lbl">Employees</span>
-      </a>
 
     </nav>
 
@@ -358,6 +476,10 @@
       <span class="current">@yield('breadcrumb', 'Dashboard')</span>
     </nav>
     <div class="header-actions">
+      <button class="mode-pill" onclick="toggleTheme()">
+        <i class="ti ti-moon" id="mode-icon"></i>
+        <span id="mode-txt">Dark</span>
+      </button>
       <a href="{{ route('admin.login') }}" class="icon-btn" title="Admin Panel">
         <i class="ti ti-external-link"></i>
       </a>
@@ -377,5 +499,21 @@
 
 </div>
 @yield('scripts')
+<script>
+  var dark = localStorage.getItem('theme') === 'dark';
+  if (dark) applyTheme(true);
+  function applyTheme(d) {
+    document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
+    var icon = document.getElementById('mode-icon');
+    var txt  = document.getElementById('mode-txt');
+    if (icon) icon.className = d ? 'ti ti-sun' : 'ti ti-moon';
+    if (txt)  txt.textContent = d ? 'Light' : 'Dark';
+  }
+  function toggleTheme() {
+    dark = !dark;
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    applyTheme(dark);
+  }
+</script>
 </body>
 </html>

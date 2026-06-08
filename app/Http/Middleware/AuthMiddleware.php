@@ -16,9 +16,22 @@ class AuthMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!Auth::guard('admins')->check()){
+        // Super admins can access admin routes without restriction
+        if (Auth::guard('super_admins')->check()) {
+            Auth::setDefaultDriver('super_admins');
+            return $next($request);
+        }
+
+        if (!Auth::guard('admins')->check()) {
             return redirect()->route('admin.login');
         }
+
+        if (Auth::guard('admins')->user()->status === 'inactive') {
+            Auth::guard('admins')->logout();
+            return redirect()->route('admin.login')->withErrors(['account' => 'حسابك موقوف، تواصل مع الدعم.']);
+        }
+
+        Auth::setDefaultDriver('admins');
         return $next($request);
     }
 }

@@ -14,6 +14,7 @@ class SuperAdminMiddleware
         if (!Auth::guard('super_admins')->check()) {
             return redirect()->route('super_admin.login');
         }
+        Auth::setDefaultDriver('super_admins');
         return $next($request);
     }
 }

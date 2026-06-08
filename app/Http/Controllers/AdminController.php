@@ -7,6 +7,7 @@ use App\Models\Advertisement;
 use App\Models\Business;
 use App\Models\Post;
 use App\Models\Report;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -29,7 +30,7 @@ class AdminController extends Controller
                 'recentUsers'          => User::latest()->take(6)->get(),
                 'recentPosts'          => Post::with('user')->latest()->take(5)->get(),
                 'pendingVerifications' => Business::where('status', 'pending')
-                                                  ->with('user')->latest()->take(5)->get(),
+                                                ->with('user')->latest()->take(5)->get(),
                 'recentReports'        => Report::with('user')->latest()->take(5)->get(),
             ];
         } catch (\Exception) {
@@ -81,15 +82,80 @@ class AdminController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'User deleted.');
     }
 
-    public function approvebusiness(int $id)
-    {
-        Business::findOrFail($id)->update(['status' => 'active']);
-        return back()->with('success', 'Business approved.');
+    public function admin_active(Admin $admin){
+        $admin->update(['status' => 'active']);
+        return back()->with('success', 'Admin activated.');
+    }
+    public function admin_inactive(Admin $admin){
+        $admin->update(['status' => 'inactive']);
+        return back()->with('success', 'Admin deactivated.');   
     }
 
-    public function rejectbusiness(int $id)
+    ////////////////////////////businesses/////////////////////////
+    public function businesses_pending()
     {
-        Business::findOrFail($id)->update(['status' => 'rejected']);
-        return back()->with('success', 'Business rejected.');
+        $businesses = Business::where('status', 'pending')->latest()->get();
+        return view('', compact('businesses'));
     }
+    public function businessto_approve(Business $business)
+    {
+        $business->update(['status' => 'active']);
+        return redirect()->route('admin.verifications.index')->with('success', 'تم قبول حساب الأعمال.');
+    }
+
+    public function businessto_rejected(Business $business)
+    {
+        $business->update(['status' => 'rejected']);
+        return redirect()->route('admin.verifications.index')->with('success', 'تم رفض حساب الأعمال.');
+    }
+
+    public function businessto_pending(Business $business)
+    {
+        $business->update(['status' => 'pending']);
+        return redirect()->route('admin.verifications.index')->with('success', 'تم إعادة الطلب لقيد الانتظار.');
+    }
+
+    public function businesses_approved(){
+        $businesses = Business::where('status','approved')->get();
+        return view('', compact('businesses'));
+    }
+    public function businesses_rejected(){
+        $businesses = Business::where('status','rejected')->get();
+        return view('', compact('businesses'));
+    }
+/////////////////////////////////////////////////////////////////
+
+
+//////////////////////////services/////////////////////////
+    public function services_pending()
+    {
+        $services = Service::where('status', 'pending')->latest()->get();
+        return view('', compact('services   '));
+    }
+    public function serviceto_approve(Service $service)
+    {
+        $service->update(['status' => 'approved']);
+        return back()->with('success', '');
+    }
+    public function serviceto_rejected(Service $service)
+    {
+        $service->update(['status' => 'rejected']);
+        return back()->with('success', '');
+    }
+    public function serviceto_pending(Service $service)
+    {
+        $service->update(['status' => 'pending']);
+        return back()->with('success', '');
+    }
+
+    public function services_approved(){
+        $services = Service::where('status','approved')->get();
+        return view('', compact('services'));
+    }
+    public function services_rejected(){
+        $services = Service::where('status','rejected')->get();
+        return view('', compact('services'));
+    }
+/////////////////////////////////////////////////////////////////
+
 }

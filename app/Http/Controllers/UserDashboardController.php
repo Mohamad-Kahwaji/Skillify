@@ -78,61 +78,6 @@ class UserDashboardController extends Controller
         return back()->with('success', 'تم تحديث المعلومات الشخصية بنجاح.');
     }
 
-    // ── Business ──────────────────────────────────────────────────────────────
-
-    public function storeBusiness(Request $request)
-    {
-        $request->validate([
-            'name'                   => 'required|string|max:120',
-            'name_job'               => 'required|string|max:120',
-            'number'                 => 'required|string|max:20',
-            'activity'               => 'required|string|max:120',
-            'active_typebusiness_id' => 'required|exists:active_typebusinesses,id',
-            'description'            => 'nullable|string|max:1000',
-            'image'                  => 'nullable|image|max:2048',
-        ]);
-
-        $data = $request->only('name','name_job','number','activity','active_typebusiness_id','description');
-        $data['user_id']   = Auth::guard('users')->id();
-        $data['status']    = 'pending';
-        $data['latitude']  = 0;
-        $data['longitude'] = 0;
-
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('businesses', 'public');
-        }
-
-        Business::create($data);
-
-        return back()->with('success', 'تم إرسال طلب حساب الأعمال، سيتم مراجعته قريباً.');
-    }
-
-    public function updateBusiness(Request $request)
-    {
-        $business = $this->user()->businesses;
-        abort_unless($business, 404);
-
-        $request->validate([
-            'name'        => 'required|string|max:120',
-            'name_job'    => 'required|string|max:120',
-            'number'      => 'required|string|max:20',
-            'activity'    => 'required|string|max:120',
-            'description' => 'nullable|string|max:1000',
-            'image'       => 'nullable|image|max:2048',
-        ]);
-
-        $data = $request->only('name','name_job','number','activity','description');
-
-        if ($request->hasFile('image')) {
-            if ($business->image) Storage::disk('public')->delete($business->image);
-            $data['image'] = $request->file('image')->store('businesses', 'public');
-        }
-
-        $business->update($data);
-
-        return back()->with('success', 'تم تحديث معلومات حساب الأعمال.');
-    }
-
     // ── Services ──────────────────────────────────────────────────────────────
 
     public function storeService(Request $request)

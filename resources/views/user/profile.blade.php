@@ -1,761 +1,826 @@
 @extends('user.layout')
 
-@section('title', 'My Profile')
+@section('title', 'Profile')
 
 @section('styles')
 <style>
-/* ═══════ HERO ═══════ */
-.profile-hero {
-  background: linear-gradient(135deg, #064e3b 0%, #065f46 40%, #047857 70%, #059669 100%);
-  border-radius: var(--radius-lg);
-  padding: 32px 28px 28px;
-  position: relative; overflow: hidden;
-  color: #fff;
-  box-shadow: 0 8px 32px rgba(4,78,59,.35);
+/* ── Tabs ─────────────────────────────────────────── */
+.tab-bar {
+  display:flex; gap:2px;
+  background:var(--bg-surface);
+  border:.5px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:4px; width:fit-content;
 }
-.profile-hero::before {
-  content: '';
-  position: absolute; top: -60px; right: -60px;
-  width: 240px; height: 240px; border-radius: 50%;
-  background: rgba(255,255,255,.06); pointer-events: none;
+.tab-btn {
+  display:flex; align-items:center; gap:7px;
+  padding:8px 18px; border-radius:calc(var(--radius-lg) - 3px);
+  font-size:13px; font-weight:500;
+  border:none; background:none; color:var(--text-secondary);
+  cursor:pointer; transition:all .15s; white-space:nowrap;
 }
-.profile-hero::after {
-  content: '';
-  position: absolute; bottom: -40px; left: 40px;
-  width: 160px; height: 160px; border-radius: 50%;
-  background: rgba(255,255,255,.04); pointer-events: none;
+.tab-btn:hover { color:var(--text-primary); background:var(--bg-hover); }
+.tab-btn.active {
+  background:var(--accent); color:#fff;
+  box-shadow:0 2px 8px rgba(29,158,117,.25);
 }
-.hero-top { display: flex; align-items: center; gap: 18px; position: relative; z-index: 1; }
-.hero-avatar {
-  width: 72px; height: 72px; border-radius: 18px; flex-shrink: 0;
-  background: rgba(255,255,255,.18);
-  border: 2.5px solid rgba(255,255,255,.45);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px; font-weight: 800; color: #fff;
-  letter-spacing: -.5px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+.tab-btn .tab-badge {
+  font-size:10px; font-weight:700; padding:1px 6px;
+  border-radius:20px; background:rgba(255,255,255,.25); line-height:1.4;
 }
-.hero-name  { font-size: 21px; font-weight: 700; letter-spacing: -.4px; text-shadow: 0 1px 3px rgba(0,0,0,.15); }
-.hero-email { font-size: 12px; color: rgba(255,255,255,.8); margin-top: 4px; }
-.hero-status {
-  margin-left: auto;
-  padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
-  background: rgba(255,255,255,.18);
-  border: 1px solid rgba(255,255,255,.3);
-  color: #fff;
-  display: inline-flex; align-items: center; gap: 6px;
-  backdrop-filter: blur(4px);
+.tab-btn:not(.active) .tab-badge {
+  background:var(--bg-sunken); color:var(--text-muted);
 }
-.hero-status-dot { width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px #4ade80; }
-.hero-divider {
-  margin: 24px 0 0; padding-top: 20px;
-  border-top: 1px solid rgba(255,255,255,.2);
-  display: flex; gap: 0; position: relative; z-index: 1;
+
+.tab-pane { display:none; }
+.tab-pane.active { display:flex; flex-direction:column; gap:20px; }
+
+/* ── Form Grid ────────────────────────────────────── */
+.form-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
 }
-.hero-stat { flex: 1; text-align: center; padding: 0 12px; }
-.hero-stat + .hero-stat { border-left: 1px solid rgba(255,255,255,.2); }
-.hero-stat-num   { font-size: 26px; font-weight: 800; color: #fff; line-height: 1; text-shadow: 0 1px 3px rgba(0,0,0,.15); }
-.hero-stat-label { font-size: 11px; color: rgba(255,255,255,.75); margin-top: 5px; font-weight: 500; letter-spacing: .3px; }
+.col-span-2 { grid-column:span 2; }
 
-/* ═══════ SECTION CARD ═══════ */
-.sec-card { background: var(--bg-surface); border: .5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-.sec-head { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-sunken); border-bottom: .5px solid var(--border); }
-.sec-head-left { display: flex; align-items: center; gap: 10px; }
-.sec-head-icon { width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; }
-.ic-green  { background: var(--accent-bg);   color: var(--accent); }
-.ic-orange { background: #FFF7ED;             color: #EA580C; }
-.ic-purple { background: #F5F3FF;             color: #7C3AED; }
-.sec-title { font-size: 14px; font-weight: 600; }
+.form-group { display:flex; flex-direction:column; gap:5px; }
+.form-label { font-size:12px; font-weight:500; color:var(--text-secondary); }
+.form-input, .form-select, .form-textarea {
+  width:100%; padding:9px 12px;
+  background:var(--bg-sunken); border:.5px solid var(--border-md);
+  border-radius:var(--radius-sm); color:var(--text-primary);
+  font-size:13px; font-family:var(--font);
+  transition:border-color .12s; outline:none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color:var(--accent); background:var(--bg-surface);
+}
+.form-select option { background:var(--bg-surface); }
+.form-textarea { resize:vertical; min-height:80px; }
 
-/* ═══════ INFO GRID ═══════ */
-.info-grid { display: grid; grid-template-columns: 1fr 1fr; }
-@media(max-width:560px){ .info-grid { grid-template-columns: 1fr; } }
-.info-cell { padding: 14px 20px; border-bottom: .5px solid var(--border); border-right: .5px solid var(--border); }
-.info-cell:nth-child(even) { border-right: none; }
-.info-cell:last-child { border-bottom: none; }
-.info-cell:nth-last-child(2):nth-child(odd) { border-bottom: none; }
-.info-cell-label { font-size: 11px; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
-.info-cell-label i { font-size: 13px; }
-.info-cell-value { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+/* ── File Upload ──────────────────────────────────── */
+.file-label {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px; border:.5px dashed var(--border-md);
+  border-radius:var(--radius-sm); cursor:pointer;
+  color:var(--text-secondary); font-size:12px;
+  transition:border-color .12s, background .12s;
+}
+.file-label:hover { border-color:var(--accent); background:var(--bg-hover); }
+.file-label input { display:none; }
+.file-label i { font-size:18px; }
+.file-preview { width:56px; height:56px; border-radius:var(--radius-sm); object-fit:cover; border:.5px solid var(--border); }
 
-/* ═══════ BADGES ═══════ */
-.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
-.badge::before { content:''; width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7; }
-.badge.active   { background: var(--green-50);  color: var(--green-800); }
-.badge.pending  { background: #FEF3C7;           color: #92400E; }
-.badge.rejected { background: var(--red-50);     color: var(--red-800); }
-.badge.inactive { background: #F3F4F6;           color: #6B7280; }
+/* ── Buttons ──────────────────────────────────────── */
+.btn-primary {
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--accent); color:#fff; border:none; cursor:pointer;
+  padding:9px 20px; border-radius:var(--radius-md);
+  font-size:13px; font-weight:600; font-family:var(--font);
+  transition:background .12s; white-space:nowrap;
+}
+.btn-primary:hover { background:var(--accent-hover); }
+.btn-secondary {
+  display:inline-flex; align-items:center; gap:6px;
+  background:none; color:var(--text-secondary);
+  border:.5px solid var(--border-md); cursor:pointer;
+  padding:8px 16px; border-radius:var(--radius-md);
+  font-size:13px; font-weight:500; font-family:var(--font);
+  transition:all .12s;
+}
+.btn-secondary:hover { background:var(--bg-hover); color:var(--text-primary); }
 
-/* ═══════ BUTTONS ═══════ */
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all .15s; text-decoration: none; white-space: nowrap; }
-.btn-primary       { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-hover); box-shadow: 0 3px 10px rgba(29,158,117,.3); }
-.btn-outline       { background: none; border: .5px solid var(--border-md); color: var(--text-secondary); }
-.btn-outline:hover { background: var(--bg-hover); color: var(--text-primary); }
-.btn-sm { padding: 5px 12px; font-size: 12px; }
-.btn-icon { width: 30px; height: 30px; padding: 0; border-radius: var(--radius-sm); display: inline-flex; align-items: center; justify-content: center; font-size: 14px; background: none; border: .5px solid var(--border-md); color: var(--text-secondary); cursor: pointer; transition: all .12s; }
-.btn-icon:hover     { background: var(--bg-hover); color: var(--text-primary); }
-.btn-icon.del:hover { background: var(--red-50); color: var(--red-400); border-color: var(--red-400); }
+/* ── Notice Banners ───────────────────────────────── */
+.notice {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:12px 16px; border-radius:var(--radius-md); font-size:13px;
+}
+.notice.pending  { background:#FFFBEB; border:.5px solid #FDE68A; color:#78350F; }
+.notice.approved { background:var(--green-50); border:.5px solid #9FE1CB; color:var(--green-800); }
+.notice.rejected { background:var(--red-50); border:.5px solid #FECACA; color:var(--red-800); }
+.notice i { font-size:17px; flex-shrink:0; margin-top:1px; }
 
-/* ═══════ BUSINESS BANNERS ═══════ */
-.biz-empty { padding: 44px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.biz-empty-ico { width: 60px; height: 60px; border-radius: 16px; background: #FFF7ED; color: #EA580C; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 4px; }
-.biz-empty-title { font-size: 15px; font-weight: 600; }
-.biz-empty-sub   { font-size: 13px; color: var(--text-secondary); max-width: 280px; line-height: 1.55; }
-.status-banner { margin: 16px 20px; padding: 14px 16px; border-radius: var(--radius-md); display: flex; align-items: flex-start; gap: 12px; }
-.status-banner.pending  { background: #FFFBEB; border: .5px solid #FDE68A; }
-.status-banner.rejected { background: var(--red-50); border: .5px solid #FECACA; }
-.sb-icon { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-.pending  .sb-icon { background: #FDE68A; color: #92400E; }
-.rejected .sb-icon { background: #FECACA; color: var(--red-800); }
-.sb-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
-.pending  .sb-title { color: #78350F; }
-.rejected .sb-title { color: var(--red-800); }
-.sb-sub   { font-size: 12px; opacity: .8; line-height: 1.5; }
+/* ── Service Grid & Cards ─────────────────────────── */
+.svc-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(255px, 1fr)); gap:14px;
+}
+.svc-card {
+  background:var(--bg-surface); border:.5px solid var(--border);
+  border-radius:var(--radius-lg); overflow:hidden;
+  display:flex; flex-direction:column;
+  transition:border-color .15s, box-shadow .15s;
+}
+.svc-card:hover { border-color:var(--accent); box-shadow:0 4px 16px rgba(29,158,117,.08); }
+.svc-thumb {
+  width:100%; height:140px; background:var(--bg-sunken); overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  font-size:34px; color:var(--text-muted);
+}
+.svc-thumb img { width:100%; height:100%; object-fit:cover; }
+.svc-body { padding:12px 14px; flex:1; display:flex; flex-direction:column; gap:5px; }
+.svc-name { font-size:13px; font-weight:700; }
+.svc-meta { display:flex; flex-wrap:wrap; gap:4px; }
+.svc-tag {
+  font-size:10px; color:var(--text-muted);
+  background:var(--bg-sunken); padding:2px 7px;
+  border-radius:20px; border:.5px solid var(--border);
+}
+.svc-price { font-size:14px; font-weight:800; color:var(--accent); }
+.svc-price small { font-size:10px; font-weight:400; color:var(--text-muted); }
+.svc-footer {
+  padding:9px 14px; border-top:.5px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
 
-/* ═══════ SERVICES ═══════ */
-.svc-item { display: flex; align-items: center; gap: 13px; padding: 13px 20px; border-bottom: .5px solid var(--border); transition: background .1s; }
-.svc-item:last-child { border-bottom: none; }
-.svc-item:hover { background: var(--bg-sunken); }
-.svc-thumb { width: 46px; height: 46px; border-radius: 10px; flex-shrink: 0; overflow: hidden; background: var(--bg-sunken); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--text-muted); }
-.svc-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.svc-info { flex: 1; min-width: 0; }
-.svc-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.svc-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.svc-price { font-size: 14px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
-.svc-price small { font-size: 10px; font-weight: 400; color: var(--text-muted); }
-.svc-actions { display: flex; gap: 5px; flex-shrink: 0; }
-.svc-empty { padding: 36px 20px; text-align: center; color: var(--text-muted); }
-.svc-empty i { font-size: 36px; display: block; margin-bottom: 8px; opacity: .3; }
-.svc-empty p { font-size: 13px; }
+/* ── Status Badge ─────────────────────────────────── */
+.status-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px;
+}
+.status-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.7; }
+.status-badge.approved { background:var(--green-50); color:var(--green-800); }
+.status-badge.pending  { background:#FEF3C7; color:#92400E; }
+.status-badge.rejected { background:var(--red-50); color:var(--red-800); }
+.status-badge.inactive { background:#F3F4F6; color:#6B7280; }
 
-/* ═══════ MODAL ═══════ */
-.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 999; padding: 16px; backdrop-filter: blur(3px); }
-.modal-backdrop.open { display: flex; }
-.modal { background: var(--bg-surface); border-radius: var(--radius-lg); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 72px rgba(0,0,0,.25); animation: mIn .22s cubic-bezier(.34,1.4,.64,1); }
-@keyframes mIn { from{opacity:0;transform:scale(.94)translateY(12px)} to{opacity:1;transform:scale(1)translateY(0)} }
-.modal-head { display: flex; align-items: center; gap: 12px; padding: 17px 20px; border-bottom: .5px solid var(--border); position: sticky; top: 0; background: var(--bg-surface); z-index: 1; }
-.modal-head-icon { width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; }
-.modal-title { font-size: 15px; font-weight: 600; flex: 1; }
-.modal-close { width: 30px; height: 30px; border-radius: 7px; background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .12s; }
-.modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
-.modal-body   { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-.modal-footer { padding: 14px 20px; border-top: .5px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; background: var(--bg-sunken); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
-.field     { display: flex; flex-direction: column; gap: 5px; }
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media(max-width:460px){ .field-row { grid-template-columns: 1fr; } }
-.lbl { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
-.inp { width: 100%; padding: 9px 12px; border: .5px solid var(--border-md); border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; color: var(--text-primary); background: var(--bg-surface); outline: none; transition: border-color .12s, box-shadow .12s; }
-.inp:focus  { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,158,117,.12); }
-textarea.inp { resize: vertical; min-height: 82px; line-height: 1.55; }
-select.inp  { cursor: pointer; }
-.inp-file { width: 100%; padding: 8px 12px; border: .5px dashed var(--border-md); border-radius: var(--radius-sm); font-family: var(--font); font-size: 12px; color: var(--text-secondary); background: var(--bg-sunken); cursor: pointer; }
-.inp-hint { font-size: 11px; color: var(--text-muted); }
+/* ── Action Buttons ───────────────────────────────── */
+.act-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:30px; height:30px; border-radius:var(--radius-sm);
+  border:.5px solid var(--border-md); background:none;
+  color:var(--text-secondary); cursor:pointer; transition:all .12s; font-size:14px;
+}
+.act-btn.edit:hover { background:rgba(59,130,246,.08); color:#3b82f6; border-color:#3b82f6; }
+.act-btn.del:hover  { background:var(--red-50); color:var(--red-400); border-color:var(--red-400); }
+
+/* ── Modal ────────────────────────────────────────── */
+.modal-overlay {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,.45); backdrop-filter:blur(3px);
+  align-items:center; justify-content:center; padding:16px;
+}
+.modal-overlay.open { display:flex; }
+.modal-box {
+  background:var(--bg-surface); border:.5px solid var(--border-md);
+  border-radius:16px; width:100%; max-width:540px;
+  max-height:90vh; display:flex; flex-direction:column;
+  overflow:hidden; animation:fadeUp .18s ease;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.modal-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:.5px solid var(--border); flex-shrink:0;
+}
+.modal-title { font-size:15px; font-weight:600; }
+.modal-close {
+  width:28px; height:28px; border-radius:8px;
+  border:none; background:none; color:var(--text-secondary);
+  font-size:17px; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background .12s;
+}
+.modal-close:hover { background:var(--bg-hover); }
+.modal-scroll { overflow-y:auto; flex:1; }
+.modal-body { padding:20px; display:flex; flex-direction:column; gap:14px; }
+.modal-footer {
+  padding:12px 20px; border-top:.5px solid var(--border);
+  display:flex; justify-content:flex-end; gap:8px; flex-shrink:0;
+}
+
+/* ── Business Avatar ──────────────────────────────── */
+.biz-avatar {
+  width:68px; height:68px; border-radius:var(--radius-md);
+  background:var(--accent); display:flex; align-items:center;
+  justify-content:center; font-size:26px; font-weight:700; color:#fff;
+  flex-shrink:0; overflow:hidden;
+}
+.biz-avatar img { width:100%; height:100%; object-fit:cover; }
+
+/* ── Empty State ──────────────────────────────────── */
+.empty-state {
+  padding:48px 24px; text-align:center;
+  background:var(--bg-surface); border:.5px solid var(--border);
+  border-radius:var(--radius-lg); color:var(--text-muted);
+}
+.empty-state i { font-size:42px; display:block; margin-bottom:10px; opacity:.25; }
+.empty-state p { font-size:13px; margin-bottom:14px; }
 </style>
 @endsection
 
-
 @section('content')
 @php
-  $joinMonths = (int) $user->created_at->diffInMonths(now());
+  $svcCount  = $userServices->count();
+  $activeTab = request('tab', 'profile');
 @endphp
 
-{{-- ═══════════════════ HERO ═══════════════════ --}}
-<div class="profile-hero">
-  <div class="profile-hero-circles"></div>
-  <div class="hero-top">
-    <div class="hero-avatar">{{ strtoupper(mb_substr($user->first_name, 0, 1)) }}</div>
-    <div>
-      <div class="hero-name">{{ $user->first_name }} {{ $user->last_name }}</div>
-      <div class="hero-email">{{ $user->email }}</div>
-    </div>
-    <div class="hero-status" style="margin-left:auto;">
-      <span class="hero-status-dot"></span>
-      {{ $user->status === 'active' ? 'Active' : 'Suspended' }}
-    </div>
-  </div>
-  <div class="hero-divider">
-    <div class="hero-stat">
-      <div class="hero-stat-num">{{ $user->posts()->count() }}</div>
-      <div class="hero-stat-label">Posts</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-num">{{ $userServices->count() }}</div>
-      <div class="hero-stat-label">Services</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-num">{{ $joinMonths }}</div>
-      <div class="hero-stat-label">Months with us</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-num">
-        @if($business)
-          <i class="ti ti-check-circle" style="font-size:18px;color:#4ade80;"></i>
-        @else
-          <i class="ti ti-circle-dashed" style="font-size:18px;color:rgba(255,255,255,.45);"></i>
-        @endif
-      </div>
-      <div class="hero-stat-label">Business Acc.</div>
-    </div>
-  </div>
+{{-- Page header --}}
+<div>
+  <div class="page-title">My Account</div>
+  <div class="page-sub">Manage your profile, business account, and services</div>
 </div>
 
-
-{{-- ═══════════════════ 1. PERSONAL INFO ═══════════════════ --}}
-<div class="sec-card">
-  <div class="sec-head">
-    <div class="sec-head-left">
-      <div class="sec-head-icon ic-green"><i class="ti ti-user"></i></div>
-      <div class="sec-title">Personal Information</div>
-    </div>
-    <button class="btn btn-outline btn-sm" onclick="openModal('modal-edit-profile')">
-      <i class="ti ti-edit"></i> Edit
-    </button>
-  </div>
-  <div class="info-grid">
-    <div class="info-cell">
-      <div class="info-cell-label"><i class="ti ti-user"></i> First Name</div>
-      <div class="info-cell-value">{{ $user->first_name }}</div>
-    </div>
-    <div class="info-cell">
-      <div class="info-cell-label"><i class="ti ti-user"></i> Last Name</div>
-      <div class="info-cell-value">{{ $user->last_name }}</div>
-    </div>
-    <div class="info-cell">
-      <div class="info-cell-label"><i class="ti ti-mail"></i> Email Address</div>
-      <div class="info-cell-value">{{ $user->email }}</div>
-    </div>
-    <div class="info-cell">
-      <div class="info-cell-label"><i class="ti ti-phone"></i> Phone</div>
-      <div class="info-cell-value">{{ $user->phone ?? '—' }}</div>
-    </div>
-    <div class="info-cell">
-      <div class="info-cell-label"><i class="ti ti-map-pin"></i> City</div>
-      <div class="info-cell-value">{{ $user->city ?? '—' }}</div>
-    </div>
-    <div class="info-cell">
-      <div class="info-cell-label"><i class="ti ti-gender-bigender"></i> Gender</div>
-      <div class="info-cell-value">{{ $user->gender === 'male' ? 'Male' : 'Female' }}</div>
-    </div>
-    <div class="info-cell">
-      <div class="info-cell-label"><i class="ti ti-calendar"></i> Date of Birth</div>
-      <div class="info-cell-value">{{ $user->birthdate ? \Carbon\Carbon::parse($user->birthdate)->format('Y/m/d') : '—' }}</div>
-    </div>
-    <div class="info-cell">
-      <div class="info-cell-label"><i class="ti ti-calendar-check"></i> Member Since</div>
-      <div class="info-cell-value">{{ $user->created_at->format('Y/m/d') }}</div>
-    </div>
-  </div>
-</div>
-
-
-{{-- ═══════════════════ 2. BUSINESS ACCOUNT ═══════════════════ --}}
-<div class="sec-card">
-  <div class="sec-head">
-    <div class="sec-head-left">
-      <div class="sec-head-icon ic-orange"><i class="ti ti-briefcase"></i></div>
-      <div class="sec-title">
-        Business Account
-        @if($business)
-          <span class="badge {{ $business->status }}" style="margin-left:8px;">
-            @if($business->status==='active') Active
-            @elseif($business->status==='pending') Under Review
-            @else Rejected @endif
-          </span>
-        @endif
-      </div>
-    </div>
-    @if(!$business)
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-create-business')">
-        <i class="ti ti-plus"></i> Create Business Account
-      </button>
-    @elseif($business->status === 'active')
-      <button class="btn btn-outline btn-sm" onclick="openModal('modal-edit-business')">
-        <i class="ti ti-edit"></i> Edit
-      </button>
+{{-- Tab bar --}}
+<div class="tab-bar">
+  <button class="tab-btn {{ $activeTab === 'profile'  ? 'active' : '' }}" onclick="switchTab(event,'profile')">
+    <i class="ti ti-user"></i> Profile
+  </button>
+  <button class="tab-btn {{ $activeTab === 'business' ? 'active' : '' }}" onclick="switchTab(event,'business')">
+    <i class="ti ti-briefcase"></i> Business Account
+    @if($business)
+      <span class="tab-badge">{{ ucfirst($business->status) }}</span>
     @endif
+  </button>
+  <button class="tab-btn {{ $activeTab === 'services' ? 'active' : '' }}" onclick="switchTab(event,'services')">
+    <i class="ti ti-tool"></i> My Services
+    @if($svcCount)
+      <span class="tab-badge">{{ $svcCount }}</span>
+    @endif
+  </button>
+</div>
+
+{{-- ════════════════════════ TAB: PROFILE ════════════════════════ --}}
+<div class="tab-pane {{ $activeTab === 'profile' ? 'active' : '' }}" id="tab-profile">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><i class="ti ti-user-edit" style="margin-right:5px;"></i>Personal Information</div>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ route('user.profile.update') }}">
+        @csrf @method('PUT')
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" name="first_name" class="form-input"
+                   value="{{ old('first_name', $user->first_name) }}" required>
+            @error('first_name')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" name="last_name" class="form-input"
+                   value="{{ old('last_name', $user->last_name) }}" required>
+            @error('last_name')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="text" name="phone" class="form-input"
+                   value="{{ old('phone', $user->phone) }}" required>
+            @error('phone')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <select name="city" class="form-select" required>
+              <option value="">— Select city —</option>
+              @foreach($cities as $city)
+              <option value="{{ $city->name_ar }}"
+                {{ old('city', $user->city) === $city->name_ar ? 'selected' : '' }}>
+                {{ $city->name_ar }}
+              </option>
+              @endforeach
+            </select>
+            @error('city')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select name="gender" class="form-select" required>
+              <option value="">— Select —</option>
+              <option value="male"   {{ old('gender', $user->gender) === 'male'   ? 'selected' : '' }}>Male</option>
+              <option value="female" {{ old('gender', $user->gender) === 'female' ? 'selected' : '' }}>Female</option>
+            </select>
+            @error('gender')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Birthdate</label>
+            <input type="date" name="birthdate" class="form-input"
+                   value="{{ old('birthdate', optional($user->birthdate)->format('Y-m-d')) }}">
+            @error('birthdate')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="col-span-2" style="display:flex;justify-content:flex-end;margin-top:4px;">
+            <button type="submit" class="btn-primary">
+              <i class="ti ti-device-floppy"></i> Save Changes
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
   </div>
+</div>
+
+{{-- ════════════════════════ TAB: BUSINESS ════════════════════════ --}}
+<div class="tab-pane {{ $activeTab === 'business' ? 'active' : '' }}" id="tab-business">
 
   @if(!$business)
-    <div class="biz-empty">
-      <div class="biz-empty-ico"><i class="ti ti-briefcase"></i></div>
-      <div class="biz-empty-title">No Business Account Yet</div>
-      <div class="biz-empty-sub">Create a business account to appear in the craftsmen directory and offer your services.</div>
-      <button class="btn btn-primary" onclick="openModal('modal-create-business')">
-        <i class="ti ti-plus"></i> Create Now
+  {{-- No business yet — create form --}}
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><i class="ti ti-building-store" style="margin-right:5px;"></i>Create Business Account</div>
+    </div>
+    <div class="card-body">
+      <div class="notice pending" style="margin-bottom:16px;">
+        <i class="ti ti-info-circle"></i>
+        <span>After submitting, your business account will be reviewed by an admin before being activated.</span>
+      </div>
+      <form method="POST" action="{{ route('user.business.store') }}" enctype="multipart/form-data">
+        @csrf
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label class="form-label">Job Title</label>
+            <input type="text" name="name_job" class="form-input" value="{{ old('name_job') }}" placeholder="e.g. Electrician, Plumber…" required>
+            @error('name_job')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Commercial / License Number</label>
+            <input type="text" name="number" class="form-input" value="{{ old('number') }}" placeholder="e.g. 123456789" required>
+            @error('number')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="form-group col-span-2">
+            <label class="form-label">Business Type</label>
+            <select name="active_typebusiness_id" class="form-select" required>
+              <option value="">— Select type —</option>
+              @foreach($activeTypes as $type)
+              <option value="{{ $type->id }}" {{ old('active_typebusiness_id') == $type->id ? 'selected' : '' }}>
+                {{ $type->name_ar }}
+              </option>
+              @endforeach
+            </select>
+            @error('active_typebusiness_id')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="form-group col-span-2">
+            <label class="form-label"><i class="ti ti-map-pin" style="font-size:13px;margin-right:3px;"></i>Location</label>
+            <input type="hidden" name="latitude"  id="biz-lat-create"  value="{{ old('latitude') }}">
+            <input type="hidden" name="longitude" id="biz-lng-create" value="{{ old('longitude') }}">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <button type="button" id="biz-loc-btn-create" class="btn-secondary"
+                      style="font-size:12px;padding:7px 14px;"
+                      onclick="getLocation('create',this)">
+                <i class="ti ti-current-location"></i> Use My Location
+              </button>
+              <span id="biz-loc-label-create" style="font-size:12px;color:var(--text-muted);">
+                {{ old('latitude') ? 'Location saved — click to update' : 'No location selected yet' }}
+              </span>
+            </div>
+            @error('latitude')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="form-group col-span-2">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-textarea" placeholder="Tell us about your business and what you offer…">{{ old('description') }}</textarea>
+            @error('description')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="form-group col-span-2">
+            <label class="form-label">Business Image <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+            <label class="file-label">
+              <i class="ti ti-photo-up"></i>
+              <span id="biz-file-name-create">Click to upload image</span>
+              <input type="file" name="image" accept="image/*"
+                     onchange="previewFile(this,'biz-file-name-create','biz-img-create')">
+            </label>
+            <img id="biz-img-create" class="file-preview" style="display:none;margin-top:6px;">
+            @error('image')<span style="font-size:11px;color:var(--red-400);">{{ $message }}</span>@enderror
+          </div>
+
+          <div class="col-span-2" style="display:flex;justify-content:flex-end;">
+            <button type="submit" class="btn-primary">
+              <i class="ti ti-send"></i> Submit for Review
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+  </div>
+
+  @else
+  {{-- Business exists --}}
+
+  {{-- Status notice --}}
+  @if($business->status === 'pending')
+  <div class="notice pending">
+    <i class="ti ti-clock"></i>
+    <span><strong>Your business account is under review.</strong> An admin will process it shortly.</span>
+  </div>
+  @elseif($business->status === 'rejected')
+  <div class="notice rejected">
+    <i class="ti ti-circle-x"></i>
+    <span><strong>Your business account was rejected.</strong> Please contact support for more information.</span>
+  </div>
+  @elseif(in_array($business->status, ['approved','active']))
+  <div class="notice approved">
+    <i class="ti ti-circle-check"></i>
+    <span><strong>Your business account is active.</strong> You can now offer services to users.</span>
+  </div>
+  @endif
+
+  <div class="card">
+    <div class="card-head">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="biz-avatar">
+          @if($business->image)
+            <img src="{{ asset('storage/'.$business->image) }}" alt="{{ $business->name }}"
+                 onerror="this.parentElement.textContent='{{ strtoupper(substr($business->name,0,1)) }}'">
+          @else
+            {{ strtoupper(substr($business->name, 0, 1)) }}
+          @endif
+        </div>
+        <div>
+          <div class="card-title">{{ $business->name }}</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">
+            {{ $business->name_job }}
+            &nbsp;·&nbsp;
+            <span class="status-badge {{ in_array($business->status,['approved','active']) ? 'approved' : $business->status }}">
+              {{ ucfirst($business->status) }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-secondary" onclick="toggleBizEdit()">
+        <i class="ti ti-pencil"></i> Edit
       </button>
     </div>
 
-  @elseif($business->status === 'pending')
-    <div class="status-banner pending">
-      <div class="sb-icon"><i class="ti ti-clock"></i></div>
-      <div>
-        <div class="sb-title">Request Under Review</div>
-        <div class="sb-sub" style="color:#92400E;">Your request has been submitted. The admin will review it and notify you soon.</div>
+    {{-- Read-only view --}}
+    <div class="card-body" id="biz-view">
+      <div class="info-row">
+        <span class="info-label"><i class="ti ti-certificate" style="font-size:12px;margin-right:4px;"></i>License No.</span>
+        <span class="info-value">{{ $business->number }}</span>
       </div>
-    </div>
-    <div class="info-grid" style="border-top:.5px solid var(--border);">
-      <div class="info-cell">
-        <div class="info-cell-label"><i class="ti ti-building"></i> Business Name</div>
-        <div class="info-cell-value">{{ $business->name }}</div>
+      @php
+        $nearestCity = null;
+        if ($business->latitude && $business->longitude) {
+            $nearestCity = $cities->sortBy(function($c) use ($business) {
+                $dLat = ($c->latitude  - $business->latitude)  * M_PI / 180;
+                $dLng = ($c->longitude - $business->longitude) * M_PI / 180;
+                $a = sin($dLat/2)**2
+                   + cos($business->latitude*M_PI/180) * cos($c->latitude*M_PI/180) * sin($dLng/2)**2;
+                return 2 * atan2(sqrt($a), sqrt(1-$a));
+            })->first();
+        }
+      @endphp
+      @if($nearestCity)
+      <div class="info-row">
+        <span class="info-label"><i class="ti ti-map-pin" style="font-size:12px;margin-right:4px;"></i>Location</span>
+        <span class="info-value">{{ $nearestCity->name_ar }}</span>
       </div>
-      <div class="info-cell">
-        <div class="info-cell-label"><i class="ti ti-id-badge"></i> Job Title</div>
-        <div class="info-cell-value">{{ $business->name_job }}</div>
-      </div>
-      <div class="info-cell">
-        <div class="info-cell-label"><i class="ti ti-tag"></i> Activity</div>
-        <div class="info-cell-value">{{ $business->activity }}</div>
-      </div>
-      <div class="info-cell">
-        <div class="info-cell-label"><i class="ti ti-phone"></i> Contact Number</div>
-        <div class="info-cell-value">{{ $business->number }}</div>
-      </div>
-    </div>
-
-  @elseif($business->status === 'rejected')
-    <div class="status-banner rejected">
-      <div class="sb-icon"><i class="ti ti-circle-x"></i></div>
-      <div>
-        <div class="sb-title">Request Rejected</div>
-        <div class="sb-sub" style="color:var(--red-800);">Unfortunately, your business account request was rejected. Please contact the admin for more information.</div>
-      </div>
-    </div>
-
-  @else
-    <div class="info-grid">
-      <div class="info-cell">
-        <div class="info-cell-label"><i class="ti ti-building"></i> Business Name</div>
-        <div class="info-cell-value">{{ $business->name }}</div>
-      </div>
-      <div class="info-cell">
-        <div class="info-cell-label"><i class="ti ti-id-badge"></i> Job Title</div>
-        <div class="info-cell-value">{{ $business->name_job }}</div>
-      </div>
-      <div class="info-cell">
-        <div class="info-cell-label"><i class="ti ti-phone"></i> Contact Number</div>
-        <div class="info-cell-value">{{ $business->number }}</div>
-      </div>
-      <div class="info-cell">
-        <div class="info-cell-label"><i class="ti ti-tag"></i> Activity</div>
-        <div class="info-cell-value">{{ $business->activity }}</div>
-      </div>
+      @endif
       @if($business->description)
-      <div class="info-cell" style="grid-column:1/-1;">
-        <div class="info-cell-label"><i class="ti ti-align-left"></i> Description</div>
-        <div class="info-cell-value" style="font-weight:400;color:var(--text-secondary);line-height:1.6;white-space:pre-line;">{{ $business->description }}</div>
+      <div class="info-row" style="align-items:flex-start;">
+        <span class="info-label"><i class="ti ti-align-left" style="font-size:12px;margin-right:4px;"></i>Description</span>
+        <span class="info-value" style="line-height:1.6;">{{ $business->description }}</span>
       </div>
       @endif
     </div>
-  @endif
-</div>
 
+    {{-- Edit form --}}
+    <div id="biz-edit" style="display:none;border-top:.5px solid var(--border);">
+      <div class="card-body">
+        <form method="POST" action="{{ route('user.business.update') }}" enctype="multipart/form-data">
+          @csrf @method('PUT')
+          <div class="form-grid">
 
-{{-- ═══════════════════ 3. MY SERVICES ═══════════════════ --}}
-<div class="sec-card">
-  <div class="sec-head">
-    <div class="sec-head-left">
-      <div class="sec-head-icon ic-purple"><i class="ti ti-tool"></i></div>
-      <div class="sec-title">
-        My Services
-        <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:6px;">{{ $userServices->count() }} service(s)</span>
+            <div class="form-group">
+              <label class="form-label">Job Title</label>
+              <input type="text" name="name_job" class="form-input" value="{{ old('name_job', $business->name_job) }}" placeholder="e.g. Electrician" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Commercial / License Number</label>
+              <input type="text" name="number" class="form-input" value="{{ old('number', $business->number) }}" placeholder="e.g. 123456789" required>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label"><i class="ti ti-map-pin" style="font-size:13px;margin-right:3px;"></i>Location</label>
+              <input type="hidden" name="latitude"  id="biz-lat-edit"  value="">
+              <input type="hidden" name="longitude" id="biz-lng-edit" value="">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <button type="button" id="biz-loc-btn-edit" class="btn-secondary"
+                        style="font-size:12px;padding:7px 14px;"
+                        onclick="getLocation('edit',this)">
+                  <i class="ti ti-current-location"></i> Update My Location
+                </button>
+                <span id="biz-loc-label-edit" style="font-size:12px;color:var(--text-muted);">
+                  {{ $nearestCity ? 'Current: '.$nearestCity->name_ar.' — click to update' : 'Click to set location' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Description</label>
+              <textarea name="description" class="form-textarea" placeholder="Tell us about your business…">{{ old('description', $business->description) }}</textarea>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Business Image</label>
+              <label class="file-label">
+                <i class="ti ti-photo-up"></i>
+                <span id="biz-file-name-edit">Click to change image</span>
+                <input type="file" name="image" accept="image/*"
+                       onchange="previewFile(this,'biz-file-name-edit','biz-img-edit')">
+              </label>
+              @if($business->image)
+              <img id="biz-img-edit" src="{{ asset('storage/'.$business->image) }}"
+                   class="file-preview" style="margin-top:6px;">
+              @else
+              <img id="biz-img-edit" class="file-preview" style="display:none;margin-top:6px;">
+              @endif
+            </div>
+
+            <div class="col-span-2" style="display:flex;justify-content:flex-end;gap:8px;">
+              <button type="button" class="btn-secondary" onclick="toggleBizEdit()">Cancel</button>
+              <button type="submit" class="btn-primary">
+                <i class="ti ti-device-floppy"></i> Save Changes
+              </button>
+            </div>
+
+          </div>
+        </form>
       </div>
     </div>
-    <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-service')">
+  </div>
+  @endif
+
+</div>
+
+{{-- ════════════════════════ TAB: SERVICES ════════════════════════ --}}
+<div class="tab-pane {{ $activeTab === 'services' ? 'active' : '' }}" id="tab-services">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <div>
+      <div style="font-size:15px;font-weight:600;">My Services</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">{{ $svcCount }} service(s) listed</div>
+    </div>
+    <button class="btn-primary" onclick="document.getElementById('add-svc-modal').classList.add('open')">
       <i class="ti ti-plus"></i> Add Service
     </button>
   </div>
 
   @if($userServices->isEmpty())
-    <div class="svc-empty">
-      <i class="ti ti-tool-off"></i>
-      <p>No services added yet. Add your first service!</p>
-    </div>
+  <div class="empty-state">
+    <i class="ti ti-tool-off"></i>
+    <p>You haven't added any services yet.</p>
+    <button class="btn-primary" onclick="document.getElementById('add-svc-modal').classList.add('open')">
+      <i class="ti ti-plus"></i> Add Your First Service
+    </button>
+  </div>
+
   @else
+  <div class="svc-grid">
     @foreach($userServices as $svc)
-    <div class="svc-item">
+    @php
+      $img = $svc->image
+        ? (str_starts_with($svc->image,'http') ? $svc->image : asset('storage/'.$svc->image))
+        : null;
+      $statusKey = match($svc->status ?? '') {
+        'pending'  => 'pending',
+        'rejected' => 'rejected',
+        'approved' => 'approved',
+        default    => $svc->is_active ? 'approved' : 'inactive',
+      };
+      $statusLabel = ['pending'=>'Under Review','rejected'=>'Rejected','approved'=>'Active','inactive'=>'Inactive'][$statusKey] ?? 'Active';
+    @endphp
+    <div class="svc-card">
       <div class="svc-thumb">
-        @if($svc->image)
-          <img src="{{ asset('storage/'.$svc->image) }}" alt="">
+        @if($img)
+          <img src="{{ $img }}" alt="{{ $svc->name }}"
+               onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'ti ti-tool\'></i>'">
         @else
           <i class="ti ti-tool"></i>
         @endif
       </div>
-      <div class="svc-info">
-        <div class="svc-name">{{ $svc->name }}</div>
+      <div class="svc-body">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
+          <div class="svc-name">{{ $svc->name }}</div>
+          <span class="status-badge {{ $statusKey }}">{{ $statusLabel }}</span>
+        </div>
         <div class="svc-meta">
-          <span><i class="ti ti-tag" style="font-size:11px;"></i> {{ $svc->category }}</span>
-          <span>·</span><span>{{ $svc->subcategory }}</span>
-          <span>·</span><span><i class="ti ti-map-pin" style="font-size:11px;"></i> {{ $svc->city }}</span>
+          @if($svc->category)    <span class="svc-tag">{{ $svc->category }}</span>    @endif
+          @if($svc->subcategory) <span class="svc-tag">{{ $svc->subcategory }}</span> @endif
+          @if($svc->city)        <span class="svc-tag"><i class="ti ti-map-pin" style="font-size:10px;"></i> {{ $svc->city }}</span> @endif
         </div>
       </div>
-      <div class="svc-price">
-        {{ number_format($svc->price, 0) }}
-        <small>{{ $svc->price_type === 'usd' ? 'USD' : 'SYP' }}</small>
-      </div>
-      <span class="badge {{ $svc->is_active ? 'active' : 'inactive' }}">
-        {{ $svc->is_active ? 'Available' : 'Inactive' }}
-      </span>
-      <div class="svc-actions">
-        <button class="btn-icon" title="Edit"
-          data-id="{{ $svc->id }}"
-          data-svc="{{ e(json_encode($svc)) }}"
-          onclick="openEditService(this)">
-          <i class="ti ti-edit"></i>
-        </button>
-        <form method="POST" action="{{ route('user.my-services.destroy', $svc->id) }}"
-              onsubmit="return confirm('Delete this service?')">
-          @csrf @method('DELETE')
-          <button type="submit" class="btn-icon del" title="Delete">
-            <i class="ti ti-trash"></i>
+      <div class="svc-footer">
+        <div class="svc-price">
+          {{ number_format($svc->price, 0) }}
+          <small>{{ strtoupper($svc->price_type) }}</small>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button class="act-btn edit" title="Edit"
+            data-id="{{ $svc->id }}"
+            data-name="{{ $svc->name }}"
+            data-description="{{ $svc->description }}"
+            data-category="{{ $svc->category }}"
+            data-subcategory="{{ $svc->subcategory }}"
+            data-city="{{ $svc->city }}"
+            data-price="{{ $svc->price }}"
+            data-price_type="{{ $svc->price_type }}"
+            data-image="{{ $img }}"
+            onclick="openEditSvc(this)">
+            <i class="ti ti-pencil"></i>
           </button>
-        </form>
+          <form method="POST" action="{{ route('user.my-services.destroy', $svc->id) }}"
+                onsubmit="return confirm('Delete this service?')">
+            @csrf @method('DELETE')
+            <button type="submit" class="act-btn del" title="Delete">
+              <i class="ti ti-trash"></i>
+            </button>
+          </form>
+        </div>
       </div>
     </div>
     @endforeach
+  </div>
   @endif
+
 </div>
 
-
-{{-- ═══════════════════════════════════════
-     MODALS
-═══════════════════════════════════════ --}}
-
-{{-- ① Edit Profile --}}
-<div class="modal-backdrop" id="modal-edit-profile" onclick="closeOnBackdrop(event,'modal-edit-profile')">
-  <div class="modal">
+{{-- ════════════════════════ MODAL: Add Service ════════════════════════ --}}
+<div class="modal-overlay" id="add-svc-modal" onclick="closeOnBackdrop(event,'add-svc-modal')">
+  <div class="modal-box">
     <div class="modal-head">
-      <div class="modal-head-icon ic-green"><i class="ti ti-user-edit"></i></div>
-      <span class="modal-title">Edit Personal Information</span>
-      <button class="modal-close" onclick="closeModal('modal-edit-profile')"><i class="ti ti-x"></i></button>
-    </div>
-    <form method="POST" action="{{ route('user.profile.update') }}">
-      @csrf @method('PUT')
-      <div class="modal-body">
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">First Name</label>
-            <input class="inp" type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}" required>
-          </div>
-          <div class="field">
-            <label class="lbl">Last Name</label>
-            <input class="inp" type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}" required>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">Phone</label>
-            <input class="inp" type="text" name="phone" value="{{ old('phone', $user->phone) }}" required>
-          </div>
-          <div class="field">
-            <label class="lbl">City</label>
-            @if($cities->isNotEmpty())
-              <select class="inp" name="city" required>
-                @foreach($cities as $c)
-                  <option value="{{ $c->name_ar }}" {{ $user->city===$c->name_ar ? 'selected':'' }}>{{ $c->name_ar }}</option>
-                @endforeach
-              </select>
-            @else
-              <input class="inp" type="text" name="city" value="{{ old('city', $user->city) }}" required>
-            @endif
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">Gender</label>
-            <select class="inp" name="gender" required>
-              <option value="male"   {{ $user->gender==='male'   ? 'selected':'' }}>Male</option>
-              <option value="female" {{ $user->gender==='female' ? 'selected':'' }}>Female</option>
-            </select>
-          </div>
-          <div class="field">
-            <label class="lbl">Date of Birth</label>
-            <input class="inp" type="date" name="birthdate"
-              value="{{ old('birthdate', $user->birthdate ? \Carbon\Carbon::parse($user->birthdate)->format('Y-m-d') : '') }}" required>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-profile')">Cancel</button>
-        <button type="submit" class="btn btn-primary"><i class="ti ti-check"></i> Save Changes</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-{{-- ② Create Business --}}
-<div class="modal-backdrop" id="modal-create-business" onclick="closeOnBackdrop(event,'modal-create-business')">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-head-icon ic-orange"><i class="ti ti-briefcase"></i></div>
-      <span class="modal-title">Create Business Account</span>
-      <button class="modal-close" onclick="closeModal('modal-create-business')"><i class="ti ti-x"></i></button>
-    </div>
-    <form method="POST" action="{{ route('user.business.store') }}" enctype="multipart/form-data">
-      @csrf
-      <div class="modal-body">
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">Business Name</label>
-            <input class="inp" type="text" name="name" value="{{ old('name') }}" placeholder="e.g. Ahmed's Workshop" required>
-          </div>
-          <div class="field">
-            <label class="lbl">Job Title</label>
-            <input class="inp" type="text" name="name_job" value="{{ old('name_job') }}" placeholder="e.g. Professional Plumber" required>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">Contact Number</label>
-            <input class="inp" type="text" name="number" value="{{ old('number') }}" placeholder="09xxxxxxxx" required>
-          </div>
-          <div class="field">
-            <label class="lbl">Business Type</label>
-            <select class="inp" name="active_typebusiness_id" required>
-              <option value="">— Select —</option>
-              @foreach($activeTypes as $at)
-                <option value="{{ $at->id }}">{{ $at->name_ar }}</option>
-              @endforeach
-            </select>
-          </div>
-        </div>
-        <div class="field">
-          <label class="lbl">Specialty / Activity</label>
-          <input class="inp" type="text" name="activity" value="{{ old('activity') }}" placeholder="e.g. Plumbing, Pipe installation..." required>
-        </div>
-        <div class="field">
-          <label class="lbl">Description <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-          <textarea class="inp" name="description" placeholder="Describe your business and experience...">{{ old('description') }}</textarea>
-        </div>
-        <div class="field">
-          <label class="lbl">Cover Image <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-          <input class="inp-file" type="file" name="image" accept="image/*">
-          <span class="inp-hint">JPG or PNG — max 2MB</span>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline" onclick="closeModal('modal-create-business')">Cancel</button>
-        <button type="submit" class="btn btn-primary"><i class="ti ti-send"></i> Submit Request</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-{{-- ③ Edit Business --}}
-@if($business && $business->status === 'active')
-<div class="modal-backdrop" id="modal-edit-business" onclick="closeOnBackdrop(event,'modal-edit-business')">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-head-icon ic-orange"><i class="ti ti-edit"></i></div>
-      <span class="modal-title">Edit Business Account</span>
-      <button class="modal-close" onclick="closeModal('modal-edit-business')"><i class="ti ti-x"></i></button>
-    </div>
-    <form method="POST" action="{{ route('user.business.update') }}" enctype="multipart/form-data">
-      @csrf @method('PUT')
-      <div class="modal-body">
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">Business Name</label>
-            <input class="inp" type="text" name="name" value="{{ old('name', $business->name) }}" required>
-          </div>
-          <div class="field">
-            <label class="lbl">Job Title</label>
-            <input class="inp" type="text" name="name_job" value="{{ old('name_job', $business->name_job) }}" required>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">Contact Number</label>
-            <input class="inp" type="text" name="number" value="{{ old('number', $business->number) }}" required>
-          </div>
-          <div class="field">
-            <label class="lbl">Activity</label>
-            <input class="inp" type="text" name="activity" value="{{ old('activity', $business->activity) }}" required>
-          </div>
-        </div>
-        <div class="field">
-          <label class="lbl">Description</label>
-          <textarea class="inp" name="description">{{ old('description', $business->description) }}</textarea>
-        </div>
-        <div class="field">
-          <label class="lbl">New Image <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-          <input class="inp-file" type="file" name="image" accept="image/*">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-business')">Cancel</button>
-        <button type="submit" class="btn btn-primary"><i class="ti ti-check"></i> Save Changes</button>
-      </div>
-    </form>
-  </div>
-</div>
-@endif
-
-{{-- ④ Add Service --}}
-<div class="modal-backdrop" id="modal-add-service" onclick="closeOnBackdrop(event,'modal-add-service')">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-head-icon ic-purple"><i class="ti ti-tool"></i></div>
-      <span class="modal-title">Add New Service</span>
-      <button class="modal-close" onclick="closeModal('modal-add-service')"><i class="ti ti-x"></i></button>
+      <div class="modal-title"><i class="ti ti-plus" style="margin-right:5px;"></i>Add New Service</div>
+      <button class="modal-close" onclick="document.getElementById('add-svc-modal').classList.remove('open')">
+        <i class="ti ti-x"></i>
+      </button>
     </div>
     <form method="POST" action="{{ route('user.my-services.store') }}" enctype="multipart/form-data">
       @csrf
-      <div class="modal-body">
-        <div class="field">
-          <label class="lbl">Service Name</label>
-          <input class="inp" type="text" name="name" value="{{ old('name') }}" placeholder="e.g. Ceramic Tile Installation" required>
-        </div>
-        <div class="field">
-          <label class="lbl">Description <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-          <textarea class="inp" name="description" placeholder="Describe what you offer...">{{ old('description') }}</textarea>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">Category</label>
-            @if($categories->isNotEmpty())
-              <select class="inp" name="category" id="add-cat-select" required onchange="filterAddSubcategories()">
+      <div class="modal-scroll">
+        <div class="modal-body">
+          <div class="form-grid">
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Service Name</label>
+              <input type="text" name="name" class="form-input" placeholder="e.g. Electrical Repair" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-select" required>
                 <option value="">— Select —</option>
                 @foreach($categories as $cat)
-                  <option value="{{ $cat->name_ar }}"
-                          data-activity="{{ $cat->active_typebusiness_id }}"
-                          data-id="{{ $cat->id }}">{{ $cat->name_ar }}</option>
+                <option value="{{ $cat->name_ar }}">{{ $cat->name_ar }}</option>
                 @endforeach
               </select>
-            @else
-              <input class="inp" type="text" name="category" placeholder="Construction" required>
-            @endif
-          </div>
-          <div class="field">
-            <label class="lbl">Subcategory</label>
-            @if($subcategories->isNotEmpty())
-              <select class="inp" name="subcategory" id="add-sub-select" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Subcategory</label>
+              <select name="subcategory" class="form-select" required>
                 <option value="">— Select —</option>
                 @foreach($subcategories as $sub)
-                  <option value="{{ $sub->name_ar }}" data-cat="{{ $sub->category_id }}">{{ $sub->name_ar }}</option>
+                <option value="{{ $sub->name_ar }}">{{ $sub->name_ar }}</option>
                 @endforeach
               </select>
-            @else
-              <input class="inp" type="text" name="subcategory" placeholder="Tiles" required>
-            @endif
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">City</label>
-            @if($cities->isNotEmpty())
-              <select class="inp" name="city" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <select name="city" class="form-select" required>
                 <option value="">— Select —</option>
-                @foreach($cities as $c)
-                  <option value="{{ $c->name_ar }}">{{ $c->name_ar }}</option>
+                @foreach($cities as $city)
+                <option value="{{ $city->name_ar }}">{{ $city->name_ar }}</option>
                 @endforeach
               </select>
-            @else
-              <input class="inp" type="text" name="city" placeholder="Damascus" required>
-            @endif
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Price</label>
+              <input type="number" name="price" class="form-input" placeholder="0" min="0" step="0.01" required>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Currency</label>
+              <select name="price_type" class="form-select" required>
+                <option value="usd">USD</option>
+                <option value="syp">SYP</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Description <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+              <textarea name="description" class="form-textarea" placeholder="Describe your service…"></textarea>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Image <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+              <label class="file-label">
+                <i class="ti ti-photo-up"></i>
+                <span id="add-svc-file-name">Click to upload</span>
+                <input type="file" name="image" accept="image/*"
+                       onchange="previewFile(this,'add-svc-file-name','add-svc-img')">
+              </label>
+              <img id="add-svc-img" class="file-preview" style="display:none;margin-top:6px;">
+            </div>
+
           </div>
-          <div class="field">
-            <label class="lbl">Currency</label>
-            <select class="inp" name="price_type" required>
-              <option value="syp">Syrian Pound (SYP)</option>
-              <option value="usd">US Dollar (USD)</option>
-            </select>
-          </div>
-        </div>
-        <div class="field">
-          <label class="lbl">Price</label>
-          <input class="inp" type="number" name="price" min="0" step="0.01" value="{{ old('price') }}" placeholder="0" required>
-        </div>
-        <div class="field">
-          <label class="lbl">Service Location</label>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <button type="button" class="btn btn-outline btn-sm" onclick="captureLocation('add-svc')">
-              <i class="ti ti-map-pin"></i> Capture My Location
-            </button>
-            <span id="loc-status-add-svc" style="font-size:11px;color:var(--text-muted);"></span>
-          </div>
-          <input type="hidden" name="latitude"  id="add-svc-lat">
-          <input type="hidden" name="longitude" id="add-svc-lng">
-        </div>
-        <div class="field">
-          <label class="lbl">Image <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-          <input class="inp-file" type="file" name="image" accept="image/*">
-          <span class="inp-hint">JPG or PNG — max 2MB</span>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" onclick="closeModal('modal-add-service')">Cancel</button>
-        <button type="submit" class="btn btn-primary"><i class="ti ti-check"></i> Add Service</button>
+        <button type="button" class="btn-secondary"
+                onclick="document.getElementById('add-svc-modal').classList.remove('open')">Cancel</button>
+        <button type="submit" class="btn-primary"><i class="ti ti-check"></i> Add Service</button>
       </div>
     </form>
   </div>
 </div>
 
-{{-- ⑤ Edit Service --}}
-<div class="modal-backdrop" id="modal-edit-service" onclick="closeOnBackdrop(event,'modal-edit-service')">
-  <div class="modal">
+{{-- ════════════════════════ MODAL: Edit Service ════════════════════════ --}}
+<div class="modal-overlay" id="edit-svc-modal" onclick="closeOnBackdrop(event,'edit-svc-modal')">
+  <div class="modal-box">
     <div class="modal-head">
-      <div class="modal-head-icon ic-purple"><i class="ti ti-edit"></i></div>
-      <span class="modal-title">Edit Service</span>
-      <button class="modal-close" onclick="closeModal('modal-edit-service')"><i class="ti ti-x"></i></button>
+      <div class="modal-title"><i class="ti ti-pencil" style="margin-right:5px;"></i>Edit Service</div>
+      <button class="modal-close" onclick="document.getElementById('edit-svc-modal').classList.remove('open')">
+        <i class="ti ti-x"></i>
+      </button>
     </div>
-    <form method="POST" id="edit-service-form" enctype="multipart/form-data">
+    <form method="POST" id="edit-svc-form" enctype="multipart/form-data">
       @csrf @method('PUT')
-      <div class="modal-body">
-        <div class="field">
-          <label class="lbl">Service Name</label>
-          <input class="inp" type="text" name="name" id="es-name" required>
-        </div>
-        <div class="field">
-          <label class="lbl">Description</label>
-          <textarea class="inp" name="description" id="es-description"></textarea>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">Category</label>
-            <input class="inp" type="text" name="category" id="es-category" required>
+      <div class="modal-scroll">
+        <div class="modal-body">
+          <div class="form-grid">
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Service Name</label>
+              <input type="text" name="name" id="edit-svc-name" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select name="category" id="edit-svc-category" class="form-select" required>
+                <option value="">— Select —</option>
+                @foreach($categories as $cat)
+                <option value="{{ $cat->name_ar }}">{{ $cat->name_ar }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Subcategory</label>
+              <select name="subcategory" id="edit-svc-subcategory" class="form-select" required>
+                <option value="">— Select —</option>
+                @foreach($subcategories as $sub)
+                <option value="{{ $sub->name_ar }}">{{ $sub->name_ar }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <select name="city" id="edit-svc-city" class="form-select" required>
+                <option value="">— Select —</option>
+                @foreach($cities as $city)
+                <option value="{{ $city->name_ar }}">{{ $city->name_ar }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Price</label>
+              <input type="number" name="price" id="edit-svc-price" class="form-input" min="0" step="0.01" required>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Currency</label>
+              <select name="price_type" id="edit-svc-price_type" class="form-select" required>
+                <option value="usd">USD</option>
+                <option value="syp">SYP</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Description</label>
+              <textarea name="description" id="edit-svc-description" class="form-textarea"></textarea>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label class="form-label">Image</label>
+              <label class="file-label">
+                <i class="ti ti-photo-up"></i>
+                <span id="edit-svc-file-name">Click to change image</span>
+                <input type="file" name="image" accept="image/*"
+                       onchange="previewFile(this,'edit-svc-file-name','edit-svc-img')">
+              </label>
+              <img id="edit-svc-img" class="file-preview" style="display:none;margin-top:6px;">
+            </div>
+
           </div>
-          <div class="field">
-            <label class="lbl">Subcategory</label>
-            <input class="inp" type="text" name="subcategory" id="es-subcategory" required>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="lbl">City</label>
-            <input class="inp" type="text" name="city" id="es-city" required>
-          </div>
-          <div class="field">
-            <label class="lbl">Currency</label>
-            <select class="inp" name="price_type" id="es-price_type" required>
-              <option value="syp">Syrian Pound (SYP)</option>
-              <option value="usd">US Dollar (USD)</option>
-            </select>
-          </div>
-        </div>
-        <div class="field">
-          <label class="lbl">Price</label>
-          <input class="inp" type="number" name="price" id="es-price" min="0" step="0.01" required>
-        </div>
-        <div class="field">
-          <label class="lbl">Service Location</label>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <button type="button" class="btn btn-outline btn-sm" onclick="captureLocation('edit-svc')">
-              <i class="ti ti-map-pin"></i> Update Location
-            </button>
-            <span id="loc-status-edit-svc" style="font-size:11px;color:var(--text-muted);"></span>
-          </div>
-          <input type="hidden" name="latitude"  id="edit-svc-lat">
-          <input type="hidden" name="longitude" id="edit-svc-lng">
-        </div>
-        <div class="field">
-          <label class="lbl">New Image <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-          <input class="inp-file" type="file" name="image" accept="image/*">
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-service')">Cancel</button>
-        <button type="submit" class="btn btn-primary"><i class="ti ti-check"></i> Save Changes</button>
+        <button type="button" class="btn-secondary"
+                onclick="document.getElementById('edit-svc-modal').classList.remove('open')">Cancel</button>
+        <button type="submit" class="btn-primary"><i class="ti ti-device-floppy"></i> Save Changes</button>
       </div>
     </form>
   </div>
@@ -765,99 +830,130 @@ select.inp  { cursor: pointer; }
 
 @section('scripts')
 <script>
-function openModal(id)  { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
-function closeOnBackdrop(e,id) { if(e.target===document.getElementById(id)) closeModal(id); }
-document.addEventListener('keydown', e => {
-  if(e.key==='Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m=>{
-    m.classList.remove('open'); document.body.style.overflow='';
-  });
-});
-function openEditService(btn) {
-  const id  = btn.dataset.id;
-  const svc = JSON.parse(btn.dataset.svc);
-  document.getElementById('edit-service-form').action = '{{ url("user/my-services") }}/' + id;
-  document.getElementById('es-name').value        = svc.name        || '';
-  document.getElementById('es-description').value = svc.description || '';
-  document.getElementById('es-category').value    = svc.category    || '';
-  document.getElementById('es-subcategory').value = svc.subcategory || '';
-  document.getElementById('es-city').value        = svc.city        || '';
-  document.getElementById('es-price').value       = svc.price       || '';
-  document.getElementById('es-price_type').value  = svc.price_type  || 'syp';
-  // Restore saved coordinates if present
-  document.getElementById('edit-svc-lat').value = svc.latitude  || '';
-  document.getElementById('edit-svc-lng').value = svc.longitude || '';
-  const st = document.getElementById('loc-status-edit-svc');
-  if (svc.latitude && svc.longitude) {
-    st.textContent = `📍 ${parseFloat(svc.latitude).toFixed(5)}, ${parseFloat(svc.longitude).toFixed(5)}`;
-    st.style.color = 'var(--accent)';
-  } else {
-    st.textContent = 'No location saved';
-    st.style.color = 'var(--text-muted)';
-  }
-  openModal('modal-edit-service');
+// ── Tab switching ──────────────────────────────────────────────────────────
+function switchTab(event, name) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  history.replaceState(null, '', '?tab=' + name);
 }
 
-function captureLocation(prefix) {
-  const statusEl = document.getElementById('loc-status-' + prefix);
-  if (!navigator.geolocation) {
-    statusEl.textContent = 'Geolocation not supported';
-    return;
+// ── Toggle business edit form ──────────────────────────────────────────────
+function toggleBizEdit() {
+  const form = document.getElementById('biz-edit');
+  const view = document.getElementById('biz-view');
+  if (!form) return;
+  const open = form.style.display === 'none';
+  form.style.display = open ? '' : 'none';
+  if (view) view.style.display = open ? 'none' : '';
+}
+
+// ── File preview ───────────────────────────────────────────────────────────
+function previewFile(input, nameId, previewId) {
+  const file    = input.files[0];
+  const nameEl  = document.getElementById(nameId);
+  const preview = document.getElementById(previewId);
+  if (!file) return;
+  nameEl.textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    preview.src           = e.target.result;
+    preview.style.display = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Open edit service modal ────────────────────────────────────────────────
+function openEditSvc(btn) {
+  const id = btn.dataset.id;
+  document.getElementById('edit-svc-form').action   = '/user/my-services/' + id;
+  document.getElementById('edit-svc-name').value        = btn.dataset.name        || '';
+  document.getElementById('edit-svc-description').value = btn.dataset.description || '';
+  document.getElementById('edit-svc-price').value       = btn.dataset.price       || '';
+
+  setSelectValue('edit-svc-category',   btn.dataset.category);
+  setSelectValue('edit-svc-subcategory',btn.dataset.subcategory);
+  setSelectValue('edit-svc-city',       btn.dataset.city);
+  setSelectValue('edit-svc-price_type', btn.dataset.price_type);
+
+  const preview = document.getElementById('edit-svc-img');
+  if (btn.dataset.image) {
+    preview.src           = btn.dataset.image;
+    preview.style.display = '';
+  } else {
+    preview.style.display = 'none';
   }
-  statusEl.textContent = 'Locating...';
+
+  document.getElementById('edit-svc-modal').classList.add('open');
+}
+
+function setSelectValue(id, value) {
+  const sel = document.getElementById(id);
+  if (!sel || !value) return;
+  for (const opt of sel.options) opt.selected = (opt.value === value);
+}
+
+// ── Close modal on backdrop click ──────────────────────────────────────────
+function closeOnBackdrop(event, id) {
+  if (event.target === event.currentTarget)
+    document.getElementById(id).classList.remove('open');
+}
+
+// ── Geolocation + nearest city ─────────────────────────────────────────────
+@php
+  $bizCitiesJs = $cities->map(fn($c) => [
+      'name' => $c->name_ar,
+      'lat'  => (float)$c->latitude,
+      'lng'  => (float)$c->longitude,
+  ])->values();
+@endphp
+const _bizCities = @json($bizCitiesJs);
+
+function _haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371, toR = Math.PI / 180;
+  const dLat = (lat2 - lat1) * toR, dLng = (lng2 - lng1) * toR;
+  const a = Math.sin(dLat/2)**2
+          + Math.cos(lat1*toR) * Math.cos(lat2*toR) * Math.sin(dLng/2)**2;
+  return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * R;
+}
+
+function _nearestCity(lat, lng) {
+  let best = null, bestDist = Infinity;
+  _bizCities.forEach(c => {
+    const d = _haversineKm(lat, lng, c.lat, c.lng);
+    if (d < bestDist) { bestDist = d; best = c; }
+  });
+  return best ? { name: best.name, km: Math.round(bestDist) } : null;
+}
+
+function getLocation(mode, btn) {
+  if (!navigator.geolocation) { alert('Geolocation not supported by your browser.'); return; }
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Getting location…';
+
   navigator.geolocation.getCurrentPosition(
     pos => {
-      const lat = pos.coords.latitude.toFixed(7);
-      const lng = pos.coords.longitude.toFixed(7);
-      document.getElementById(prefix + '-lat').value = lat;
-      document.getElementById(prefix + '-lng').value = lng;
-      statusEl.textContent = `📍 ${parseFloat(lat).toFixed(5)}, ${parseFloat(lng).toFixed(5)}`;
-      statusEl.style.color = 'var(--accent)';
+      const lat = pos.coords.latitude, lng = pos.coords.longitude;
+      document.getElementById('biz-lat-' + mode).value = lat;
+      document.getElementById('biz-lng-' + mode).value = lng;
+      const nearest = _nearestCity(lat, lng);
+      const label   = document.getElementById('biz-loc-label-' + mode);
+      label.textContent = nearest
+        ? 'Nearest city: ' + nearest.name + ' (' + nearest.km + ' km away)'
+        : 'Location captured: ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+      label.style.color = 'var(--accent)';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-map-check"></i> Location updated';
     },
     () => {
-      statusEl.textContent = 'Could not get location';
-      statusEl.style.color = '#EF4444';
-    }
+      alert('Could not get your location. Please allow location access and try again.');
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    },
+    { timeout: 10000 }
   );
 }
-@if($errors->any())
-  @if(old('_method')==='PUT' && old('first_name'))   openModal('modal-edit-profile');
-  @elseif(old('_method')==='PUT' && old('name_job')) openModal('modal-edit-business');
-  @elseif(old('name') && old('price'))               openModal('modal-add-service');
-  @elseif(!@$business)                               openModal('modal-create-business');
-  @endif
-@endif
-
-/* ── Category / Subcategory filtering by business activity ── */
-const bizActivityId = {{ $business?->active_typebusiness_id ?? 'null' }};
-
-function filterAddCategories() {
-  const sel = document.getElementById('add-cat-select');
-  if (!sel) return;
-  Array.from(sel.options).forEach(opt => {
-    if (!opt.value) return;
-    opt.hidden = bizActivityId
-      ? parseInt(opt.dataset.activity) !== bizActivityId
-      : false;
-  });
-  sel.value = '';
-  filterAddSubcategories();
-}
-
-function filterAddSubcategories() {
-  const catSel = document.getElementById('add-cat-select');
-  const subSel = document.getElementById('add-sub-select');
-  if (!subSel) return;
-  const catId = catSel && catSel.value
-    ? catSel.options[catSel.selectedIndex]?.dataset?.id
-    : null;
-  Array.from(subSel.options).forEach(opt => {
-    if (!opt.value) return;
-    opt.hidden = catId ? opt.dataset.cat !== catId : false;
-  });
-  subSel.value = '';
-}
-
-document.addEventListener('DOMContentLoaded', filterAddCategories);
 </script>
 @endsection

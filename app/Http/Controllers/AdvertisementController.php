@@ -53,4 +53,24 @@ class AdvertisementController extends Controller
         Advertisement::findOrFail($id)->delete();
         return redirect()->route('admin.ads.index')->with('success', 'Advertisement deleted.');
     }
+
+    public function userAds()
+    {
+        $advertisements = Advertisement::where('status', 'approved')
+            ->where(function ($q) {
+                $today = now()->toDateString();
+                $q->whereNull('start_date')
+                  ->orWhere(function ($q2) use ($today) {
+                      $q2->where('start_date', '<=', $today)
+                         ->where(function ($q3) use ($today) {
+                             $q3->whereNull('end_date')
+                                ->orWhere('end_date', '>=', $today);
+                         });
+                  });
+            })
+            ->latest()
+            ->get();
+
+        return view('user.advertisements', compact('advertisements'));
+    }
 }

@@ -9,7 +9,9 @@ class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with('user')->latest()->get();
+        $posts = Post::with('user')
+        ->where('user_id','!=',auth('users')->id())
+        ->latest()->get();
         return view('admin.posts.index', compact('posts'));
     }
 
@@ -17,6 +19,15 @@ class PostController extends Controller
     {
         $posts = Post::where('user_id', auth('users')->id())->latest()->get();
         return view('user.posts', compact('posts'));
+    }
+
+    public function communityPosts()
+    {
+        $posts = Post::with('user')
+            ->where('user_id', '!=', auth('users')->id())
+            ->latest()
+            ->get();
+        return view('user.community-posts', compact('posts'));
     }
 
     public function store(Request $request)
@@ -31,22 +42,11 @@ class PostController extends Controller
             'status'      => 'nullable|string',
         ]);
 
-        $post = Post::create($validated);
+        $post = Post::updateOrCreate(['id' => $request->id], $validated);
         return redirect()->route('admin.posts.index')->with('success', 'Post created.');
     }
 
-    public function show(int $id)
-    {
-        $post = Post::findOrFail($id);
-        return response()->json($post);
-    }
 
-    public function update(Request $request, int $id)
-    {
-        $post = Post::findOrFail($id);
-        $post->update($request->all());
-        return redirect()->route('admin.posts.index')->with('success', 'Post updated.');
-    }
 
     public function destroy(int $id)
     {

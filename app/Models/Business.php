@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Business extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['name', 'name_job', 'number', 'description', 'latitude', 'longitude', 'activity', 'image', 'status', 'user_id'];
+    protected $fillable = ['name', 'name_job', 'number', 'description', 'latitude', 'longitude', 'activity', 'image', 'status', 'user_id', 'active_typebusiness_id'];
 
     protected $casts = [
         'latitude'  => 'decimal:7',

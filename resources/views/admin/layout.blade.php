@@ -139,7 +139,7 @@
       text-align: left; transition: background 0.12s; cursor: pointer;
     }
     .nav-item:hover  { background: var(--sidebar-hover); }
-    .nav-item.active { background: var(--sidebar-active); color: #fff; }
+    .nav-item.active { background: var(--sidebar-active); color: #fff; box-shadow: inset 3px 0 0 var(--accent); }
     .nav-item > i    { font-size: 17px; flex-shrink: 0; }
     .nav-item .lbl   { flex: 1; }
     .nav-badge {
@@ -384,6 +384,85 @@
     .empty-state { padding: 40px; text-align: center; color: var(--text-muted); }
     .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; }
 
+    /* TABLE TOOLBAR */
+    .table-toolbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 20px; border-bottom: 0.5px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .search-field {
+      display: flex; align-items: center;
+      background: var(--bg-sunken); border: 0.5px solid var(--border);
+      border-radius: 8px; overflow: hidden; width: 220px; flex-shrink: 0;
+      transition: border-color 0.15s;
+    }
+    .search-field:focus-within { border-color: var(--accent); }
+    .search-field > i { padding: 0 10px; font-size: 15px; color: var(--text-muted); flex-shrink: 0; }
+    .search-field input {
+      border: none; outline: none; background: transparent;
+      padding: 7px 8px 7px 0; font-size: 13px;
+      color: var(--text-primary); width: 100%; font-family: var(--font);
+    }
+    .search-field input::placeholder { color: var(--text-muted); }
+    .filter-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+    .chip {
+      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+      border: 0.5px solid var(--border-md); background: transparent;
+      color: var(--text-secondary); cursor: pointer; transition: all 0.12s; font-family: var(--font);
+    }
+    .chip.on { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+    .chip:not(.on):hover { background: var(--bg-hover); color: var(--text-primary); }
+    .tbl-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; padding: 0 4px; margin-right: auto; }
+
+    /* MODAL */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:300;
+      background:rgba(0,0,0,.55); backdrop-filter:blur(4px);
+      align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal-box {
+      background:var(--bg-surface); border:0.5px solid var(--border-md);
+      border-radius:16px; width:100%; max-width:560px;
+      overflow:hidden; animation:mfadeUp .2s ease;
+      max-height:90vh; display:flex; flex-direction:column;
+    }
+    @keyframes mfadeUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .modal-head {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 20px; border-bottom:0.5px solid var(--border); flex-shrink:0;
+    }
+    .modal-title { font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px; }
+    .modal-close {
+      width:28px; height:28px; border-radius:8px;
+      border:none; background:none; color:var(--text-secondary);
+      font-size:17px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:background .12s; font-family:var(--font);
+    }
+    .modal-close:hover { background:var(--bg-hover); }
+    .modal-body { padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:14px; }
+    .modal-foot {
+      padding:14px 20px; border-top:0.5px solid var(--border);
+      display:flex; justify-content:flex-end; gap:8px; flex-shrink:0;
+    }
+    .form-label { display:block; font-size:12px; font-weight:500; color:var(--text-secondary); margin-bottom:6px; }
+    .form-field {
+      display:flex; align-items:center;
+      background:var(--bg-sunken); border:0.5px solid var(--border-md);
+      border-radius:8px; overflow:hidden; transition:border-color .15s;
+    }
+    .form-field:focus-within { border-color:var(--accent); }
+    .form-field > i { padding:0 11px; font-size:16px; color:var(--text-muted); flex-shrink:0; }
+    .form-field input, .form-field select, .form-field textarea {
+      flex:1; border:none; outline:none; background:transparent;
+      padding:10px 12px 10px 0; font-size:13px; color:var(--text-primary);
+      font-family:var(--font); resize:none;
+    }
+    .form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
     /* RESPONSIVE */
     @media (max-width: 960px) { .content-grid { grid-template-columns: 1fr; } }
     @media (max-width: 720px) {
@@ -418,79 +497,117 @@
         <span class="lbl">Dashboard</span>
       </a>
 
+      @canany(['businesses.view','verifications.view','users.view','blocked.view','services.view'])
       <div class="nav-sep"></div>
       <span class="nav-label-group">Management</span>
 
+      @can('businesses.view')
       <a href="{{ route('admin.workers.index') }}" class="nav-item {{ request()->routeIs('admin.workers.*') ? 'active' : '' }}">
         <i class="ti ti-tools"></i>
-        <span class="lbl">Workers</span>
+        <span class="lbl">Service Providers</span>
       </a>
+      @endcan
+
+      @can('verifications.view')
       <a href="{{ route('admin.verifications.index') }}" class="nav-item {{ request()->routeIs('admin.verifications.*') ? 'active' : '' }}">
         <i class="ti ti-id-badge"></i>
-        <span class="lbl">Verifications</span>
+        <span class="lbl">Business Requests</span>
       </a>
+      @endcan
+
+      @can('users.view')
       <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
         <i class="ti ti-user"></i>
         <span class="lbl">Users</span>
       </a>
+      @endcan
+
+      @can('blocked.view')
       <a href="{{ route('admin.blocked.index') }}" class="nav-item {{ request()->routeIs('admin.blocked.*') ? 'active' : '' }}">
         <i class="ti ti-ban"></i>
         <span class="lbl">Blocked</span>
       </a>
+      @endcan
+
+      @can('services.view')
       <a href="{{ route('admin.services.index') }}" class="nav-item {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
         <i class="ti ti-list-check"></i>
         <span class="lbl">Services</span>
       </a>
+      @endcan
+      @endcanany
 
+      @canany(['posts.view_all','reports.view','ads.view'])
       <div class="nav-sep"></div>
       <span class="nav-label-group">Content</span>
 
+      @can('posts.view_all')
       <a href="{{ route('admin.posts.index') }}" class="nav-item {{ request()->routeIs('admin.posts.*') ? 'active' : '' }}">
         <i class="ti ti-file-text"></i>
         <span class="lbl">Posts</span>
       </a>
+      @endcan
+
+      @can('reports.view')
       <a href="{{ route('admin.reports.index') }}" class="nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
         <i class="ti ti-flag"></i>
         <span class="lbl">Reports</span>
       </a>
+      @endcan
+
+      @can('ads.view')
       <a href="{{ route('admin.ads.index') }}" class="nav-item {{ request()->routeIs('admin.ads.*') ? 'active' : '' }}">
         <i class="ti ti-speakerphone"></i>
         <span class="lbl">Ads</span>
       </a>
+      @endcan
+      @endcanany
 
+      @canany(['active_type_businesses.view','active_types.view','categories.view','subcategories.view','cities.view'])
       <div class="nav-sep"></div>
       <span class="nav-label-group">Reference Data</span>
 
+      @can('active_type_businesses.view')
       <a href="{{ route('admin.active_typebusinesses.index') }}"
          class="nav-item {{ request()->routeIs('admin.active_typebusinesses.*') ? 'active' : '' }}">
         <i class="ti ti-briefcase"></i>
         <span class="lbl">Business Types</span>
       </a>
+      @endcan
+
+      @can('active_types.view')
       <a href="{{ route('admin.active_types.index') }}"
          class="nav-item {{ request()->routeIs('admin.active_types.*') ? 'active' : '' }}">
         <i class="ti ti-tag"></i>
         <span class="lbl">Activity Types</span>
       </a>
+      @endcan
+
+      @can('categories.view')
       <a href="{{ route('admin.categories.index') }}"
          class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
         <i class="ti ti-category"></i>
         <span class="lbl">Categories</span>
       </a>
+      @endcan
+
+      @can('subcategories.view')
       <a href="{{ route('admin.subcategories.index') }}"
          class="nav-item {{ request()->routeIs('admin.subcategories.*') ? 'active' : '' }}">
         <i class="ti ti-category-2"></i>
         <span class="lbl">Subcategories</span>
       </a>
-      <a href="{{ route('admin.employees.index') }}"
-         class="nav-item {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}">
-        <i class="ti ti-user-check"></i>
-        <span class="lbl">Employees</span>
-      </a>
+      @endcan
+
+      @can('cities.view')
       <a href="{{ route('admin.cities.index') }}"
          class="nav-item {{ request()->routeIs('admin.cities.*') ? 'active' : '' }}">
         <i class="ti ti-map-pin"></i>
         <span class="lbl">Cities</span>
       </a>
+      @endcan
+      @endcanany
+
     </nav>
 
     <div class="sidebar-footer">

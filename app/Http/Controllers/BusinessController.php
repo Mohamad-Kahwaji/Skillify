@@ -4,23 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class BusinessController extends Controller
 {
-    public function getLocationAttribute()
-{
-    if ($this->business) {
-        return [
-            'latitude'  => $this->business->latitude,
-            'longitude' => $this->business->longitude,
-        ];
-    }
-
-    return [
-        'latitude'  => $this->latitude,
-        'longitude' => $this->longitude,
-    ];
-}
     public function index()
     {
         $businesses = Business::withTrashed()->latest()->get();
@@ -29,43 +17,62 @@ class BusinessController extends Controller
 
     public function store(Request $request)
     {
-        $user = auth('users')->user();
+        $user = Auth::guard('users')->user();
+
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'name_job'    => 'required|string|max:255',
-            'number'      => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'latitude'    => 'required|numeric|between:-90,90',
-            'longitude'   => 'required|numeric|between:-180,180',
-            'activity'    => 'required|string',
-            'image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
-            'status'      => 'required|in:pending,active,rejected',
-            'user_id'     => 'required|exists:users,id',
+            'name_job'               => 'required|string|max:120',
+            'number'                 => 'required|string|max:40',
+            'active_typebusiness_id' => 'required|exists:active_typebusinesses,id',
+            'latitude'               => 'required|numeric|between:-90,90',
+            'longitude'              => 'required|numeric|between:-180,180',
+            'description'            => 'nullable|string|max:1000',
+            'image'                  => 'nullable|image|max:2048',
         ]);
-        Business::create($request->all());
-        
-        return redirect()->route('admin.workers.index')->with('success', 'Business created.');
+
+        $data = $request->only('name_job', 'number', 'active_typebusiness_id', 'description', 'latitude', 'longitude');
+        $data['name']     = $user->first_name . ' ' . $user->last_name;
+        $data['activity'] = $request->name_job;
+        $data['user_id']  = $user->id;
+        $data['status']   = 'pending';
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('businesses', 'public');
+        }
+
+        Business::create($data);
+
+        return back()->with('success', 'تم إرسال طلب حساب الأعمال، سيتم مراجعته قريباً.');
     }
 
-    public function edit(int $id, Request $request)
+    public function edit(Request $request)
     {
-        $business = Business::findOrFail($id);
+        $business = Business::where('user_id', Auth::guard('users')->id())->firstOrFail();
+
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'name_job'    => 'required|string|max:255',
-            'number'      => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'latitude'    => 'required|numeric|between:-90,90',
-            'longitude'   => 'required|numeric|between:-180,180',
-            'activity'    => 'required|string',
-            'image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
-            'status'      => 'required|in:pending,active,rejected',
-            'user_id'     => 'required|exists:users,id',
+            'name_job'    => 'required|string|max:120',
+            'number'      => 'required|string|max:40',
+            'latitude'    => 'nullable|numeric|between:-90,90',
+            'longitude'   => 'nullable|numeric|between:-180,180',
+            'description' => 'nullable|string|max:1000',
+            'image'       => 'nullable|image|max:2048',
         ]);
 
+        $data = $request->only('name_job', 'number', 'description');
+        $data['activity'] = $request->name_job;
 
-        $business->update($request->all());
-        return redirect()->route('admin.workers.index')->with('success', 'Business updated.');
+        if ($request->filled('latitude') && $request->filled('longitude')) {
+            $data['latitude']  = $request->latitude;
+            $data['longitude'] = $request->longitude;
+        }
+
+        if ($request->hasFile('image')) {
+            if ($business->image) Storage::disk('public')->delete($business->image);
+            $data['image'] = $request->file('image')->store('businesses', 'public');
+        }
+
+        $business->update($data);
+
+        return back()->with('success', 'تم تحديث معلومات حساب الأعمال.');
     }
 
     public function show(int $id)
@@ -79,4 +86,5 @@ class BusinessController extends Controller
         Business::findOrFail($id)->delete();
         return redirect()->route('admin.workers.index')->with('success', 'Business deleted.');
     }
+
 }

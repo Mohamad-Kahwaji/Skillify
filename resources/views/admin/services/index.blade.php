@@ -3,37 +3,26 @@
 @section('breadcrumb', 'Services')
 
 @section('styles')
-<style>
-  .status-toggle {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
-    border: none; cursor: pointer; font-family: var(--font);
-    transition: background 0.12s;
-  }
-  .status-toggle.active   { background: var(--green-50); color: var(--green-800); }
-  .status-toggle.inactive { background: var(--bg-sunken); color: var(--text-muted); border: 0.5px solid var(--border-md); }
-  .filter-tabs { display: flex; gap: 6px; }
-  .filter-tab {
-    padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
-    border: 0.5px solid var(--border-md); background: var(--bg-sunken);
-    color: var(--text-secondary); cursor: pointer; transition: all 0.12s; text-decoration: none;
-  }
-  .filter-tab.active, .filter-tab:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
-</style>
+.status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  border: none; cursor: pointer; font-family: var(--font); transition: opacity 0.12s;
+}
+.status-pill.active   { background: var(--green-50); color: var(--green-800); }
+.status-pill.inactive { background: var(--bg-sunken); color: var(--text-muted); border: 0.5px solid var(--border-md); }
+.status-pill:hover { opacity: 0.8; }
 @endsection
 
 @section('content')
+
 <div class="page-head">
   <div>
     <div class="page-title">Services</div>
     <div class="page-sub">
-      {{ $services->count() }} total &middot;
-      {{ $services->where('is_active', true)->count() }} active &middot;
+      {{ $services->count() }} total ·
+      {{ $services->where('is_active', true)->count() }} active ·
       {{ $services->where('is_active', false)->count() }} inactive
     </div>
-  </div>
-  <div class="filter-tabs">
-    <a href="{{ route('admin.services.index') }}" class="filter-tab active">All</a>
   </div>
 </div>
 
@@ -41,7 +30,19 @@
   <div class="card-head">
     <span class="card-title">All Services</span>
   </div>
-  <table class="data-table">
+  <div class="table-toolbar">
+    <div class="search-field">
+      <i class="ti ti-search"></i>
+      <input type="text" id="q" placeholder="Search name, category, city…">
+    </div>
+    <div class="filter-chips" id="chips">
+      <button class="chip on" data-s="">All ({{ $services->count() }})</button>
+      <button class="chip" data-s="1">Active ({{ $services->where('is_active', true)->count() }})</button>
+      <button class="chip" data-s="0">Inactive ({{ $services->where('is_active', false)->count() }})</button>
+    </div>
+    <span class="tbl-count" id="tbl-count"></span>
+  </div>
+  <table class="data-table" id="tbl">
     <thead>
       <tr>
         <th>Service</th>
@@ -54,19 +55,21 @@
     </thead>
     <tbody>
       @forelse($services as $svc)
-      <tr>
+      <tr data-s="{{ $svc->is_active ? '1' : '0' }}"
+          data-search="{{ strtolower(($svc->name ?? '') . ' ' . ($svc->category ?? '') . ' ' . ($svc->subcategory ?? '') . ' ' . ($svc->city ?? '') . ' ' . ($svc->description ?? '')) }}">
         <td>
           <div class="cell-user">
             @if($svc->image)
-              <img src="{{ $svc->image }}" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;">
+              <img src="{{ $svc->image }}" alt=""
+                   style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;">
             @else
-              <div class="avatar" style="background:var(--accent);border-radius:8px;width:36px;height:36px;">
-                {{ strtoupper(substr($svc->name, 0, 1)) }}
+              <div class="avatar" style="background:var(--accent);border-radius:8px;width:36px;height:36px;font-size:14px;">
+                {{ strtoupper(substr($svc->name ?? 'S', 0, 1)) }}
               </div>
             @endif
             <div>
               <div class="cell-name">{{ $svc->name }}</div>
-              <div class="cell-email">{{ Str::limit($svc->description, 45) }}</div>
+              <div class="cell-email">{{ Str::limit($svc->description ?? '', 45) }}</div>
             </div>
           </div>
         </td>
@@ -77,12 +80,12 @@
         <td style="color:var(--text-secondary);font-size:12px;">{{ $svc->city }}</td>
         <td>
           <span style="font-weight:600;font-size:13px;">{{ number_format($svc->price) }}</span>
-          <span style="font-size:11px;color:var(--text-muted);margin-right:2px;">{{ strtoupper($svc->price_type) }}</span>
+          <span style="font-size:10px;color:var(--text-muted);margin-right:2px;">{{ strtoupper($svc->price_type ?? '') }}</span>
         </td>
         <td>
           <form method="POST" action="{{ route('admin.services.toggle', $svc->id) }}">
             @csrf @method('PATCH')
-            <button type="submit" class="status-toggle {{ $svc->is_active ? 'active' : 'inactive' }}">
+            <button type="submit" class="status-pill {{ $svc->is_active ? 'active' : 'inactive' }}">
               <i class="ti {{ $svc->is_active ? 'ti-circle-check' : 'ti-circle-x' }}" style="font-size:14px;"></i>
               {{ $svc->is_active ? 'Active' : 'Inactive' }}
             </button>
@@ -90,21 +93,53 @@
         </td>
         <td>
           <div style="display:flex;gap:5px;">
-            <a href="{{ route('admin.services.show', $svc->id) }}" class="btn-ghost" style="padding:5px 10px;font-size:12px;">
+            <a href="{{ route('admin.services.show', $svc->id) }}" class="btn-ghost" style="padding:5px 10px;font-size:12px;" title="View">
               <i class="ti ti-eye"></i>
             </a>
             <form method="POST" action="{{ route('admin.services.destroy', $svc->id) }}"
                   onsubmit="return confirm('Delete this service?')">
               @csrf @method('DELETE')
-              <button type="submit" class="btn-danger"><i class="ti ti-trash"></i></button>
+              <button type="submit" class="btn-danger" title="Delete">
+                <i class="ti ti-trash"></i>
+              </button>
             </form>
           </div>
         </td>
       </tr>
       @empty
-      <tr><td colspan="6"><div class="empty-state"><i class="ti ti-list-check"></i>No services found</div></td></tr>
+      <tr>
+        <td colspan="6">
+          <div class="empty-state"><i class="ti ti-list-check"></i>No services found</div>
+        </td>
+      </tr>
       @endforelse
     </tbody>
   </table>
 </div>
+
+@endsection
+
+@section('scripts')
+<script>
+(function(){
+  let sts = '', q = '';
+  const rows = () => [...document.querySelectorAll('#tbl tbody tr[data-s]')];
+  const cnt  = document.getElementById('tbl-count');
+  function render(){
+    let n = 0;
+    rows().forEach(r => {
+      const ok = r.dataset.search.includes(q) && (!sts || r.dataset.s === sts);
+      r.style.display = ok ? '' : 'none';
+      if(ok) n++;
+    });
+    if(cnt) cnt.textContent = n + ' result' + (n !== 1 ? 's' : '');
+  }
+  document.getElementById('q').addEventListener('input', e => { q = e.target.value.toLowerCase(); render(); });
+  document.getElementById('chips').querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+    document.querySelectorAll('#chips .chip').forEach(x => x.classList.remove('on'));
+    c.classList.add('on'); sts = c.dataset.s; render();
+  }));
+  render();
+})();
+</script>
 @endsection

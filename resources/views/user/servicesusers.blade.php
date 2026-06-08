@@ -107,7 +107,6 @@
   from { opacity:0; transform:translateY(14px) scale(.97); }
   to   { opacity:1; transform:translateY(0)    scale(1);   }
 }
-/* Header */
 .svc-modal-header {
   display: flex; align-items: flex-start; justify-content: space-between;
   padding: 16px 20px 12px; border-bottom: .5px solid var(--border);
@@ -121,12 +120,10 @@
   color: var(--text-secondary); flex-shrink: 0; transition: background .12s;
 }
 .svc-modal-close:hover { background: var(--border-md); }
-/* Full-width image banner */
 .detail-banner {
   width: 100%; height: 180px; flex-shrink: 0;
   background: var(--bg-sunken); overflow: hidden;
-  border-bottom: .5px solid var(--border);
-  position: relative;
+  border-bottom: .5px solid var(--border); position: relative;
 }
 .detail-banner img { width:100%;height:100%;object-fit:cover;display:block; }
 .detail-banner-fallback {
@@ -134,34 +131,22 @@
   display:flex;align-items:center;justify-content:center;
   font-size:52px;font-weight:800;color:#fff;letter-spacing:-2px;
 }
-/* Body: two equal columns, fixed height */
 .svc-modal-body {
   display: grid; grid-template-columns: 42% 58%;
   min-height: 420px;
 }
 @media (max-width: 600px) { .svc-modal-body { grid-template-columns: 1fr; } }
-/* Left: map column */
-.svc-modal-left {
-  border-right: .5px solid var(--border);
-}
+.svc-modal-left { border-right: .5px solid var(--border); }
 .map-placeholder {
-  height: 420px;
-  background: var(--bg-sunken);
+  height: 420px; background: var(--bg-sunken);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 6px;
   color: var(--text-muted);
 }
 .mp-title { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
 .mp-val   { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
-/* Right: info panel */
-.svc-modal-right {
-  padding: 16px 18px;
-  display: flex; flex-direction: column; gap: 14px;
-}
-/* Price row */
-.detail-price-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-}
+.svc-modal-right { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+.detail-price-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .detail-price-badge {
   display: inline-flex; align-items: baseline; gap: 4px;
   font-size: 28px; font-weight: 800; color: var(--accent);
@@ -173,19 +158,14 @@
   background: var(--green-50); color: var(--green-800);
   border: .5px solid rgba(5,150,105,.2); white-space: nowrap;
 }
-/* Section labels */
 .detail-section-label {
   font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
   color: var(--text-muted); font-weight: 600; margin-bottom: 7px;
 }
-/* Description */
 .detail-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
-/* Info blocks with labeled rows */
 .info-block { display: flex; flex-direction: column; }
 .info-grid  { display: flex; flex-direction: column; gap: 5px; }
-.info-row {
-  display: flex; align-items: baseline; gap: 6px; min-height: 22px;
-}
+.info-row   { display: flex; align-items: baseline; gap: 6px; min-height: 22px; }
 .info-lbl {
   font-size: 11px; color: var(--text-muted); white-space: nowrap;
   min-width: 76px; display: flex; align-items: center; gap: 4px; flex-shrink: 0;
@@ -193,16 +173,13 @@
 .info-lbl i { font-size: 12px; color: var(--accent); }
 .info-val { font-size: 12px; color: var(--text-primary); line-height: 1.4; }
 .info-val.fw { font-weight: 700; }
-/* Divider */
 .detail-divider { height: .5px; background: var(--border); }
-/* Owner avatar */
 .detail-owner { display: flex; align-items: flex-start; gap: 10px; }
 .detail-owner-av {
   width: 36px; height: 36px; border-radius: 50%;
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-size: 14px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
 }
-/* Business card */
 .detail-business {
   background: var(--bg-sunken); border-radius: 10px;
   padding: 11px 12px; display: flex; gap: 10px; align-items: flex-start;
@@ -220,7 +197,6 @@
   font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
   background: var(--green-50); color: var(--green-800);
 }
-/* Footer */
 .svc-modal-footer {
   padding: 12px 20px; border-top: .5px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;

@@ -38,11 +38,42 @@ class ServiceController extends Controller
         ->where('user_id','!=',auth('users')->id())
         ->where('status','=','approved')
         ->get();
-        return view('servicesusers',compact('services'));
+        return view('user.servicesusers',compact('services'));
         }
 
     public function serviceDetails($id){
         $service = Service::with('user.businesses','business','category','subCategory')->findOrFail($id);
-        return view('servicedetails',compact('service'));
+        return view('user.servicedetails',compact('service'));
     }
+
+    public function createService(Request $request,$id)
+    {
+        $request->validate([
+            'name'            => 'required|string|max:255',
+            'category_id'     => 'required|exists:categories,id',
+            'sub_category_id' => 'required|exists:sub_categories,id',
+            'description'     => 'nullable|string|max:1000',
+        ]);
+
+        $user     = auth('users')->user();
+        $business = $user->businesses;
+
+        if (!$business) {
+            return back()->with('error', 'يجب أن يكون لديك حساب أعمال نشط لإضافة خدمة.');
+        }
+
+        Service::updateOrCreate([
+            'user_id'         => $user->id,
+            'business_id'     => $business->id,
+            'name'            => $request->name,
+            'category_id'     => $request->category_id,
+            'sub_category_id' => $request->sub_category_id,
+            'description'     => $request->description,
+            'status'          => 'pending',
+        ]);
+
+        return back()->with('success', 'تم إضافة الخدمة بنجاح، سيتم مراجعتها قريباً.');
+    }
+
+
 }

@@ -32,6 +32,6 @@ class ChatController extends Controller
             ? $conversation->userTwo
             : $conversation->userOne;
 
-        return view('chat', compact('conversation', 'messages', 'conversations', 'otherUser'));
+        return view('user.chat', compact('conversation', 'messages', 'conversations', 'otherUser'));
     }
 }

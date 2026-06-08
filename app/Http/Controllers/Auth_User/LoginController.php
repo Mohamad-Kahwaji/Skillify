@@ -36,5 +36,4 @@ class LoginController extends Controller
         ])->withInput($request->only('phone'));
     }
 
-
 }

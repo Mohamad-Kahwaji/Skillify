@@ -13,7 +13,8 @@ class AdminBlockedController extends Controller
     public function index()
     {
         $blocked = Blocked::with(['user', 'admin'])->latest()->get();
-        return view('admin.blocked.index', compact('blocked'));
+        $users   = User::where('status', 'active')->orderBy('first_name')->get();
+        return view('admin.blocked.index', compact('blocked', 'users'));
     }
 
     public function create()

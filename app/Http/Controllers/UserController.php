@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Support\Facades\Request;
 
@@ -35,7 +36,7 @@ class UserController extends Controller
         ]);
 
         User::create($validated);
-    
+
         return redirect()->route('users.index')->with('success', 'User created successfully.');
 
     }
@@ -56,4 +57,20 @@ class UserController extends Controller
         $user->update(['status' => 'inactive']);
         return back()->with('success', 'User deactivated.');
     }
+    public function services_users(){
+        $users = User::whereNotIn('id', function($query) {
+            $query->select('user_id')->from('services');
+        })->get();
+        return view('admin.users.no-services', compact('users'));
+    }
+
+    public function myservices(){
+        $services = Service::where('user_id', auth('users')->id())->latest()->get();
+        return view('user.my-services', compact('services'));
+    }
+
+    public function status_myservice(){
+        return redirect()->route('user.my-services.list', ['filter' => 'pending']);
+    }
+
 }

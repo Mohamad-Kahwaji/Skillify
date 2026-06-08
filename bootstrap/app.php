@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\ConfirmAdminPassword;
+use App\Http\Middleware\HasBusinessMiddleware;
 use App\Http\Middleware\SuperAdminMiddleware;
 use App\Http\Middleware\UserMiddleware;
 use Illuminate\Foundation\Application;
@@ -17,19 +18,16 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'auth_admin'       => AuthMiddleware::class,
-            'auth_super_admin' => SuperAdminMiddleware::class,
-            'auth_user'        => UserMiddleware::class,
+            'auth_admin'         => AuthMiddleware::class,
+            'auth_super_admin'   => SuperAdminMiddleware::class,
+            'auth_user'          => UserMiddleware::class,
             'confirm_admin_password' => ConfirmAdminPassword::class,
+            'has_business'           => HasBusinessMiddleware::class,
+            'role'               => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
     })
-    ->withMiddleware(function (Middleware $middleware) {
-    $middleware->alias([
-        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-        'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-        'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-    ]);
-})
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

@@ -37,9 +37,6 @@
               {{ $post->views }}
             </span>
           @endif
-          <span class="badge {{ $post->status === 'active' ? 'active' : 'pending' }}">
-            {{ $post->status === 'active' ? 'Active' : 'Pending' }}
-          </span>
         </div>
       </div>
       @if($post->description)

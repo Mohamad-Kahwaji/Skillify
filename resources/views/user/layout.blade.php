@@ -193,27 +193,62 @@
   </div>
 
   <nav class="header-nav">
+
+    {{-- Home --}}
     <a href="{{ route('user.dashboard') }}"
        class="nav-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
       <i class="ti ti-home"></i> Home
     </a>
+
+    {{-- Explore --}}
     <a href="{{ route('user.explore') }}"
        class="nav-link {{ request()->routeIs('user.explore') ? 'active' : '' }}">
       <i class="ti ti-search"></i> Explore
     </a>
+
+    {{-- Available Services (other users) --}}
     <a href="{{ route('user.services') }}"
        class="nav-link {{ request()->routeIs('user.services') ? 'active' : '' }}">
       <i class="ti ti-briefcase"></i> Services
     </a>
+
+    {{-- My Services --}}
+    <a href="{{ route('user.my-services.list') }}"
+       class="nav-link {{ request()->routeIs('user.my-services.*') ? 'active' : '' }}">
+      <i class="ti ti-list-check"></i> My Services
+    </a>
+
+    {{-- My Posts --}}
+    <a href="{{ route('user.posts') }}"
+       class="nav-link {{ request()->routeIs('user.posts') ? 'active' : '' }}">
+      <i class="ti ti-file-text"></i> My Posts
+    </a>
+
+    {{-- Community Posts --}}
+    <a href="{{ route('user.community-posts') }}"
+       class="nav-link {{ request()->routeIs('user.community-posts') ? 'active' : '' }}">
+      <i class="ti ti-users"></i> Community
+    </a>
+
+    {{-- Ads --}}
+    <a href="{{ route('user.ads') }}"
+       class="nav-link {{ request()->routeIs('user.ads') ? 'active' : '' }}">
+      <i class="ti ti-speakerphone"></i> Ads
+    </a>
+
+    {{-- Profile --}}
     <a href="{{ route('user.profile') }}"
        class="nav-link {{ request()->routeIs('user.profile') ? 'active' : '' }}">
       <i class="ti ti-user"></i> Profile
     </a>
+
+    {{-- Messages --}}
     <a id="nav-messages-link" href="{{ route('user.conversations') }}"
        class="nav-link {{ request()->routeIs('user.conversations') || request()->routeIs('user.chat') ? 'active' : '' }}">
       <i class="ti ti-message-circle"></i> Messages
       <span class="notif-badge" id="notif-badge"></span>
     </a>
+
   </nav>
 
   <div class="header-user">

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('company_name')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('approved');
             $table->softDeletes();
             $table->timestamps();
         });

@@ -15,11 +15,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            CitiesSeeder::class,       // مدن سورية
+            CitiesSeeder::class,             // مدن سورية
             ActiveTypebusinessSeeder::class, // مهنة / حرفة / معمل / شركة
             ActiveTypeSeeders::class,        // أنواع المنشورات
             CategorySeedeers::class,         // التصنيفات
             SubcategorySeedeers::class,      // التصنيفات الفرعية
+            RolesAndPermissionsSeeder::class,// الأدوار والصلاحيات
             SuperAdminSeedeers::class,       // السوبر أدمن
             UserSeedeers::class,             // المستخدمون + الأعمال + المنشورات
             ServiceSeedeers::class,          // الخدمات

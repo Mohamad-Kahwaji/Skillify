@@ -11,6 +11,8 @@ use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class SuperAdminController extends Controller
 {
@@ -28,7 +30,9 @@ class SuperAdminController extends Controller
                 'totalPosts'       => Post::count(),
                 'postsThisMonth'   => Post::whereMonth('created_at', $now->month)->count(),
                 'pendingReports'   => Report::count(),
-                'activeAds'        => Advertisement::where('status', 'active')->count(),
+                'activeAds'        => Advertisement::where('status', 'approved')->count(),
+                'totalRoles'       => Role::count(),
+                'totalPermissions' => Permission::count(),
                 'recentUsers'      => User::latest()->take(5)->get(),
                 'pendingVerifications' => Business::where('status', 'pending')->with('user')->latest()->take(4)->get(),
                 'recentReports'    => Report::with('user')->latest()->take(4)->get(),
@@ -45,6 +49,8 @@ class SuperAdminController extends Controller
                 'postsThisMonth'   => 0,
                 'pendingReports'   => 0,
                 'activeAds'        => 0,
+                'totalRoles'       => 0,
+                'totalPermissions' => 0,
                 'recentUsers'      => collect(),
                 'pendingVerifications' => collect(),
                 'recentReports'    => collect(),
