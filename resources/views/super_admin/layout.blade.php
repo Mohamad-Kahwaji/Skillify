@@ -246,9 +246,13 @@
     .badge.admin  { background: rgba(59,130,246,.15); color: #60a5fa; }
 
     /* ALERTS */
-    .alert { padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: 13px; }
-    .alert.success { background: rgba(29,158,117,.12); color: var(--accent-hover); border: 0.5px solid rgba(29,158,117,.2); }
-    .alert.error   { background: var(--red-50); color: var(--red-800); }
+    .alert {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: 13px;
+    }
+    .alert > i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .alert.success { background: rgba(29,158,117,.12); color: var(--accent-hover); border: 0.5px solid rgba(29,158,117,.25); }
+    .alert.error   { background: rgba(226,75,74,.12);  color: #f09595;             border: 0.5px solid rgba(226,75,74,.25); }
 
     /* TABLE TOOLBAR */
     .table-toolbar {
@@ -490,10 +494,16 @@
   {{-- MAIN --}}
   <main class="main">
     @if(session('success'))
-      <div class="alert success"><i class="ti ti-check"></i> {{ session('success') }}</div>
+      <div class="alert success">
+        <i class="ti ti-circle-check"></i>
+        <span>{{ session('success') }}</span>
+      </div>
     @endif
     @if(session('error'))
-      <div class="alert error"><i class="ti ti-alert-circle"></i> {{ session('error') }}</div>
+      <div class="alert error">
+        <i class="ti ti-alert-circle"></i>
+        <span>{{ session('error') }}</span>
+      </div>
     @endif
     @yield('content')
   </main>

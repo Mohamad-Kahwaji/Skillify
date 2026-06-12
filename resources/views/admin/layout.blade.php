@@ -376,9 +376,13 @@
     .status-lbl   { font-size: 12px; color: var(--text-muted); }
 
     /* ALERTS */
-    .alert { padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: 13px; }
+    .alert {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: 13px;
+    }
+    .alert > i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
     .alert.success { background: var(--green-50); color: var(--green-800); border: 0.5px solid var(--green-100); }
-    .alert.error   { background: var(--red-50);   color: var(--red-800); }
+    .alert.error   { background: var(--red-50);   color: var(--red-800);   border: 0.5px solid #fcc; }
 
     /* EMPTY STATE */
     .empty-state { padding: 40px; text-align: center; color: var(--text-muted); }
@@ -656,10 +660,16 @@
   {{-- MAIN --}}
   <main class="main">
     @if(session('success'))
-      <div class="alert success"><i class="ti ti-check"></i> {{ session('success') }}</div>
+      <div class="alert success">
+        <i class="ti ti-circle-check"></i>
+        <span>{{ session('success') }}</span>
+      </div>
     @endif
     @if(session('error'))
-      <div class="alert error"><i class="ti ti-alert-circle"></i> {{ session('error') }}</div>
+      <div class="alert error">
+        <i class="ti ti-alert-circle"></i>
+        <span>{{ session('error') }}</span>
+      </div>
     @endif
 
     @yield('content')

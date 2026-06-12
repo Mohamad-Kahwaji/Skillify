@@ -31,7 +31,10 @@ Route::prefix('super-admin')->name('super_admin.')->group(function () {
     Route::post('/login',                       [SuperAdminLoginController::class, 'login'])->name('login.post');
 
     Route::get('/forgot-password',              fn() => view('auth.super_admin.forgot-password'))->name('forgot-password');
-    Route::post('/forgot-password',             fn() => back()->with('status', 'تم إرسال رابط الاستعادة.'))->name('forgot-password.send');
+    Route::post('/forgot-password',             fn() => back()->with('status', 'If an account with that email exists, a reset link has been sent.'))->name('forgot-password.send');
+
+    Route::get('/reset-password/{token}',       fn($token) => view('auth.super_admin.reset-password', compact('token')))->name('reset-password');
+    Route::post('/reset-password',              fn() => redirect()->route('super_admin.login')->with('status', 'Your password has been reset successfully.'))->name('reset-password.update');
 });
 
 // ════════════════════════════════════════════════════════════
@@ -46,8 +49,8 @@ Route::name('user.')->group(function () {
     Route::post('/register',                    [UserRegisterController::class,'register'])->name('register.post');
 
     Route::get('/forgot-password',              fn() => view('auth.user.forgot-password'))->name('forgot-password');
-    Route::post('/forgot-password',             fn() => back()->with('status', 'تم إرسال رابط الاستعادة.'))->name('forgot-password.send');
+    Route::post('/forgot-password',             fn() => back()->with('status', 'If an account with that email exists, a reset link has been sent.'))->name('forgot-password.send');
 
     Route::get('/reset-password/{token}',       fn($token) => view('auth.user.reset-password', compact('token')))->name('reset-password');
-    Route::post('/reset-password',              fn() => redirect()->route('user.login')->with('status', 'تم تغيير كلمة المرور.'))->name('reset-password.update');
+    Route::post('/reset-password',              fn() => redirect()->route('user.login')->with('status', 'Your password has been reset successfully. Please sign in.'))->name('reset-password.update');
 });
