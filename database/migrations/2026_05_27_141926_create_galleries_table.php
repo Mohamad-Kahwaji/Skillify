@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('galleries', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('em_id')->constrained('employees')->onDelete('cascade');
+            $table->foreignId('business_id')->constrained('businesses')->onDelete('cascade');
             $table->string('image');
             $table->timestamp('date')->nullable();
             $table->timestamps();

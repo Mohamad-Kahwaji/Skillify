@@ -21,6 +21,7 @@ use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth_SuperAdmin\LoginController as SuperAdminLoginController;
 use App\Http\Controllers\Auth_User\LogoutController as UserLogoutController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth routes (login, register, forgot/reset password) ────────────────────
@@ -166,6 +167,12 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
         ->middleware('permission:blocked.create');
     Route::delete('/blocked/{id}',   [AdminBlockedController::class, 'destroy'])->name('blocked.destroy')
         ->middleware('permission:blocked.delete');
+
+    // Notifications
+    Route::get('/notifications',              [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/{id}/read',  [NotificationController::class, 'markAsread'])->name('notifications.read');
+    Route::patch('/notifications/read-all',   [NotificationController::class, 'makeAllread'])->name('notifications.read-all');
+    Route::post('/notifications/notify-user', [NotificationController::class, 'notifyUser'])->name('notifications.notify-user');
 });
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -195,6 +202,13 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::post('/roles',          [RolePermissionController::class, 'storeRole'])->name('roles.store');
     Route::put('/roles/{role}',    [RolePermissionController::class, 'updateRole'])->name('roles.update');
     Route::delete('/roles/{role}', [RolePermissionController::class, 'destroyRole'])->name('roles.destroy');
+
+    // Notifications
+    Route::get('/notifications',               [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/{id}/read',   [NotificationController::class, 'markAsread'])->name('notifications.read');
+    Route::patch('/notifications/read-all',    [NotificationController::class, 'makeAllread'])->name('notifications.read-all');
+    Route::post('/notifications/notify-admin', [NotificationController::class, 'notifyAdmin'])->name('notifications.notify-admin');
+    Route::post('/notifications/announce',     [NotificationController::class, 'announceToAll'])->name('notifications.announce');
 });
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -247,6 +261,13 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     Route::post('/messages/{conversationId}/mark-read', [MessageController::class, 'markAsRead'])->name('messages.read');
     Route::post('/messages',                            [MessageController::class, 'store'])->name('messages.store');
     Route::get('/messages/{conversationId}',            [MessageController::class, 'index'])->name('messages.index');
+
+    // Notifications
+    Route::get('/notifications',              [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread',       [NotificationController::class, 'unread'])->name('notifications.unread');
+    Route::patch('/notifications/{id}/read',  [NotificationController::class, 'markAsread'])->name('notifications.read');
+    Route::patch('/notifications/read-all',   [NotificationController::class, 'makeAllread'])->name('notifications.read-all');
+    Route::delete('/notifications/{id}',      [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
 // ── Root ─────────────────────────────────────────────────────────────────────

@@ -666,20 +666,21 @@
 
             <div class="form-group">
               <label class="form-label">Category</label>
-              <select name="category" class="form-select" required>
+              <select name="category" id="add-svc-category" class="form-select"
+                      onchange="filterSubcats('add-svc-category','add-svc-subcategory')" required>
                 <option value="">— Select —</option>
                 @foreach($categories as $cat)
-                <option value="{{ $cat->name_ar }}">{{ $cat->name_ar }}</option>
+                <option value="{{ $cat->name_ar }}" data-id="{{ $cat->id }}">{{ $cat->name_ar }}</option>
                 @endforeach
               </select>
             </div>
 
             <div class="form-group">
               <label class="form-label">Subcategory</label>
-              <select name="subcategory" class="form-select" required>
+              <select name="subcategory" id="add-svc-subcategory" class="form-select" required>
                 <option value="">— Select —</option>
                 @foreach($subcategories as $sub)
-                <option value="{{ $sub->name_ar }}">{{ $sub->name_ar }}</option>
+                <option value="{{ $sub->name_ar }}" data-cat-id="{{ $sub->category_id }}">{{ $sub->name_ar }}</option>
                 @endforeach
               </select>
             </div>
@@ -757,10 +758,11 @@
 
             <div class="form-group">
               <label class="form-label">Category</label>
-              <select name="category" id="edit-svc-category" class="form-select" required>
+              <select name="category" id="edit-svc-category" class="form-select"
+                      onchange="filterSubcats('edit-svc-category','edit-svc-subcategory')" required>
                 <option value="">— Select —</option>
                 @foreach($categories as $cat)
-                <option value="{{ $cat->name_ar }}">{{ $cat->name_ar }}</option>
+                <option value="{{ $cat->name_ar }}" data-id="{{ $cat->id }}">{{ $cat->name_ar }}</option>
                 @endforeach
               </select>
             </div>
@@ -770,7 +772,7 @@
               <select name="subcategory" id="edit-svc-subcategory" class="form-select" required>
                 <option value="">— Select —</option>
                 @foreach($subcategories as $sub)
-                <option value="{{ $sub->name_ar }}">{{ $sub->name_ar }}</option>
+                <option value="{{ $sub->name_ar }}" data-cat-id="{{ $sub->category_id }}">{{ $sub->name_ar }}</option>
                 @endforeach
               </select>
             </div>
@@ -873,6 +875,7 @@ function openEditSvc(btn) {
   document.getElementById('edit-svc-price').value       = btn.dataset.price       || '';
 
   setSelectValue('edit-svc-category',   btn.dataset.category);
+  filterSubcats('edit-svc-category', 'edit-svc-subcategory');
   setSelectValue('edit-svc-subcategory',btn.dataset.subcategory);
   setSelectValue('edit-svc-city',       btn.dataset.city);
   setSelectValue('edit-svc-price_type', btn.dataset.price_type);
@@ -892,6 +895,23 @@ function setSelectValue(id, value) {
   const sel = document.getElementById(id);
   if (!sel || !value) return;
   for (const opt of sel.options) opt.selected = (opt.value === value);
+}
+
+// ── Filter subcategories by selected category ──────────────────────────────
+function filterSubcats(catId, subId) {
+  const catSel = document.getElementById(catId);
+  const subSel = document.getElementById(subId);
+  if (!catSel || !subSel) return;
+
+  const selOpt   = catSel.options[catSel.selectedIndex];
+  const catDbId  = selOpt ? selOpt.dataset.id : null;
+
+  subSel.value = '';
+  Array.from(subSel.options).forEach(opt => {
+    if (!opt.value) { opt.hidden = false; return; }
+    opt.hidden   = catDbId ? opt.dataset.catId !== catDbId : false;
+    opt.disabled = opt.hidden;
+  });
 }
 
 // ── Close modal on backdrop click ──────────────────────────────────────────
