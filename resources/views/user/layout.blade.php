@@ -252,6 +252,7 @@
   </nav>
 
   <div class="header-user">
+    <x-notifications />
     <div class="user-avatar">
       {{ strtoupper(substr(Auth::guard('users')->user()->first_name ?? 'U', 0, 1)) }}
     </div>
@@ -284,6 +285,8 @@
 <div class="toast-stack" id="toast-stack"></div>
 
 @vite(['resources/js/app.js'])
+
+@stack('scripts')
 
 <script>
 (function () {

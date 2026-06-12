@@ -3,66 +3,47 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Broadcasting\PrivateChannel;
 
 class AdminAlertNotification extends Notification
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct(private string $message)
-    {
-        //
-    }
+    public function __construct(
+        private string $message,
+        private ?object $notifiable = null
+    ) {}
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
-        return ['DataBase','broadcast'];
+        return ['database', 'broadcast'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
-    }
-    public function toDataBase(object $notifiable):array
+    public function toDatabase(object $notifiable): array
     {
         return [
-            'title' => 'Admin Alert',
+            'title'   => 'Admin Alert',
             'message' => $this->message,
-            'type' => 'alert',
-
+            'type'    => 'alert',
         ];
     }
+
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage($this->toDataBase($notifiable));
+        return new BroadcastMessage($this->toDatabase($notifiable));
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
+    public function broadcastOn(): array
     {
         return [
-            //
+            new PrivateChannel('admins.' . $this->notifiable->id . '.notifications'),
         ];
+    }
+
+    public function toArray(object $notifiable): array
+    {
+        return $this->toDatabase($notifiable);
     }
 }

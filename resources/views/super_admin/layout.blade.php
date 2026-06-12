@@ -476,6 +476,7 @@
       <span class="current">@yield('breadcrumb', 'Dashboard')</span>
     </nav>
     <div class="header-actions">
+      <x-notifications />
       <button class="mode-pill" onclick="toggleTheme()">
         <i class="ti ti-moon" id="mode-icon"></i>
         <span id="mode-txt">Dark</span>
@@ -498,6 +499,8 @@
   </main>
 
 </div>
+@vite(['resources/js/app.js'])
+@stack('scripts')
 @yield('scripts')
 <script>
   var dark = localStorage.getItem('theme') === 'dark';

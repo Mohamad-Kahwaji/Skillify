@@ -3,60 +3,47 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Broadcasting\PrivateChannel;
 
 class UserBlockedNotification extends Notification
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct( private string $reason = '',)
-    {
+    public function __construct(
+        private string $reason = 'No reason specified',
+        private ?object $notifiable = null
+    ) {}
 
-    }
-
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
-        return ['dataBase','broadcast'];
+        return ['database', 'broadcast'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toDataBase(object $notifiable): array
+    public function toDatabase(object $notifiable): array
     {
         return [
-            'title' => 'Account Blocked',
-            'message' => "Your account has been blocked. Reason: .{$this->reason}",
-            'type' => 'worning',
+            'title'   => 'Account Suspended',
+            'message' => 'Your account has been suspended. Reason: ' . $this->reason,
+            'type'    => 'warning',
         ];
-        }
-
-    public function toBroadcast(object $notifiable):BroadcastMessage
-    {
-        return new BroadcastMessage($this->toDataBase($notifiable));
-
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage($this->toDatabase($notifiable));
+    }
+
+    public function broadcastOn(): array
+    {
+        return [
+            new PrivateChannel('users.' . $this->notifiable->id . '.notifications'),
+        ];
+    }
+
     public function toArray(object $notifiable): array
     {
-        return [
-            //
-        ];
+        return $this->toDatabase($notifiable);
     }
 }

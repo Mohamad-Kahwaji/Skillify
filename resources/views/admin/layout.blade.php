@@ -642,10 +642,7 @@
         <i class="ti ti-search"></i>
         <input type="text" placeholder="Quick search..." />
       </div>
-      <button class="icon-btn" title="Notifications">
-        <i class="ti ti-bell"></i>
-        <span class="notif-dot"></span>
-      </button>
+      <x-notifications />
       <button class="icon-btn" title="Messages">
         <i class="ti ti-message"></i>
       </button>
@@ -704,6 +701,8 @@
     applyTheme(dark);
   }
 </script>
+@vite(['resources/js/app.js'])
+@stack('scripts')
 @yield('scripts')
 </body>
 </html>
