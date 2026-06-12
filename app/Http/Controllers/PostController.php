@@ -9,10 +9,18 @@ class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with('user')
-        ->where('user_id','!=',auth('users')->id())
-        ->latest()->get();
+        $posts = Post::with('user')->latest()->get();
         return view('admin.posts.index', compact('posts'));
+    }
+
+    public function allUserPosts()
+    {
+        $authId = auth('users')->id();
+        $posts  = Post::with(['user', 'comments', 'likes'])
+            ->where('user_id', '!=', $authId)
+            ->latest()
+            ->get();
+        return view('user.all-posts', compact('posts', 'authId'));
     }
 
     public function showmypost()

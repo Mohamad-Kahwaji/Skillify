@@ -224,6 +224,12 @@
       <i class="ti ti-file-text"></i> My Posts
     </a>
 
+    {{-- All Posts --}}
+    <a href="{{ route('user.all-posts') }}"
+       class="nav-link {{ request()->routeIs('user.all-posts') ? 'active' : '' }}">
+      <i class="ti ti-layout-list"></i> All Posts
+    </a>
+
     {{-- Community Posts --}}
     <a href="{{ route('user.community-posts') }}"
        class="nav-link {{ request()->routeIs('user.community-posts') ? 'active' : '' }}">

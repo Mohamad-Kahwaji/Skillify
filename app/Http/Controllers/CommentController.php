@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comment;
+use App\Models\Post;
+use App\Notifications\PostCommentedNotification;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
@@ -14,45 +16,60 @@ class CommentController extends Controller
 
     public function store(Request $request)
     {
-        $user = auth('users')->user();
-        $validated = $request->validate([
-            'content' => 'required|string',
-            'post_id' => 'required|exists:posts,id',
-            'comment_date' => 'nullable|date',
+        $request->validate([
+            'content'   => 'required|string|max:1000',
+            'post_id'   => 'required|exists:posts,id',
+            'parent_id' => 'nullable|exists:comments,id',
         ]);
 
-        $comment = Comment::create([
-            'content' => $validated['content'],
-            'user_id' => auth('users')->id(),
-            'post_id' => $validated['post_id'],
-            'comment_date' => $request->comment_date ?? now(),
-            'likes' => 0
+        $authId = auth('users')->id();
+
+        Comment::create([
+            'content'      => $request->content,
+            'user_id'      => $authId,
+            'post_id'      => $request->post_id,
+            'parent_id'    => $request->parent_id ?? null,
+            'comment_date' => now(),
+            'likes'        => 0,
         ]);
-        return redirect()->route('posts.show', $comment->post_id)->with('success', 'Comment added.');
+
+        // Only notify for top-level comments (not replies)
+        if (!$request->parent_id) {
+            $post = Post::with('user')->find($request->post_id);
+            if ($post && $post->user_id !== $authId) {
+                $post->user->notify(new PostCommentedNotification(auth('users')->user(), $post));
+            }
+        }
+
+        return back()->with('commented_post', $request->post_id);
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         $comment = Comment::find($id);
         if (!$comment) return response()->json(['message' => 'Not found'], 404);
         return response()->json($comment, 200);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $comment = Comment::find($id);
         if (!$comment) return response()->json(['message' => 'Not found'], 404);
 
-        $comment->update($request->all());
+        $comment->update($request->only(['content']));
         return response()->json($comment, 200);
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
-        $comment = Comment::find($id);
-        if (!$comment) return response()->json(['message' => 'Not found'], 404);
+        $comment = Comment::findOrFail($id);
+
+        if ($comment->user_id !== auth('users')->id()) {
+            abort(403);
+        }
 
         $comment->delete();
-        return response()->json(['message' => 'Deleted successfully'], 200);
+
+        return back();
     }
 }

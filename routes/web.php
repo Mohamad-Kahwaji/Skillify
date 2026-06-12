@@ -10,7 +10,9 @@ use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\PostLikeController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\ServiceController;
@@ -248,9 +250,15 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     Route::get('/my-services-status', [UserController::class, 'status_myservice'])->name('my-services.status');
 
     // Posts & Ads
-    Route::get('/posts',           [PostController::class,          'showmypost'])->name('posts');
-    Route::get('/community-posts', [PostController::class,          'communityPosts'])->name('community-posts');
+    Route::get('/posts',           [PostController::class,     'showmypost'])->name('posts');
+    Route::get('/all-posts',       [PostController::class,     'allUserPosts'])->name('all-posts');
+    Route::get('/community-posts', [PostController::class,     'communityPosts'])->name('community-posts');
     Route::get('/ads',             [AdvertisementController::class, 'userAds'])->name('ads');
+
+    // Likes & Comments
+    Route::post('/posts/{post}/like',            [PostLikeController::class, 'toggle'])->name('posts.like');
+    Route::post('/posts/{post}/comments',        [CommentController::class,  'store'])->name('posts.comments.store');
+    Route::delete('/comments/{comment}',         [CommentController::class,  'destroy'])->name('comments.destroy');
 
     // Conversations & Chat
     Route::get('/conversations',          [UserDashboardController::class, 'conversations'])->name('conversations');
