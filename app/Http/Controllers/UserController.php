@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Support\Facades\Request;
+use Inertia\Inertia;
 
 class UserController extends Controller
 {
     public function getDistance($userid)
 {
     $currentUser = auth('users')->user();
-    $otherUser   = User::findOrFail($userId);
+    $otherUser   = User::findOrFail($userid);
 
     $distance = $currentUser->distanceTo($otherUser);
 
@@ -43,7 +44,7 @@ class UserController extends Controller
     public function allusers()
     {
         $users = User::latest()->get();
-        return view('admin.users.index', compact('users'));
+        return Inertia::render('Admin/Users', ['users' => $users]);
     }
 
     public function active(User $user)
@@ -60,13 +61,16 @@ class UserController extends Controller
     public function services_users(){
         $users = User::whereNotIn('id', function($query) {
             $query->select('user_id')->from('services');
-        })->get();
-        return view('admin.users.no-services', compact('users'));
+        })->latest()->get();
+        return Inertia::render('Admin/NoServicesUsers', ['users' => $users]);
     }
 
     public function myservices(){
-        $services = Service::where('user_id', auth('users')->id())->latest()->get();
-        return view('user.my-services', compact('services'));
+        $services = Service::where('user_id', auth('users')->id())
+            ->with(['category','subcategory','city'])
+            ->latest()
+            ->get();
+        return Inertia::render('User/MyServices', ['services' => $services]);
     }
 
     public function status_myservice(){

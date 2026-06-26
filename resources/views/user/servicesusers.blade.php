@@ -1,4 +1,4 @@
-@extends('user.layout')
+﻿@extends('user.layout')
 
 @section('title', 'Services')
 
@@ -155,7 +155,7 @@
 .detail-status-badge {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
-  background: var(--green-50); color: var(--green-800);
+  background: var(--green-50); color: var(--teal-900);
   border: .5px solid rgba(5,150,105,.2); white-space: nowrap;
 }
 .detail-section-label {
@@ -195,7 +195,7 @@
 .detail-biz-badge {
   display: inline-flex; align-items: center; gap: 3px;
   font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
-  background: var(--green-50); color: var(--green-800);
+  background: var(--green-50); color: var(--teal-900);
 }
 .svc-modal-footer {
   padding: 12px 20px; border-top: .5px solid var(--border);
@@ -260,7 +260,7 @@
 <div class="services-grid" id="svc-grid">
   @forelse($services as $svc)
   @php
-    $avColors = ['#1D9E75','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899'];
+    $avColors = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899'];
     $avColor  = $avColors[($svc->user_id ?? $svc->id) % count($avColors)];
     $initial  = strtoupper(mb_substr($svc->user?->first_name ?? 'H', 0, 1));
   @endphp

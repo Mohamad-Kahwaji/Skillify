@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ActiveTypebusinessController;
 use App\Http\Controllers\ActiveTypeController;
 use App\Http\Controllers\AdminBlockedController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\IdentityVerificationController;
 use App\Http\Controllers\Auth_SuperAdmin\LoginController as SuperAdminLoginController;
 use App\Http\Controllers\Auth_User\LogoutController as UserLogoutController;
 use App\Http\Controllers\NotificationController;
@@ -62,13 +64,24 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::delete('/workers/{id}',       [BusinessController::class, 'destroy'])->name('workers.destroy')
         ->middleware('permission:businesses.delete');
 
-    // Verifications
+    // Business Verifications
     Route::get('/verifications',                 [AdminController::class, 'verifications'])->name('verifications.index')
         ->middleware('permission:verifications.view');
     Route::patch('/verifications/{business}/approve',  [AdminController::class, 'businessto_approve'])->name('verifications.approve')
         ->middleware('permission:verifications.approve');
     Route::patch('/verifications/{business}/reject',   [AdminController::class, 'businessto_rejected'])->name('verifications.reject')
         ->middleware('permission:verifications.reject');
+
+    // Identity Verifications
+    Route::get('/identity-verifications',                            [IdentityVerificationController::class, 'adminIndex'])->name('identity.index')
+        ->middleware('permission:verifications.view');
+    Route::post('/identity-verifications/analyse-all',               [IdentityVerificationController::class, 'analyseAll'])->name('identity.analyse-all');
+    Route::patch('/identity-verifications/{verification}/approve',   [IdentityVerificationController::class, 'approve'])->name('identity.approve')
+        ->middleware('permission:verifications.approve');
+    Route::patch('/identity-verifications/{verification}/reject',    [IdentityVerificationController::class, 'reject'])->name('identity.reject')
+        ->middleware('permission:verifications.reject');
+    Route::patch('/identity-verifications/{verification}/pending',   [IdentityVerificationController::class, 'resetToPending'])->name('identity.pending');
+    Route::post('/identity-verifications/{verification}/analyse-ai', [IdentityVerificationController::class, 'analyseWithAi'])->name('identity.analyse');
 
     // Posts
     Route::get('/posts',         [PostController::class, 'index'])->name('posts.index')
@@ -190,9 +203,11 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::get('/admins',                      [SuperAdminController::class, 'admins'])->name('admins.index');
     Route::get('/admins/create',               [SuperAdminController::class, 'createAdmin'])->name('admins.create');
     Route::post('/admins',                     [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
-    Route::delete('/admins/{admin}',           [SuperAdminController::class, 'deleteAdmin'])->name('admins.destroy');
-    Route::patch('/admins/{admin}/activate',   [AdminController::class, 'admin_active'])->name('admins.activate');
-    Route::patch('/admins/{admin}/deactivate', [AdminController::class, 'admin_inactive'])->name('admins.deactivate');
+    Route::delete('/admins/{admin}',              [SuperAdminController::class, 'deleteAdmin'])->name('admins.destroy');
+    Route::patch('/admins/{admin}/activate',      [AdminController::class, 'admin_active'])->name('admins.activate');
+    Route::patch('/admins/{admin}/deactivate',    [AdminController::class, 'admin_inactive'])->name('admins.deactivate');
+    Route::patch('/admins/{admin}/assign-role',   [SuperAdminController::class, 'assignAdminRole'])->name('admins.assign-role');
+    Route::patch('/admins/{admin}/revoke-roles',  [SuperAdminController::class, 'revokeAdminRole'])->name('admins.revoke-roles');
 
     // Permissions
     Route::get('/permissions',                 [RolePermissionController::class, 'permissions'])->name('permissions.index');
@@ -206,11 +221,46 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::delete('/roles/{role}', [RolePermissionController::class, 'destroyRole'])->name('roles.destroy');
 
     // Notifications
-    Route::get('/notifications',               [NotificationController::class, 'index'])->name('notifications.index');
-    Route::patch('/notifications/{id}/read',   [NotificationController::class, 'markAsread'])->name('notifications.read');
-    Route::patch('/notifications/read-all',    [NotificationController::class, 'makeAllread'])->name('notifications.read-all');
+    Route::get('/notifications',               [SuperAdminController::class, 'notifications'])->name('notifications.index');
+    Route::patch('/notifications/{id}/read',   [SuperAdminController::class, 'markNotificationRead'])->name('notifications.read');
+    Route::patch('/notifications/read-all',    [SuperAdminController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
     Route::post('/notifications/notify-admin', [NotificationController::class, 'notifyAdmin'])->name('notifications.notify-admin');
     Route::post('/notifications/announce',     [NotificationController::class, 'announceToAll'])->name('notifications.announce');
+
+    // Users
+    Route::get('/users',              [SuperAdminController::class, 'users'])->name('users.index');
+    Route::delete('/users/{user}',    [SuperAdminController::class, 'destroyUser'])->name('users.destroy');
+
+    // Businesses
+    Route::get('/businesses',                         [SuperAdminController::class, 'businesses'])->name('businesses.index');
+    Route::patch('/businesses/{business}/approve',    [SuperAdminController::class, 'businessto_approve'])->name('businesses.approve');
+    Route::patch('/businesses/{business}/reject',     [SuperAdminController::class, 'businessto_rejected'])->name('businesses.reject');
+    Route::patch('/businesses/{business}/pending',    [SuperAdminController::class, 'businessto_pending'])->name('businesses.pending');
+    Route::delete('/businesses/{business}',           [SuperAdminController::class, 'destroyBusiness'])->name('businesses.destroy');
+
+    // Services
+    Route::get('/services',                        [SuperAdminController::class, 'services'])->name('services.index');
+    Route::patch('/services/{service}/approve',    [SuperAdminController::class, 'serviceto_approve'])->name('services.approve');
+    Route::patch('/services/{service}/reject',     [SuperAdminController::class, 'serviceto_rejected'])->name('services.reject');
+    Route::patch('/services/{service}/pending',    [SuperAdminController::class, 'serviceto_pending'])->name('services.pending');
+    Route::delete('/services/{service}',           [SuperAdminController::class, 'destroyService'])->name('services.destroy');
+
+    // Ads
+    Route::get('/ads',               [SuperAdminController::class, 'ads'])->name('ads.index');
+    Route::patch('/ads/{ad}/toggle', [SuperAdminController::class, 'toggleAd'])->name('ads.toggle');
+    Route::delete('/ads/{ad}',       [SuperAdminController::class, 'destroyAd'])->name('ads.destroy');
+
+    // Posts
+    Route::get('/posts',             [SuperAdminController::class, 'posts'])->name('posts.index');
+    Route::delete('/posts/{post}',   [SuperAdminController::class, 'destroyPost'])->name('posts.destroy');
+
+    // Identity Verifications
+    Route::get('/identity-verifications',                              [SuperAdminController::class, 'identityVerifications'])->name('identity.index');
+    Route::post('/identity-verifications/analyse-all',                 [SuperAdminController::class, 'analyseAllIdentities'])->name('identity.analyse-all');
+    Route::patch('/identity-verifications/{verification}/approve',     [SuperAdminController::class, 'approveIdentity'])->name('identity.approve');
+    Route::patch('/identity-verifications/{verification}/reject',      [SuperAdminController::class, 'rejectIdentity'])->name('identity.reject');
+    Route::patch('/identity-verifications/{verification}/pending',     [SuperAdminController::class, 'pendingIdentity'])->name('identity.pending');
+    Route::post('/identity-verifications/{verification}/analyse-ai',   [SuperAdminController::class, 'analyseIdentityWithAi'])->name('identity.analyse');
 });
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -249,11 +299,19 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     Route::get('/my-services-list',   [UserController::class, 'myservices'])->name('my-services.list');
     Route::get('/my-services-status', [UserController::class, 'status_myservice'])->name('my-services.status');
 
+    // Identity Verification
+    Route::get('/identity-verification',  [IdentityVerificationController::class, 'show'])->name('identity.show');
+    Route::post('/identity-verification', [IdentityVerificationController::class, 'store'])->name('identity.store');
+
     // Posts & Ads
     Route::get('/posts',           [PostController::class,     'showmypost'])->name('posts');
     Route::get('/all-posts',       [PostController::class,     'allUserPosts'])->name('all-posts');
     Route::get('/community-posts', [PostController::class,     'communityPosts'])->name('community-posts');
     Route::get('/ads',             [AdvertisementController::class, 'userAds'])->name('ads');
+
+    // Posts (user CRUD)
+    Route::post('/posts',                        [PostController::class,     'storeUserPost'])->name('posts.store');
+    Route::delete('/posts/{id}',                 [PostController::class,     'destroyUserPost'])->name('posts.destroy');
 
     // Likes & Comments
     Route::post('/posts/{post}/like',            [PostLikeController::class, 'toggle'])->name('posts.like');
@@ -279,4 +337,4 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
 });
 
 // ── Root ─────────────────────────────────────────────────────────────────────
-Route::get('/', fn() => redirect()->route('admin.dashboard'));
+Route::get('/', [LandingController::class, 'index'])->name('home');

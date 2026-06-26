@@ -4,18 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\City;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AdminCityController extends Controller
 {
     public function index()
     {
-        $cities = City::orderBy('governorate_en')->orderBy('name_en')->get();
-        return view('admin.cities.index', compact('cities'));
+        $cities = City::orderBy('name_en')->get();
+        return Inertia::render('Admin/Cities', ['cities' => $cities]);
     }
 
     public function create()
     {
-        return view('admin.cities.create');
+        return Inertia::render('Admin/Cities');
     }
 
     public function store(Request $request)

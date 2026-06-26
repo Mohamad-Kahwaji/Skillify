@@ -6,13 +6,14 @@ use App\Models\Business;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class BusinessController extends Controller
 {
     public function index()
     {
-        $businesses = Business::withTrashed()->latest()->get();
-        return view('admin.workers.index', compact('businesses'));
+        $businesses = Business::withTrashed()->with('user')->latest()->get();
+        return Inertia::render('Admin/Workers', ['businesses' => $businesses]);
     }
 
     public function store(Request $request)
@@ -78,7 +79,7 @@ class BusinessController extends Controller
     public function show(int $id)
     {
         $business = Business::withTrashed()->with('user')->findOrFail($id);
-        return view('admin.workers.show', compact('business'));
+        return Inertia::render('Admin/WorkerDetails', ['business' => $business]);
     }
 
     public function destroy(int $id)

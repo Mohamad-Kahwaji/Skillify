@@ -77,6 +77,11 @@ class User extends Authenticatable
         return $this->hasMany(Service::class);
     }
 
+    public function identityVerification()
+    {
+        return $this->hasOne(IdentityVerification::class)->latest();
+    }
+
     public function distanceTo(User $other): float
 {
     $lat1 = $this->location['latitude'];

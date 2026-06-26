@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class RegisterController extends Controller
 {
@@ -14,7 +15,7 @@ class RegisterController extends Controller
         if (Auth::guard('users')->check()) {
             return redirect()->route('user.dashboard');
         }
-        return view('auth.user.register');
+        return Inertia::render('Auth/Register');
     }
 
     public function register(Request $request)

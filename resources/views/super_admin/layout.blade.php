@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>@yield('title', 'Dashboard') — Hirfa Super Admin</title>
+  <title>@yield('title', 'Dashboard') — Skillify Super Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
@@ -11,11 +11,11 @@
   <style>
     :root {
       --font: 'Inter', sans-serif;
-      --green-50:  #E1F5EE;
-      --green-100: #9FE1CB;
-      --green-400: #1D9E75;
-      --green-600: #0F6E56;
-      --green-800: #085041;
+      --teal-50:  #F0FDFA;
+      --teal-100: #C7D2FE;
+      --teal-500: #0D9488;
+      --teal-700: #0F766E;
+      --teal-900: #134E4A;
       --red-400:   #E24B4A;
       --red-50:    #FCEBEB;
       --red-800:   #791F1F;
@@ -26,46 +26,46 @@
       --radius-lg: 14px;
     }
     [data-theme="light"] {
-      --bg-base:       #F1EFE8;
+      --bg-base:       #F8FAFB;
       --bg-surface:    #ffffff;
-      --bg-sunken:     #F8F7F4;
-      --bg-hover:      #F0EEE8;
+      --bg-sunken:     #F0FDFA;
+      --bg-hover:      #CCFBF1;
       --border:        rgba(0,0,0,0.08);
       --border-md:     rgba(0,0,0,0.13);
       --text-primary:  #1a1a1a;
       --text-secondary:#5F5E5A;
       --text-muted:    #B4B2A9;
-      --sidebar-bg:    #04342C;
+      --sidebar-bg:    #134E4A;
       --sidebar-text:  rgba(255,255,255,0.85);
       --sidebar-dim:   rgba(255,255,255,0.45);
       --sidebar-rule:  rgba(255,255,255,0.08);
-      --sidebar-active:rgba(255,255,255,0.10);
-      --sidebar-hover: rgba(255,255,255,0.06);
-      --accent:        #1D9E75;
-      --accent-hover:  #0F6E56;
-      --accent-bg:     #E1F5EE;
-      --accent-txt:    #085041;
+      --sidebar-active:rgba(255,255,255,0.12);
+      --sidebar-hover: rgba(255,255,255,0.07);
+      --accent:        #0D9488;
+      --accent-hover:  #0F766E;
+      --accent-bg:     #F0FDFA;
+      --accent-txt:    #134E4A;
     }
     [data-theme="dark"] {
-      --bg-base:       #080f0b;
-      --bg-surface:    #0e1a14;
-      --bg-sunken:     #0a1510;
-      --bg-hover:      #111f17;
+      --bg-base:       #0D1F1E;
+      --bg-surface:    #0D2B27;
+      --bg-sunken:     #0D2B27;
+      --bg-hover:      #0D2B27;
       --border:        rgba(255,255,255,0.06);
       --border-md:     rgba(255,255,255,0.10);
-      --text-primary:  #e6f2ee;
-      --text-secondary:#9FE1CB;
-      --text-muted:    #4d8c74;
-      --sidebar-bg:    #020c07;
+      --text-primary:  #e8e8ff;
+      --text-secondary:#a5b4fc;
+      --text-muted:    #0D9488;
+      --sidebar-bg:    #0D1F1E;
       --sidebar-text:  rgba(255,255,255,0.88);
       --sidebar-dim:   rgba(255,255,255,0.38);
       --sidebar-rule:  rgba(255,255,255,0.06);
-      --sidebar-active:rgba(29,158,117,0.18);
-      --sidebar-hover: rgba(255,255,255,0.04);
-      --accent:        #1D9E75;
-      --accent-hover:  #5DCAA5;
-      --accent-bg:     #04342C;
-      --accent-txt:    #9FE1CB;
+      --sidebar-active:rgba(13,148,136,0.22);
+      --sidebar-hover: rgba(255,255,255,0.05);
+      --accent:        #0D9488;
+      --accent-hover:  #818cf8;
+      --accent-bg:     #134E4A;
+      --accent-txt:    #a5b4fc;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
@@ -97,16 +97,16 @@
     }
     .brand-icon {
       width: 32px; height: 32px; border-radius: 8px;
-      background: linear-gradient(135deg, var(--accent), var(--green-800));
+      background: linear-gradient(135deg, var(--accent), var(--teal-900));
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 16px; flex-shrink: 0;
-      box-shadow: 0 0 12px rgba(29,158,117,.4);
+      box-shadow: 0 0 12px rgba(13,148,136,.4);
     }
     .brand-name { font-size: 16px; font-weight: 600; color: #fff; line-height: 1.1; }
     .brand-badge {
       display: inline-flex; align-items: center; gap: 3px;
       font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
-      background: rgba(29,158,117,.2); color: var(--accent);
+      background: rgba(13,148,136,.2); color: var(--accent);
       padding: 2px 7px; border-radius: 20px; margin-top: 2px;
     }
     .sidebar-nav {
@@ -139,7 +139,7 @@
     }
     .admin-avatar {
       width: 30px; height: 30px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--green-800));
+      background: linear-gradient(135deg, var(--accent), var(--teal-900));
       display: flex; align-items: center; justify-content: center;
       font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0;
     }
@@ -219,7 +219,7 @@
     }
     .stat-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .stat-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
-    .stat-icon.green { background: rgba(29,158,117,.15); color: var(--accent); }
+    .stat-icon.green { background: rgba(79,70,229,.15); color: var(--accent); }
     .stat-icon.blue  { background: rgba(59,130,246,.15);  color: #60a5fa; }
     .stat-icon.amber { background: rgba(239,159,39,.15);  color: #fac775; }
     .stat-value { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; }
@@ -242,7 +242,7 @@
     .cell-email { font-size: 11px; color: var(--text-muted); }
     .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
     .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.7; }
-    .badge.active { background: rgba(29,158,117,.15); color: var(--accent-hover); }
+    .badge.active { background: rgba(79,70,229,.15); color: var(--accent-hover); }
     .badge.admin  { background: rgba(59,130,246,.15); color: #60a5fa; }
 
     /* ALERTS */
@@ -251,7 +251,7 @@
       padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: 13px;
     }
     .alert > i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-    .alert.success { background: rgba(29,158,117,.12); color: var(--accent-hover); border: 0.5px solid rgba(29,158,117,.25); }
+    .alert.success { background: rgba(79,70,229,.10); color: var(--accent-hover); border: 0.5px solid rgba(79,70,229,.20); }
     .alert.error   { background: rgba(226,75,74,.12);  color: #f09595;             border: 0.5px solid rgba(226,75,74,.25); }
 
     /* TABLE TOOLBAR */
@@ -280,7 +280,7 @@
       border: 0.5px solid rgba(255,255,255,0.10); background: transparent;
       color: var(--sidebar-dim); cursor: pointer; transition: all 0.12s; font-family: var(--font);
     }
-    .chip.on { background: rgba(29,158,117,.18); color: var(--accent-hover); border-color: var(--accent); }
+    .chip.on { background: rgba(79,70,229,.18); color: var(--accent-hover); border-color: var(--accent); }
     .chip:not(.on):hover { background: rgba(255,255,255,.06); color: var(--text-primary); }
     .tbl-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; padding: 0 4px; margin-right: auto; }
 
@@ -349,7 +349,7 @@
     <div class="sidebar-brand">
       <div class="brand-icon"><i class="ti ti-shield-check"></i></div>
       <div>
-        <div class="brand-name">Hirfa</div>
+        <div class="brand-name">Skillify</div>
         <div class="brand-badge"><i class="ti ti-crown" style="font-size:8px;"></i> Super Admin</div>
       </div>
     </div>

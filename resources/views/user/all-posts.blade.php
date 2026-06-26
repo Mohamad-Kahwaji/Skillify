@@ -1,4 +1,4 @@
-@extends('user.layout')
+﻿@extends('user.layout')
 
 @section('title', 'All Posts')
 
@@ -220,7 +220,7 @@
 @php
   $me      = auth('users')->user();
   $myInit  = strtoupper(substr($me->first_name ?? $me->name ?? 'U', 0, 1));
-  $palette = ['#1D9E75','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#0F6E56','#6366F1'];
+  $palette = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#0891B2','#0D9488'];
 @endphp
 
 <div class="posts-topbar">

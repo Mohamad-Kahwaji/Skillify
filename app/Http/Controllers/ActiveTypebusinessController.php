@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\ActiveTypebusiness;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ActiveTypebusinessController extends Controller
 {
     public function index()
     {
         $types = ActiveTypebusiness::latest()->get();
-        return view('admin.active_typebusinesses.index', compact('types'));
+        return Inertia::render('Admin/ActiveTypeBusinesses', ['types' => $types]);
     }
 
     public function store(Request $request)

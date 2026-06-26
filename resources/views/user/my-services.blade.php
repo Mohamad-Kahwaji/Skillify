@@ -1,4 +1,4 @@
-@extends('user.layout')
+﻿@extends('user.layout')
 
 @section('title', 'My Services')
 
@@ -116,8 +116,8 @@
   font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px;
 }
 .badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.7; }
-.badge.approved { background:var(--green-50);  color:var(--green-800); }
-.badge.active   { background:var(--green-50);  color:var(--green-800); }
+.badge.approved { background:var(--green-50);  color:var(--teal-900); }
+.badge.active   { background:var(--green-50);  color:var(--teal-900); }
 .badge.pending  { background:#FEF3C7;           color:#92400E; }
 .badge.rejected { background:var(--red-50);     color:var(--red-800); }
 .badge.inactive { background:#F3F4F6;           color:#6B7280; }

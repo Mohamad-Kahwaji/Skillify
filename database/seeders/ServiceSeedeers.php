@@ -9,460 +9,454 @@ class ServiceSeedeers extends Seeder
 {
     public function run(): void
     {
-        // cities (English names)
+        // cities (English names — used for DB lookup via name_en)
         $cities = [
             'Damascus', 'Aleppo',   'Homs',       'Hama',       'Latakia',
             'Tartus',   'Daraa',    'As-Suwayda', 'Idlib',      'Qamishli',
         ];
 
-        /*
-         * Each service entry maps to a category / subcategory that already
-         * exists after running CategorySeedeers and SubcategorySeedeers.
-         * city_idx references the $cities array above.
-         * img_seed is used to generate a consistent Picsum image URL.
-         */
         $services = [
 
-            // ── Health & Medicine ────────────────────────────────────────
+            // ── الصحة والطب ───────────────────────────────────────────────
             [
-                'name'        => 'Home Visit — General Practitioner',
+                'name'        => 'زيارة منزلية — طبيب عام',
                 'category'    => 'Health & Medicine',
                 'subcategory' => 'General Doctor',
-                'description' => 'Certified GP visits your home for examination, diagnosis, and prescription.',
+                'description' => 'طبيب عام معتمد يزور منزلك للفحص والتشخيص وإعطاء الوصفة الطبية.',
                 'price'       => 15.00,  'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'doctor1',
             ],
             [
-                'name'        => 'Full Dental Treatment Session',
+                'name'        => 'جلسة علاج أسنان متكاملة',
                 'category'    => 'Health & Medicine',
                 'subcategory' => 'Dentist',
-                'description' => 'Cavity treatment, whitening, crown fitting, and extraction with flexible appointments.',
+                'description' => 'علاج التسوس وتبييض الأسنان وتركيب التيجان والخلع مع مواعيد مرنة.',
                 'price'       => 25.00,  'price_type' => 'usd',
                 'city_idx'    => 1,
                 'img_seed'    => 'dentist1',
             ],
             [
-                'name'        => 'Online Psychiatry Consultation',
+                'name'        => 'استشارة نفسية عبر الإنترنت',
                 'category'    => 'Health & Medicine',
                 'subcategory' => 'Psychiatrist',
-                'description' => 'Video-based therapy and counselling sessions with a certified psychiatrist.',
+                'description' => 'جلسات علاج نفسي وإرشاد عبر الفيديو مع طبيب نفسي معتمد.',
                 'price'       => 20.00,  'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'therapy1',
             ],
             [
-                'name'        => 'Ophthalmology Check-Up',
+                'name'        => 'فحص عيون متكامل',
                 'category'    => 'Health & Medicine',
                 'subcategory' => 'Ophthalmologist',
-                'description' => 'Complete eye examination including vision test, pressure check, and prescription.',
+                'description' => 'فحص شامل للعين يشمل اختبار النظر وقياس الضغط وإعطاء الوصفة الطبية.',
                 'price'       => 18.00,  'price_type' => 'usd',
                 'city_idx'    => 2,
                 'img_seed'    => 'eye1',
             ],
 
-            // ── Law & Legal ──────────────────────────────────────────────
+            // ── القانون والشؤون القانونية ─────────────────────────────────
             [
-                'name'        => 'Specialised Legal Consultation',
+                'name'        => 'استشارة قانونية متخصصة',
                 'category'    => 'Law & Legal',
                 'subcategory' => 'Legal Advisor',
-                'description' => 'Comprehensive legal advice on family, commercial, and real-estate matters.',
+                'description' => 'نصائح قانونية شاملة في قضايا الأسرة والتجارة والعقارات.',
                 'price'       => 2500000, 'price_type' => 'syp',
                 'city_idx'    => 1,
                 'img_seed'    => 'lawyer1',
             ],
             [
-                'name'        => 'Sale & Purchase Contract Drafting',
+                'name'        => 'صياغة عقود البيع والشراء',
                 'category'    => 'Law & Legal',
                 'subcategory' => 'Notary',
-                'description' => 'Professional drafting and notarisation of real-estate and goods contracts.',
+                'description' => 'صياغة واعتماد عقود العقارات والبضائع بشكل احترافي.',
                 'price'       => 3000000, 'price_type' => 'syp',
                 'city_idx'    => 0,
                 'img_seed'    => 'notary1',
             ],
 
-            // ── Engineering ──────────────────────────────────────────────
+            // ── الهندسة ───────────────────────────────────────────────────
             [
-                'name'        => 'Residential House — Full Architectural Design',
+                'name'        => 'تصميم معماري كامل لمنزل سكني',
                 'category'    => 'Engineering',
                 'subcategory' => 'Architect',
-                'description' => 'Complete architectural and structural design with execution drawings and BOQ.',
+                'description' => 'تصميم معماري وإنشائي متكامل مع رسومات التنفيذ وجداول الكميات.',
                 'price'       => 150.00, 'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'architect1',
             ],
             [
-                'name'        => 'On-Site Civil Engineering Supervision',
+                'name'        => 'إشراف هندسي مدني في الموقع',
                 'category'    => 'Engineering',
                 'subcategory' => 'Civil Engineer',
-                'description' => 'Daily and weekly supervision of construction projects to ensure quality standards.',
+                'description' => 'إشراف يومي وأسبوعي على مشاريع البناء لضمان معايير الجودة.',
                 'price'       => 80.00,  'price_type' => 'usd',
                 'city_idx'    => 2,
                 'img_seed'    => 'civil1',
             ],
             [
-                'name'        => 'Mobile Application Development',
+                'name'        => 'تطوير تطبيق جوال احترافي',
                 'category'    => 'Engineering',
                 'subcategory' => 'Software Engineer',
-                'description' => 'Professional Android & iOS app development with modern UI/UX design.',
+                'description' => 'تطوير احترافي لتطبيقات Android وiOS بتصميم UI/UX عصري.',
                 'price'       => 500.00, 'price_type' => 'usd',
                 'city_idx'    => 1,
                 'img_seed'    => 'appdev1',
             ],
 
-            // ── Education ────────────────────────────────────────────────
+            // ── التعليم ───────────────────────────────────────────────────
             [
-                'name'        => 'High-School Mathematics & Physics Tutoring',
+                'name'        => 'دروس خصوصية في الرياضيات والفيزياء',
                 'category'    => 'Education',
                 'subcategory' => 'Teacher',
-                'description' => 'Private lessons in maths and physics for secondary students by an experienced teacher.',
+                'description' => 'دروس خصوصية في الرياضيات والفيزياء لطلاب المرحلة الثانوية مع مدرس متمرس.',
                 'price'       => 500000, 'price_type' => 'syp',
                 'city_idx'    => 3,
                 'img_seed'    => 'teacher1',
             ],
             [
-                'name'        => 'Advanced English Language Course',
+                'name'        => 'دورة لغة إنجليزية متقدمة',
                 'category'    => 'Education',
                 'subcategory' => 'Trainer',
-                'description' => 'Intensive English course covering speaking, writing, and IELTS / TOEFL preparation.',
+                'description' => 'دورة إنجليزية مكثفة تشمل المحادثة والكتابة والتحضير لـ IELTS وTOEFL.',
                 'price'       => 10.00,  'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'english1',
             ],
 
-            // ── Accounting & Finance ─────────────────────────────────────
+            // ── المحاسبة والمالية ─────────────────────────────────────────
             [
-                'name'        => 'Monthly Bookkeeping Service',
+                'name'        => 'خدمة مسك الدفاتر الشهرية',
                 'category'    => 'Accounting & Finance',
                 'subcategory' => 'Accountant',
-                'description' => 'Full bookkeeping, journal entries, and monthly financial statements for businesses.',
+                'description' => 'مسك دفاتر كامل وقيود يومية وبيانات مالية شهرية للشركات.',
                 'price'       => 50.00,  'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'accountant1',
             ],
             [
-                'name'        => 'Annual Financial Audit',
+                'name'        => 'مراجعة مالية سنوية',
                 'category'    => 'Accounting & Finance',
                 'subcategory' => 'Auditor',
-                'description' => 'Year-end audit and preparation of closing financial reports for companies.',
+                'description' => 'تدقيق سنوي وإعداد تقارير الإقفال المالية للشركات.',
                 'price'       => 200.00, 'price_type' => 'usd',
                 'city_idx'    => 1,
                 'img_seed'    => 'audit1',
             ],
 
-            // ── Information Technology ───────────────────────────────────
+            // ── تقنية المعلومات ───────────────────────────────────────────
             [
-                'name'        => 'Professional Website Development',
+                'name'        => 'تطوير موقع إلكتروني احترافي',
                 'category'    => 'Information Technology',
                 'subcategory' => 'Web Developer',
-                'description' => 'Design and development of professional websites and e-commerce stores with latest tech.',
+                'description' => 'تصميم وتطوير مواقع احترافية ومتاجر إلكترونية بأحدث التقنيات.',
                 'price'       => 300.00, 'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'website1',
             ],
             [
-                'name'        => 'Complete Brand Identity Design',
+                'name'        => 'تصميم هوية بصرية كاملة',
                 'category'    => 'Information Technology',
                 'subcategory' => 'Graphic Designer',
-                'description' => 'Logo, business card, letterhead, and company profile design package.',
+                'description' => 'تصميم شعار وبطاقة عمل وورق رسمي وملف تعريف الشركة.',
                 'price'       => 100.00, 'price_type' => 'usd',
                 'city_idx'    => 1,
                 'img_seed'    => 'design1',
             ],
 
-            // ── Construction ─────────────────────────────────────────────
+            // ── البناء ────────────────────────────────────────────────────
             [
-                'name'        => 'Masonry & Foundation Work',
+                'name'        => 'أعمال البناء والأساسات',
                 'category'    => 'Construction',
                 'subcategory' => 'Mason',
-                'description' => 'Construction from foundation to walls and roofing with guaranteed quality.',
+                'description' => 'بناء من الأساسات حتى الجدران والسقف مع ضمان الجودة.',
                 'price'       => 4000000, 'price_type' => 'syp',
                 'city_idx'    => 2,
                 'img_seed'    => 'mason1',
             ],
             [
-                'name'        => 'Full Apartment Interior Painting',
+                'name'        => 'دهان شامل لشقة سكنية',
                 'category'    => 'Construction',
                 'subcategory' => 'Painter',
-                'description' => 'Wall and ceiling painting with premium paint, including surface prep and old-coat removal.',
+                'description' => 'دهان الجدران والأسقف بدهانات ممتازة مع تحضير الأسطح وإزالة الطبقات القديمة.',
                 'price'       => 1500000, 'price_type' => 'syp',
                 'city_idx'    => 3,
                 'img_seed'    => 'painter1',
             ],
             [
-                'name'        => 'Bathroom Tiling & Ceramics',
+                'name'        => 'تبليط الحمامات والسيراميك',
                 'category'    => 'Construction',
                 'subcategory' => 'Tiler',
-                'description' => 'Precision installation of ceramic and porcelain tiles for floors and walls.',
+                'description' => 'تركيب دقيق للبلاط السيراميكي والبورسيلاني للأرضيات والجدران.',
                 'price'       => 2000000, 'price_type' => 'syp',
                 'city_idx'    => 4,
                 'img_seed'    => 'tiler1',
             ],
 
-            // ── Electrical & Plumbing ────────────────────────────────────
+            // ── الكهرباء والسباكة ─────────────────────────────────────────
             [
-                'name'        => 'Full Home Electrical Wiring',
+                'name'        => 'تمديد كهربائي كامل للمنزل',
                 'category'    => 'Electrical & Plumbing',
                 'subcategory' => 'Electrician',
-                'description' => 'Residential electrical network installation including distribution panels and cables.',
+                'description' => 'تركيب شبكة كهربائية سكنية تشمل لوحات التوزيع والكابلات.',
                 'price'       => 3000000, 'price_type' => 'syp',
                 'city_idx'    => 0,
                 'img_seed'    => 'electric2',
             ],
             [
-                'name'        => 'Central Heating System Installation',
+                'name'        => 'تركيب نظام تدفئة مركزية',
                 'category'    => 'Electrical & Plumbing',
                 'subcategory' => 'Heating Technician',
-                'description' => 'Installing oil, gas, or electric central heating systems with full radiator network.',
+                'description' => 'تركيب أنظمة التدفئة المركزية (نفط أو غاز أو كهرباء) مع شبكة مشعات كاملة.',
                 'price'       => 5000000, 'price_type' => 'syp',
                 'city_idx'    => 3,
                 'img_seed'    => 'heating1',
             ],
             [
-                'name'        => 'Split AC Installation & Servicing',
+                'name'        => 'تركيب وصيانة مكيفات سبليت',
                 'category'    => 'Electrical & Plumbing',
                 'subcategory' => 'AC Technician',
-                'description' => 'Installation, maintenance, and inspection of split air conditioners with refrigerant top-up.',
+                'description' => 'تركيب وصيانة وفحص مكيفات السبليت مع إعادة شحن الغاز.',
                 'price'       => 800000,  'price_type' => 'syp',
                 'city_idx'    => 1,
                 'img_seed'    => 'ac1',
             ],
 
-            // ── Carpentry & Furniture ────────────────────────────────────
+            // ── النجارة والأثاث ───────────────────────────────────────────
             [
-                'name'        => 'Custom-Built Wooden Kitchen',
+                'name'        => 'مطبخ خشبي مصنوع حسب الطلب',
                 'category'    => 'Carpentry & Furniture',
                 'subcategory' => 'Furniture Maker',
-                'description' => 'Design and manufacture of modern fitted kitchens using premium hardwood.',
+                'description' => 'تصميم وتصنيع مطابخ عصرية مركبة من خشب صلب ممتاز.',
                 'price'       => 12000000, 'price_type' => 'syp',
                 'city_idx'    => 0,
                 'img_seed'    => 'kitchen1',
             ],
             [
-                'name'        => 'Antique Furniture Restoration',
+                'name'        => 'ترميم الأثاث القديم والكلاسيكي',
                 'category'    => 'Carpentry & Furniture',
                 'subcategory' => 'Carpenter',
-                'description' => 'Full restoration and rehabilitation of old and antique furniture with part replacement.',
+                'description' => 'ترميم وتأهيل الأثاث القديم والكلاسيكي مع استبدال القطع التالفة.',
                 'price'       => 1000000, 'price_type' => 'syp',
                 'city_idx'    => 2,
                 'img_seed'    => 'furniture1',
             ],
 
-            // ── Tailoring & Textiles ─────────────────────────────────────
+            // ── الخياطة والمنسوجات ────────────────────────────────────────
             [
-                'name'        => 'Custom Wedding Dress Tailoring',
+                'name'        => 'خياطة فستان زفاف حسب الطلب',
                 'category'    => 'Tailoring & Textiles',
                 'subcategory' => "Women's Tailor",
-                'description' => 'Bespoke bridal and evening gowns made from the finest fabrics and latest designs.',
+                'description' => 'فساتين زفاف وسهرة مصممة بالقياس من أجود الأقمشة وأحدث التصاميم.',
                 'price'       => 100.00,  'price_type' => 'usd',
                 'city_idx'    => 4,
                 'img_seed'    => 'dress1',
             ],
             [
-                'name'        => 'Tailored Men\'s Formal Suit',
+                'name'        => 'بدلة رجالية رسمية على المقاس',
                 'category'    => 'Tailoring & Textiles',
                 'subcategory' => "Men's Tailor",
-                'description' => 'Made-to-measure formal and casual suits in premium cashmere and wool fabrics.',
+                'description' => 'بدلات رجالية رسمية وكاجوال على القياس من أفخر أقمشة الكشمير والصوف.',
                 'price'       => 60.00,   'price_type' => 'usd',
                 'city_idx'    => 1,
                 'img_seed'    => 'suit1',
             ],
 
-            // ── Cooking & Pastry ─────────────────────────────────────────
+            // ── الطبخ والحلويات ───────────────────────────────────────────
             [
-                'name'        => 'Wedding & Event Catering Service',
+                'name'        => 'خدمة تقديم طعام للأفراح والمناسبات',
                 'category'    => 'Cooking & Pastry',
                 'subcategory' => 'Chef',
-                'description' => 'Preparation and serving of authentic Syrian cuisine for weddings and large gatherings.',
+                'description' => 'إعداد وتقديم المأكولات السورية الأصيلة للأفراح والتجمعات الكبيرة.',
                 'price'       => 35.00,   'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'catering1',
             ],
             [
-                'name'        => 'Syrian Oriental Sweets — Custom Orders',
+                'name'        => 'حلويات شرقية سورية — طلبات مخصصة',
                 'category'    => 'Cooking & Pastry',
                 'subcategory' => 'Pastry Chef',
-                'description' => 'Ma\'amoul, baklava, knafeh, and assorted oriental pastries made to order.',
+                'description' => 'معمول وبقلاوة وكنافة وتشكيلة متنوعة من الحلويات الشرقية حسب الطلب.',
                 'price'       => 500000,  'price_type' => 'syp',
                 'city_idx'    => 3,
                 'img_seed'    => 'sweets1',
             ],
 
-            // ── Beauty & Care ────────────────────────────────────────────
+            // ── الجمال والعناية ───────────────────────────────────────────
             [
-                'name'        => 'Bridal & Evening Makeup',
+                'name'        => 'مكياج عرائس وسهرة',
                 'category'    => 'Beauty & Care',
                 'subcategory' => 'Beautician',
-                'description' => 'Professional bridal and event makeup with luxury hairstyling.',
+                'description' => 'مكياج عرائس ومناسبات احترافي مع تسريح شعر فاخر.',
                 'price'       => 40.00,   'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'makeup1',
             ],
             [
-                'name'        => 'Men\'s Haircut & Beard Styling',
+                'name'        => 'قص شعر وتشكيل لحية للرجال',
                 'category'    => 'Beauty & Care',
                 'subcategory' => 'Barber',
-                'description' => 'Modern haircut and precision beard shaping with hair-care treatments.',
+                'description' => 'قصة شعر عصرية وتشكيل دقيق للحية مع علاجات العناية بالشعر.',
                 'price'       => 200000,  'price_type' => 'syp',
                 'city_idx'    => 5,
                 'img_seed'    => 'barber2',
             ],
 
-            // ── Medical Laboratory ───────────────────────────────────────
+            // ── مختبرات طبية ─────────────────────────────────────────────
             [
-                'name'        => 'Complete Blood Count (CBC)',
+                'name'        => 'تحليل دم كامل (CBC)',
                 'category'    => 'Medical Laboratory',
                 'subcategory' => 'Blood Analysis',
-                'description' => 'Full CBC blood test with a detailed medical report delivered same day.',
+                'description' => 'فحص دم كامل مع تقرير طبي مفصل يُسلَّم في نفس اليوم.',
                 'price'       => 300000,  'price_type' => 'syp',
                 'city_idx'    => 0,
                 'img_seed'    => 'bloodtest1',
             ],
             [
-                'name'        => 'Hormonal & Thyroid Panel',
+                'name'        => 'فحوصات هرمونية وغدة درقية',
                 'category'    => 'Medical Laboratory',
                 'subcategory' => 'Hormonal Tests',
-                'description' => 'Thyroid hormone tests (T3, T4, TSH) along with sex-hormone panel.',
+                'description' => 'فحوصات هرمونات الغدة الدرقية (T3 وT4 وTSH) مع لوحة الهرمونات الجنسية.',
                 'price'       => 500000,  'price_type' => 'syp',
                 'city_idx'    => 2,
                 'img_seed'    => 'hormone1',
             ],
 
-            // ── Photography Studio ───────────────────────────────────────
+            // ── استوديو تصوير ─────────────────────────────────────────────
             [
-                'name'        => 'Full Wedding Photography & Videography',
+                'name'        => 'تصوير زفاف فوتوغرافي وفيديو متكامل',
                 'category'    => 'Photography Studio',
                 'subcategory' => 'Photography',
-                'description' => 'Professional photo and video coverage of wedding ceremonies with editing and delivery.',
+                'description' => 'تغطية فوتوغرافية وفيديو احترافية لحفلات الزفاف مع المونتاج والتسليم.',
                 'price'       => 200.00,  'price_type' => 'usd',
                 'city_idx'    => 1,
                 'img_seed'    => 'wedding1',
             ],
             [
-                'name'        => 'Commercial Product Photography',
+                'name'        => 'تصوير منتجات تجارية',
                 'category'    => 'Photography Studio',
                 'subcategory' => 'Photography',
-                'description' => 'Product shots on white and coloured backgrounds for online stores and catalogues.',
+                'description' => 'تصوير المنتجات على خلفيات بيضاء وملونة للمتاجر الإلكترونية والكتالوجات.',
                 'price'       => 50.00,   'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'product1',
             ],
 
-            // ── Print Workshop ───────────────────────────────────────────
+            // ── مطبعة ────────────────────────────────────────────────────
             [
-                'name'        => 'Large-Format Banner & Signage Printing',
+                'name'        => 'طباعة لافتات كبيرة وإعلانية',
                 'category'    => 'Print Workshop',
                 'subcategory' => 'Digital Printing',
-                'description' => 'High-quality digital printing of banners, signs, and advertising displays.',
+                'description' => 'طباعة رقمية عالية الجودة للافتات والإعلانات واللوحات الترويجية.',
                 'price'       => 600000,  'price_type' => 'syp',
                 'city_idx'    => 0,
                 'img_seed'    => 'banner1',
             ],
             [
-                'name'        => 'Catalogue & Brochure Offset Printing',
+                'name'        => 'طباعة أوفست للكتالوجات والبروشورات',
                 'category'    => 'Print Workshop',
                 'subcategory' => 'Offset Printing',
-                'description' => 'Design and offset printing of catalogues and promotional brochures at high resolution.',
+                'description' => 'تصميم وطباعة أوفست للكتالوجات والبروشورات الترويجية بدقة عالية.',
                 'price'       => 1000000, 'price_type' => 'syp',
                 'city_idx'    => 1,
                 'img_seed'    => 'brochure1',
             ],
 
-            // ── Tech Company ─────────────────────────────────────────────
+            // ── شركة تقنية ───────────────────────────────────────────────
             [
-                'name'        => 'Enterprise ERP System Development',
+                'name'        => 'تطوير نظام ERP للمؤسسات',
                 'category'    => 'Tech Company',
                 'subcategory' => 'Software Development',
-                'description' => 'End-to-end ERP solution for inventory, accounting, HR, and operations management.',
+                'description' => 'حل ERP متكامل لإدارة المخزون والمحاسبة والموارد البشرية والعمليات.',
                 'price'       => 2000.00, 'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'erp1',
             ],
             [
-                'name'        => 'Cloud Hosting & Data Backup Service',
+                'name'        => 'استضافة سحابية وخدمة النسخ الاحتياطي',
                 'category'    => 'Tech Company',
                 'subcategory' => 'Cloud Services',
-                'description' => 'Secure cloud hosting with automated backup solutions and 24/7 technical support.',
+                'description' => 'استضافة سحابية آمنة مع حلول نسخ احتياطي آلية ودعم تقني على مدار الساعة.',
                 'price'       => 30.00,   'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'cloud1',
             ],
 
-            // ── Contracting Company ──────────────────────────────────────
+            // ── شركة مقاولات ─────────────────────────────────────────────
             [
-                'name'        => 'Turnkey Residential Villa Construction',
+                'name'        => 'بناء فيلا سكنية جاهزة للتسليم',
                 'category'    => 'Contracting Company',
                 'subcategory' => 'General Contracting',
-                'description' => 'Full construction from ground-up to complete finishing with premium-grade materials.',
+                'description' => 'بناء كامل من الأساسات حتى التشطيب الكامل بأجود مواد البناء.',
                 'price'       => 50000.00,'price_type' => 'usd',
                 'city_idx'    => 1,
                 'img_seed'    => 'villa1',
             ],
             [
-                'name'        => 'Luxury Interior Design — 200 sqm Apartment',
+                'name'        => 'ديكور داخلي فاخر — شقة 200م²',
                 'category'    => 'Contracting Company',
                 'subcategory' => 'Decoration Contracting',
-                'description' => 'High-end interior decoration execution for residential apartments and offices.',
+                'description' => 'تنفيذ ديكور داخلي راقٍ للشقق السكنية والمكاتب.',
                 'price'       => 8000.00, 'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'decor1',
             ],
 
-            // ── Shipping & Transport ─────────────────────────────────────
+            // ── الشحن والنقل ─────────────────────────────────────────────
             [
-                'name'        => 'Inter-City Furniture Relocation',
+                'name'        => 'نقل أثاث بين المدن',
                 'category'    => 'Shipping & Transport',
                 'subcategory' => 'Furniture Moving',
-                'description' => 'Professional furniture and household goods relocation between Syrian cities with full insurance.',
+                'description' => 'نقل أثاث وأمتعة منزلية احترافي بين مدن سوريا مع تأمين شامل.',
                 'price'       => 1500000, 'price_type' => 'syp',
                 'city_idx'    => 5,
                 'img_seed'    => 'moving1',
             ],
             [
-                'name'        => 'Cross-Border Land Freight',
+                'name'        => 'شحن بري عبر الحدود',
                 'category'    => 'Shipping & Transport',
                 'subcategory' => 'Land Shipping',
-                'description' => 'Goods shipment to Lebanon, Jordan, Turkey, and neighbouring countries by road.',
+                'description' => 'شحن بضائع إلى لبنان والأردن وتركيا والدول المجاورة براً.',
                 'price'       => 2.50,    'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'shipping2',
             ],
 
-            // ── Real Estate Company ──────────────────────────────────────
+            // ── شركة عقارية ──────────────────────────────────────────────
             [
-                'name'        => 'Residential Apartments for Sale — Mazzeh District',
+                'name'        => 'شقق سكنية للبيع — حي المزة',
                 'category'    => 'Real Estate Company',
                 'subcategory' => 'Real Estate Sales',
-                'description' => 'Various-sized apartments for sale in Mazzeh and Kafarsouseh at competitive prices.',
+                'description' => 'شقق متنوعة المساحات للبيع في المزة والكفرسوسة بأسعار تنافسية.',
                 'price'       => 80000.00,'price_type' => 'usd',
                 'city_idx'    => 0,
                 'img_seed'    => 'apartment1',
             ],
             [
-                'name'        => 'Commercial Office Space for Rent',
+                'name'        => 'مكاتب تجارية للإيجار',
                 'category'    => 'Real Estate Company',
                 'subcategory' => 'Real Estate Rental',
-                'description' => 'Office and retail space rental in prime business districts of Aleppo and Damascus.',
+                'description' => 'تأجير مكاتب ومحلات تجارية في أحياء الأعمال المتميزة بحلب ودمشق.',
                 'price'       => 500.00,  'price_type' => 'usd',
                 'city_idx'    => 1,
                 'img_seed'    => 'office1',
             ],
 
-            // ── Services Company ─────────────────────────────────────────
+            // ── شركة خدمات ───────────────────────────────────────────────
             [
-                'name'        => 'Residential Cleaning Service',
+                'name'        => 'خدمة تنظيف منازل',
                 'category'    => 'Services Company',
                 'subcategory' => 'Cleaning & Maintenance',
-                'description' => 'Comprehensive home and apartment cleaning with specialised products and trained staff.',
+                'description' => 'تنظيف شامل للمنازل والشقق بمنتجات متخصصة وطاقم مدرب.',
                 'price'       => 400000,  'price_type' => 'syp',
                 'city_idx'    => 0,
                 'img_seed'    => 'cleaning1',
             ],
             [
-                'name'        => 'Security & Guard Services for Facilities',
+                'name'        => 'خدمات أمن وحراسة للمنشآت',
                 'category'    => 'Services Company',
                 'subcategory' => 'Security & Guard',
-                'description' => 'Trained security personnel for commercial establishments and residential compounds.',
+                'description' => 'أفراد أمن مدربون للمنشآت التجارية والمجمعات السكنية.',
                 'price'       => 600000,  'price_type' => 'syp',
                 'city_idx'    => 1,
                 'img_seed'    => 'security1',
@@ -470,18 +464,26 @@ class ServiceSeedeers extends Seeder
         ];
 
         foreach ($services as $srv) {
-            $city = $cities[$srv['city_idx'] % \count($cities)];
+            $cityName = $cities[$srv['city_idx'] % \count($cities)];
+
+            $city        = \App\Models\City::where('name_en', $cityName)->first();
+            $category    = \App\Models\Category::where('name_en', $srv['category'])->first();
+            $subcategory = \App\Models\Subcategory::where('name_en', $srv['subcategory'])->first();
+
+            if (! $city || ! $category || ! $subcategory) {
+                continue;
+            }
 
             Service::firstOrCreate(
-                ['name' => $srv['name'], 'city' => $city],
+                ['name' => $srv['name'], 'city_id' => $city->id],
                 [
-                    'description' => $srv['description'],
-                    'category'    => $srv['category'],
-                    'subcategory' => $srv['subcategory'],
-                    'city'        => $city,
-                    'image'       => "https://picsum.photos/seed/{$srv['img_seed']}/640/480",
-                    'price'       => $srv['price'],
-                    'price_type'  => $srv['price_type'],
+                    'description'    => $srv['description'],
+                    'category_id'    => $category->id,
+                    'subcategory_id' => $subcategory->id,
+                    'city_id'        => $city->id,
+                    'image'          => "https://picsum.photos/seed/{$srv['img_seed']}/640/480",
+                    'price'          => $srv['price'],
+                    'price_type'     => $srv['price_type'],
                 ]
             );
         }

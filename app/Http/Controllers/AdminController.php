@@ -10,6 +10,7 @@ use App\Models\Report;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AdminController extends Controller
 {
@@ -50,13 +51,13 @@ class AdminController extends Controller
             ];
         }
 
-        return view('admin.dashboard', $data);
+        return Inertia::render('Admin/Dashboard', $data);
     }
 
     public function verifications()
     {
-        $pending = Business::where('status', 'pending')->latest()->get();
-        return view('admin.verifications.index', compact('pending'));
+        $pending = Business::where('status', 'pending')->with('user')->latest()->get();
+        return Inertia::render('Admin/Verifications', ['pending' => $pending]);
     }
 
     public function store(Request $request)

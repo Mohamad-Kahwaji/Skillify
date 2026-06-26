@@ -1,4 +1,4 @@
-@extends('user.layout')
+﻿@extends('user.layout')
 
 @section('title', 'Explore Craftsmen')
 
@@ -12,7 +12,7 @@
   .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .chip { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 0.5px solid var(--border-md); background: var(--bg-surface); color: var(--text-secondary); cursor: pointer; transition: all 0.12s; white-space: nowrap; }
   .chip:hover  { border-color: var(--accent); color: var(--accent); }
-  .chip.active { background: var(--accent-bg); border-color: var(--accent); color: var(--green-800); }
+  .chip.active { background: var(--accent-bg); border-color: var(--accent); color: var(--teal-900); }
   .workers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
   .worker-card { background: var(--bg-surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: border-color 0.15s, box-shadow 0.15s; }
   .worker-card:hover { border-color: var(--border-md); box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
@@ -27,7 +27,7 @@
   .worker-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 0.5px solid var(--border); }
   .chat-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius-sm); background: var(--accent); color: #fff; font-size: 12px; font-weight: 500; border: none; cursor: pointer; transition: background 0.12s; }
   .chat-btn:hover { background: var(--accent-hover); }
-  .av-0{background:#1D9E75;}.av-1{background:#3B82F6;}.av-2{background:#8B5CF6;}.av-3{background:#F59E0B;}.av-4{background:#EF4444;}.av-5{background:#EC4899;}.av-6{background:#0F6E56;}
+  .av-0{background:#0D9488;}.av-1{background:#3B82F6;}.av-2{background:#8B5CF6;}.av-3{background:#F59E0B;}.av-4{background:#EF4444;}.av-5{background:#EC4899;}.av-6{background:#0F766E;}
   .empty-state { text-align: center; padding: 60px 24px; color: var(--text-muted); }
   .empty-state i { font-size: 48px; display: block; margin-bottom: 12px; opacity: .35; }
   .empty-state p { font-size: 14px; }

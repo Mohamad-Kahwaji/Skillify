@@ -1,4 +1,4 @@
-@extends('user.layout')
+﻿@extends('user.layout')
 
 @section('title', 'Messages')
 
@@ -45,13 +45,13 @@
 .empty-conv i { font-size: 48px; display: block; margin-bottom: 12px; opacity: .3; }
 .empty-conv p { font-size: 14px; margin-bottom: 16px; }
 
-.av-0 { background: #1D9E75; }
+.av-0 { background: #0D9488; }
 .av-1 { background: #3B82F6; }
 .av-2 { background: #8B5CF6; }
 .av-3 { background: #F59E0B; }
 .av-4 { background: #EF4444; }
 .av-5 { background: #EC4899; }
-.av-6 { background: #0F6E56; }
+.av-6 { background: #0F766E; }
 </style>
 @endsection
 

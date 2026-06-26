@@ -1,4 +1,4 @@
-@extends('user.layout')
+﻿@extends('user.layout')
 
 @section('title', 'My Posts')
 
@@ -21,7 +21,7 @@
   transition: background .15s, box-shadow .15s;
   box-shadow: 0 2px 8px rgba(29,158,117,.25);
 }
-.btn-new-post:hover { background: var(--accent-hover, #0F6E56); box-shadow: 0 4px 14px rgba(29,158,117,.3); }
+.btn-new-post:hover { background: var(--accent-hover, #0F766E); box-shadow: 0 4px 14px rgba(13,148,136,.3); }
 
 /* ── Empty state ── */
 .empty-wrap {
@@ -30,7 +30,7 @@
 }
 .empty-wrap .empty-icon {
   width: 64px; height: 64px; border-radius: 18px;
-  background: var(--accent-bg, #E1F5EE);
+  background: var(--accent-bg, #F0FDFA);
   display: flex; align-items: center; justify-content: center;
   font-size: 28px; color: var(--accent); margin-bottom: 18px;
 }
@@ -54,7 +54,7 @@
 }
 .post-icon {
   width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
-  background: var(--accent-bg, #E1F5EE);
+  background: var(--accent-bg, #F0FDFA);
   display: flex; align-items: center; justify-content: center;
   font-size: 18px; color: var(--accent); margin-top: 2px;
 }
@@ -102,7 +102,7 @@
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px;
 }
-.status-dot.active   { background: #E1F5EE; color: #0F6E56; }
+.status-dot.active   { background: #F0FDFA; color: #0F766E; }
 .status-dot.inactive { background: rgba(0,0,0,.06); color: var(--text-muted); }
 .status-dot::before  {
   content: ''; width: 5px; height: 5px; border-radius: 50%;

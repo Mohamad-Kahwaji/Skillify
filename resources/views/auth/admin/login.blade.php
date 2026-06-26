@@ -1,193 +1,250 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Sign In — Hirfa</title>
+  <title>دخول المشرف — Skillify</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
   <style>
     :root {
-      --font:          'Inter', sans-serif;
-      --accent:        #1D9E75;
-      --accent-hover:  #0F6E56;
-      --accent-light:  #E1F5EE;
-      --panel-bg:      #04342C;
-      --panel-bg2:     #062e26;
-      --red-400:       #E24B4A;
-      --red-50:        #FCEBEB;
-      --red-800:       #791F1F;
-      --green-50:      #E1F5EE;
-      --green-800:     #085041;
-      --bg-base:       #F4F2EC;
-      --bg-surface:    #ffffff;
-      --bg-sunken:     #F8F7F3;
-      --border:        rgba(0,0,0,0.08);
-      --border-md:     rgba(0,0,0,0.12);
-      --text-primary:  #111827;
-      --text-secondary:#6B7280;
-      --text-muted:    #9CA3AF;
+      --font:          'Cairo', sans-serif;
+      /* ── Teal brand (matches AdminLayout sidebar #0F172A + active #2DD4BF) ── */
+      --accent:        #0D9488;
+      --accent-hover:  #0F766E;
+      --accent-light:  #2DD4BF;
+      --accent-dim:    rgba(13,148,136,.12);
+      --accent-border: rgba(45,212,191,.25);
+      --accent-glow:   rgba(13,148,136,.20);
+      /* ── Panel: matches AdminLayout sidebar #0F172A ── */
+      --bg-panel:      #0A111F;
+      --bg-base:       #F1F5F9;
+      --bg-surface:    #FFFFFF;
+      --bg-field:      #F8FAFC;
+      /* ── Borders ── */
+      --border:        rgba(255,255,255,.06);
+      --border-md:     rgba(0,0,0,.11);
+      --border-focus:  rgba(13,148,136,.50);
+      /* ── Text ── */
+      --text-primary:  #0F172A;
+      --text-secondary:#475569;
+      --text-muted:    #94A3B8;
+      --text-panel:    #CBD5E1;
+      --text-panel-dim:#475569;
+      /* ── Status ── */
+      --red-text:      #B91C1C;
+      --red-bg:        #FEF2F2;
+      --red-border:    #FECACA;
+      --green-text:    #134E4A;
+      --green-bg:      #F0FDF4;
+      --green-border:  #9FE1CB;
     }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; font-family: var(--font); font-size: 14px; line-height: 1.6; }
     body { display: flex; background: var(--bg-base); color: var(--text-primary); }
     a { text-decoration: none; color: inherit; }
     button { font-family: var(--font); cursor: pointer; }
 
-    /* ── Split shell ─────────────────────────────────── */
+    /* ════════════════════════════════════════
+       Shell — brand on right (RTL)
+    ════════════════════════════════════════ */
     .auth-shell {
       display: flex; width: 100%; min-height: 100vh;
+      flex-direction: row-reverse;
     }
 
-    /* ── Left panel ──────────────────────────────────── */
+    /* ════════════════════════════════════════
+       Brand panel
+    ════════════════════════════════════════ */
     .auth-panel {
-      width: 420px; flex-shrink: 0;
-      background: var(--panel-bg);
+      width: 400px; flex-shrink: 0;
+      background: var(--bg-panel);
+      border-left: 0.5px solid rgba(255,255,255,.05);
       display: flex; flex-direction: column;
       justify-content: space-between;
-      padding: 48px 40px;
+      padding: 52px 44px;
       position: relative; overflow: hidden;
     }
     .auth-panel::before {
       content: '';
-      position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse at 0% 0%,   rgba(29,158,117,.18) 0%, transparent 60%),
-        radial-gradient(ellipse at 100% 100%, rgba(4,52,44,.9)    0%, transparent 70%);
+      position: absolute; top: -120px; right: -120px;
+      width: 380px; height: 380px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(13,148,136,.15) 0%, transparent 65%);
       pointer-events: none;
     }
     .auth-panel::after {
       content: '';
-      position: absolute; bottom: -80px; right: -80px;
-      width: 280px; height: 280px; border-radius: 50%;
-      background: rgba(29,158,117,.08);
+      position: absolute; bottom: -80px; left: -80px;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(45,212,191,.05) 0%, transparent 65%);
       pointer-events: none;
     }
+
     .panel-top { position: relative; z-index: 1; }
-    .panel-brand {
-      display: flex; align-items: center; gap: 12px;
-      margin-bottom: 56px;
-    }
+
+    .panel-brand { display: flex; align-items: center; gap: 13px; margin-bottom: 52px; }
     .panel-icon {
-      width: 40px; height: 40px; border-radius: 12px;
-      background: var(--accent);
+      width: 44px; height: 44px; border-radius: 13px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent) 0%, #134E4A 100%);
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 20px;
+      box-shadow: 0 0 22px var(--accent-glow);
     }
-    .panel-brand-name { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+    .panel-brand-name { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+    .panel-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--accent-dim); border: 0.5px solid var(--accent-border);
+      color: var(--accent-light); font-size: 10px; font-weight: 700;
+      padding: 3px 9px; border-radius: 20px; letter-spacing: 0.7px; text-transform: uppercase;
+      margin-top: 3px;
+    }
 
-    .panel-headline { font-size: 26px; font-weight: 700; color: #fff; line-height: 1.3; letter-spacing: -0.5px; margin-bottom: 12px; }
-    .panel-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.7; margin-bottom: 40px; }
+    .panel-headline {
+      font-size: 25px; font-weight: 800; color: #fff;
+      line-height: 1.3; letter-spacing: -0.4px; margin: 20px 0 12px;
+    }
+    .panel-headline span { color: var(--accent-light); }
+    .panel-desc {
+      font-size: 13px; color: var(--text-panel);
+      line-height: 1.85; margin-bottom: 36px;
+      opacity: 0.65;
+    }
 
-    .panel-features { display: flex; flex-direction: column; gap: 16px; }
+    .panel-features { display: flex; flex-direction: column; gap: 14px; }
     .feature {
-      display: flex; align-items: center; gap: 12px;
+      display: flex; align-items: center; gap: 13px;
+      padding: 13px 15px; border-radius: 12px;
+      background: rgba(255,255,255,.03);
+      border: 0.5px solid rgba(255,255,255,.06);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .feature:hover {
+      background: rgba(13,148,136,.08);
+      border-color: var(--accent-border);
     }
     .feature-icon {
       width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
-      background: rgba(255,255,255,0.07);
-      border: 0.5px solid rgba(255,255,255,0.10);
+      background: rgba(13,148,136,.12);
+      border: 0.5px solid rgba(45,212,191,.20);
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px; color: var(--accent);
+      font-size: 15px; color: var(--accent-light);
     }
-    .feature-text { font-size: 13px; color: rgba(255,255,255,0.65); }
+    .feature-title { font-size: 13px; font-weight: 700; color: #E2E8F0; margin-bottom: 1px; }
+    .feature-text  { font-size: 11.5px; color: rgba(255,255,255,.40); line-height: 1.5; }
+
+    .panel-divider { height: 0.5px; background: rgba(255,255,255,.07); margin: 32px 0; }
+
+    .security-row {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11.5px; color: rgba(255,255,255,.25);
+    }
+    .security-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-light);
+      box-shadow: 0 0 6px var(--accent-glow);
+      flex-shrink: 0; animation: pulse-dot 2.2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.35} }
 
     .panel-bottom { position: relative; z-index: 1; }
-    .panel-footer-text { font-size: 11px; color: rgba(255,255,255,0.25); }
+    .panel-footer { font-size: 11px; color: rgba(255,255,255,.15); margin-top: 24px; }
 
-    /* ── Right form ──────────────────────────────────── */
+    /* ════════════════════════════════════════
+       Form area
+    ════════════════════════════════════════ */
     .auth-form {
       flex: 1; display: flex; align-items: center; justify-content: center;
-      padding: 40px 24px;
-      background: var(--bg-surface);
+      padding: 40px 24px; background: var(--bg-surface);
+      position: relative;
     }
+    .auth-form::before {
+      content: '';
+      position: absolute; top: 0; right: 0; left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+      opacity: 0.30;
+    }
+
     .form-wrap { width: 100%; max-width: 380px; }
 
-    .form-header { margin-bottom: 32px; }
     .form-eyebrow {
       display: inline-flex; align-items: center; gap: 6px;
-      background: var(--accent-light); color: var(--green-800);
-      font-size: 11px; font-weight: 600; padding: 4px 10px;
+      background: #F0FDFA; color: #134E4A;
+      border: 0.5px solid #9FE1CB;
+      font-size: 10.5px; font-weight: 700; padding: 4px 11px;
       border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
-    .form-title { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; color: var(--text-primary); margin-bottom: 6px; }
-    .form-sub   { font-size: 13px; color: var(--text-secondary); }
+    .form-title {
+      font-size: 24px; font-weight: 800;
+      color: var(--text-primary); letter-spacing: -0.4px; margin-bottom: 7px;
+    }
+    .form-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 30px; line-height: 1.7; }
 
-    /* ── Alerts ──────────────────────────────────────── */
+    /* Alerts */
     .alert {
       display: flex; align-items: flex-start; gap: 10px;
       padding: 12px 14px; border-radius: 10px;
-      font-size: 13px; margin-bottom: 20px;
+      font-size: 13px; margin-bottom: 22px; line-height: 1.5;
     }
     .alert i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-    .alert.error   { background: var(--red-50);   color: var(--red-800);   border: 0.5px solid #fbb; }
-    .alert.success { background: var(--green-50); color: var(--green-800); border: 0.5px solid #9FE1CB; }
+    .alert.error   { background: var(--red-bg);   color: var(--red-text);   border: 0.5px solid var(--red-border); }
+    .alert.success { background: var(--green-bg); color: var(--green-text); border: 0.5px solid var(--green-border); }
 
-    /* ── Form groups ─────────────────────────────────── */
-    .form-group  { margin-bottom: 18px; }
-    .form-label  {
+    /* Fields */
+    .form-group { margin-bottom: 20px; }
+    .form-label {
       display: flex; align-items: center; justify-content: space-between;
-      font-size: 12px; font-weight: 600; color: var(--text-secondary);
-      margin-bottom: 7px; letter-spacing: 0.2px;
+      font-size: 12px; font-weight: 700; color: var(--text-secondary);
+      margin-bottom: 8px;
     }
-    .form-label a { font-weight: 500; color: var(--accent); font-size: 11px; }
+    .form-label a { font-weight: 600; color: var(--accent); font-size: 11.5px; transition: color 0.12s; }
     .form-label a:hover { color: var(--accent-hover); }
+
     .input-wrap {
       display: flex; align-items: center;
-      background: var(--bg-sunken);
+      background: var(--bg-field);
       border: 1px solid var(--border-md);
-      border-radius: 10px; overflow: hidden;
+      border-radius: 11px; overflow: hidden;
       transition: border-color 0.15s, box-shadow 0.15s;
     }
     .input-wrap:focus-within {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(29,158,117,.10);
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(13,148,136,.09);
     }
-    .input-wrap .input-icon {
-      padding: 0 12px; font-size: 16px; color: var(--text-muted); flex-shrink: 0;
-    }
+    .input-icon { padding: 0 13px; font-size: 16px; color: var(--text-muted); flex-shrink: 0; }
     .input-wrap input {
       flex: 1; border: none; outline: none;
-      background: transparent; padding: 11px 12px 11px 0;
-      font-size: 13px; color: var(--text-primary); font-family: var(--font);
+      background: transparent; padding: 12px 12px 12px 0;
+      font-size: 13.5px; color: var(--text-primary); font-family: var(--font);
     }
     .input-wrap input::placeholder { color: var(--text-muted); }
     .pw-toggle {
-      padding: 0 12px; background: none; border: none;
+      padding: 0 13px; background: none; border: none;
       color: var(--text-muted); font-size: 16px; flex-shrink: 0;
       display: flex; align-items: center; transition: color 0.12s;
     }
     .pw-toggle:hover { color: var(--text-primary); }
-
     .field-error {
       display: flex; align-items: center; gap: 5px;
-      font-size: 11px; color: var(--red-400); margin-top: 6px;
+      font-size: 11px; color: var(--red-text); margin-top: 7px;
     }
-    .field-error::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--red-400); flex-shrink: 0; }
+    .field-error::before { content:''; width:4px; height:4px; border-radius:50%; background:var(--red-text); flex-shrink:0; }
 
-    /* ── Remember me ─────────────────────────────────── */
-    .remember-row {
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 22px;
-    }
-    .checkbox-wrap {
-      position: relative; width: 16px; height: 16px; flex-shrink: 0;
-    }
-    .checkbox-wrap input {
-      position: absolute; opacity: 0; width: 0; height: 0;
-    }
+    /* Remember */
+    .remember-row { display: flex; align-items: center; gap: 9px; margin-bottom: 24px; }
+    .checkbox-wrap { position: relative; width: 17px; height: 17px; flex-shrink: 0; }
+    .checkbox-wrap input { position: absolute; opacity: 0; width: 0; height: 0; }
     .checkbox-custom {
-      position: absolute; inset: 0; border-radius: 4px;
+      position: absolute; inset: 0; border-radius: 5px;
       border: 1.5px solid var(--border-md);
-      background: var(--bg-sunken);
+      background: var(--bg-field);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; transition: all 0.15s;
     }
-    .checkbox-wrap input:checked + .checkbox-custom {
-      background: var(--accent); border-color: var(--accent);
-    }
+    .checkbox-wrap input:checked + .checkbox-custom { background: var(--accent); border-color: var(--accent); }
     .checkbox-custom::after {
       content: ''; display: none;
       width: 8px; height: 5px;
@@ -197,19 +254,24 @@
     .checkbox-wrap input:checked + .checkbox-custom::after { display: block; }
     .remember-label { font-size: 13px; color: var(--text-secondary); cursor: pointer; }
 
-    /* ── Submit ──────────────────────────────────────── */
+    /* Submit */
     .btn-submit {
-      width: 100%; padding: 12px;
+      width: 100%; padding: 13px;
       background: var(--accent); color: #fff;
-      border: none; border-radius: 10px;
-      font-size: 14px; font-weight: 600; font-family: var(--font);
-      cursor: pointer; transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      border: none; border-radius: 11px;
+      font-size: 14px; font-weight: 700; font-family: var(--font);
+      cursor: pointer; transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      box-shadow: 0 2px 8px rgba(29,158,117,.3);
+      box-shadow: 0 3px 14px rgba(13,148,136,.28);
+      letter-spacing: 0.2px;
     }
-    .btn-submit:hover { background: var(--accent-hover); box-shadow: 0 4px 14px rgba(29,158,117,.35); }
-    .btn-submit:active { transform: scale(0.99); }
-    .btn-submit.loading { pointer-events: none; opacity: 0.75; }
+    .btn-submit:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 5px 20px rgba(13,148,136,.38);
+      transform: translateY(-1px);
+    }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit.loading { pointer-events: none; opacity: 0.72; }
     .btn-submit .spinner {
       display: none; width: 16px; height: 16px;
       border: 2px solid rgba(255,255,255,.3);
@@ -220,18 +282,13 @@
     .btn-submit.loading .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Super admin link ────────────────────────────── */
-    .form-footer {
-      text-align: center; margin-top: 24px;
-      font-size: 12px; color: var(--text-muted);
-    }
-    .form-footer a { color: var(--accent); font-weight: 500; }
+    .form-footer { text-align: center; margin-top: 22px; font-size: 12px; color: var(--text-muted); }
+    .form-footer a { color: var(--accent); font-weight: 600; transition: color 0.12s; }
     .form-footer a:hover { color: var(--accent-hover); }
 
-    /* ── Responsive ──────────────────────────────────── */
     @media (max-width: 800px) {
       .auth-panel { display: none; }
-      .auth-form  { background: var(--bg-base); }
+      .auth-shell { flex-direction: column; }
     }
   </style>
 </head>
@@ -239,47 +296,74 @@
 
 <div class="auth-shell">
 
-  {{-- ── Left Brand Panel ─────────────────────────── --}}
+  {{-- ══════════════════ Brand Panel ══════════════════ --}}
   <div class="auth-panel">
     <div class="panel-top">
+
       <div class="panel-brand">
         <div class="panel-icon"><i class="ti ti-tool"></i></div>
-        <div class="panel-brand-name">Hirfa</div>
+        <div>
+          <div class="panel-brand-name">Skillify</div>
+          <div class="panel-badge"><i class="ti ti-shield-check" style="font-size:9px;"></i> لوحة الإدارة</div>
+        </div>
       </div>
 
-      <div class="panel-headline">Manage your<br>platform with<br>confidence.</div>
-      <div class="panel-desc">The Hirfa Admin Panel gives you full control over users, services, verifications, and platform content.</div>
+      <div class="panel-headline">
+        أدر منصتك<br>
+        <span>بثقة واحترافية.</span>
+      </div>
+      <div class="panel-desc">
+        لوحة الإدارة تمنحك سيطرة كاملة على المستخدمين،
+        الخدمات، التحقق من الحسابات، والمحتوى.
+      </div>
 
       <div class="panel-features">
         <div class="feature">
           <div class="feature-icon"><i class="ti ti-users"></i></div>
-          <div class="feature-text">Complete user & worker management</div>
+          <div>
+            <div class="feature-title">إدارة المستخدمين</div>
+            <div class="feature-text">متابعة كاملة لحسابات المستخدمين والحرفيين</div>
+          </div>
         </div>
         <div class="feature">
           <div class="feature-icon"><i class="ti ti-chart-bar"></i></div>
-          <div class="feature-text">Real-time analytics & reporting</div>
+          <div>
+            <div class="feature-title">التقارير والإحصاءات</div>
+            <div class="feature-text">بيانات حية عن نشاط المنصة ومعدلات الاستخدام</div>
+          </div>
         </div>
         <div class="feature">
           <div class="feature-icon"><i class="ti ti-shield-check"></i></div>
-          <div class="feature-text">Secure role-based access control</div>
+          <div>
+            <div class="feature-title">التحقق والمراجعة</div>
+            <div class="feature-text">قبول أو رفض طلبات التسجيل والخدمات</div>
+          </div>
         </div>
       </div>
+
+      <div class="panel-divider"></div>
+
+      <div class="security-row">
+        <div class="security-dot"></div>
+        جلسات مشفرة ومحمية — TLS 1.3
+      </div>
+
     </div>
 
     <div class="panel-bottom">
-      <div class="panel-footer-text">© {{ date('Y') }} Hirfa Platform. All rights reserved.</div>
+      <div class="panel-footer">© {{ date('Y') }} Skillify. جميع الحقوق محفوظة.</div>
     </div>
   </div>
 
-  {{-- ── Right Form ────────────────────────────────── --}}
+  {{-- ══════════════════ Form Area ══════════════════ --}}
   <div class="auth-form">
     <div class="form-wrap">
 
-      <div class="form-header">
-        <div class="form-eyebrow"><i class="ti ti-lock" style="font-size:10px;"></i> Admin Access</div>
-        <div class="form-title">Welcome back</div>
-        <div class="form-sub">Sign in to your admin account to continue</div>
+      <div class="form-eyebrow">
+        <i class="ti ti-lock" style="font-size:10px;"></i> لوحة الإدارة
       </div>
+      <div class="form-title">مرحباً بعودتك</div>
+      <div class="form-sub">سجّل دخول للوصول إلى لوحة إدارة Skillify.</div>
 
       @if(session('error'))
         <div class="alert error">
@@ -298,30 +382,32 @@
       <form method="POST" action="{{ route('admin.login.post') }}" id="loginForm">
         @csrf
 
+        {{-- Email --}}
         <div class="form-group">
-          <label class="form-label">
-            <span>Email Address</span>
-          </label>
+          <label class="form-label"><span>البريد الإلكتروني</span></label>
           <div class="input-wrap">
             <i class="ti ti-mail input-icon"></i>
-            <input type="email" name="email" placeholder="admin@hirfa.com"
-                   value="{{ old('email') }}" autofocus autocomplete="email" required>
+            <input type="email" name="email"
+                   placeholder="admin@skillify.com"
+                   value="{{ old('email') }}"
+                   autofocus autocomplete="email" required />
           </div>
           @error('email')
             <div class="field-error">{{ $message }}</div>
           @enderror
         </div>
 
+        {{-- Password --}}
         <div class="form-group">
           <label class="form-label">
-            <span>Password</span>
-            <a href="{{ route('admin.forgot-password') }}">Forgot password?</a>
+            <span>كلمة المرور</span>
+            <a href="{{ route('admin.forgot-password') }}">نسيت كلمة المرور؟</a>
           </label>
           <div class="input-wrap">
             <i class="ti ti-lock input-icon"></i>
             <input type="password" id="password" name="password"
-                   placeholder="••••••••" autocomplete="current-password" required>
-            <button type="button" class="pw-toggle" onclick="togglePassword('password', this)" title="Show password">
+                   placeholder="••••••••" autocomplete="current-password" required />
+            <button type="button" class="pw-toggle" onclick="togglePassword('password', this)">
               <i class="ti ti-eye"></i>
             </button>
           </div>
@@ -330,22 +416,26 @@
           @enderror
         </div>
 
+        {{-- Remember --}}
         <div class="remember-row">
           <label class="checkbox-wrap">
-            <input type="checkbox" name="remember">
+            <input type="checkbox" name="remember" />
             <div class="checkbox-custom"></div>
           </label>
-          <span class="remember-label">Keep me signed in</span>
+          <span class="remember-label">ابقَ متصلاً</span>
         </div>
 
         <button type="submit" class="btn-submit" id="submitBtn">
           <div class="spinner"></div>
-          <span class="btn-text"><i class="ti ti-login" style="font-size:16px;"></i> Sign In</span>
+          <span class="btn-text">
+            <i class="ti ti-login" style="font-size:16px;"></i>
+            تسجيل الدخول
+          </span>
         </button>
       </form>
 
       <div class="form-footer">
-        Not an admin? <a href="{{ route('super_admin.login') }}">Super Admin Portal →</a>
+        بوابة المدير العام؟ <a href="{{ route('super_admin.login') }}">الدخول هنا ←</a>
       </div>
 
     </div>
@@ -357,18 +447,11 @@
   function togglePassword(id, btn) {
     const input = document.getElementById(id);
     const icon  = btn.querySelector('i');
-    if (input.type === 'password') {
-      input.type = 'text';
-      icon.className = 'ti ti-eye-off';
-    } else {
-      input.type = 'password';
-      icon.className = 'ti ti-eye';
-    }
+    input.type  = input.type === 'password' ? 'text' : 'password';
+    icon.className = input.type === 'password' ? 'ti ti-eye' : 'ti ti-eye-off';
   }
-
   document.getElementById('loginForm').addEventListener('submit', function () {
-    const btn = document.getElementById('submitBtn');
-    btn.classList.add('loading');
+    document.getElementById('submitBtn').classList.add('loading');
   });
 </script>
 

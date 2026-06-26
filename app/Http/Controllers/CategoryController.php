@@ -5,14 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\ActiveTypebusiness;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
     public function index()
     {
-        $categories      = Category::with('activeTypebusiness')->latest()->get();
-        $businessTypes   = ActiveTypebusiness::all();
-        return view('admin.categories.index', compact('categories', 'businessTypes'));
+        $categories    = Category::with('activeTypebusiness')->latest()->get();
+        $businessTypes = ActiveTypebusiness::all();
+        return Inertia::render('Admin/Categories', [
+            'categories'    => $categories,
+            'businessTypes' => $businessTypes,
+        ]);
     }
 
     public function store(Request $request)

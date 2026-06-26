@@ -1,4 +1,4 @@
-@extends('user.layout')
+﻿@extends('user.layout')
 
 @section('title', 'Profile')
 
@@ -94,7 +94,7 @@
   padding:12px 16px; border-radius:var(--radius-md); font-size:13px;
 }
 .notice.pending  { background:#FFFBEB; border:.5px solid #FDE68A; color:#78350F; }
-.notice.approved { background:var(--green-50); border:.5px solid #9FE1CB; color:var(--green-800); }
+.notice.approved { background:var(--green-50); border:.5px solid #9FE1CB; color:var(--teal-900); }
 .notice.rejected { background:var(--red-50); border:.5px solid #FECACA; color:var(--red-800); }
 .notice i { font-size:17px; flex-shrink:0; margin-top:1px; }
 
@@ -136,7 +136,7 @@
   font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px;
 }
 .status-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.7; }
-.status-badge.approved { background:var(--green-50); color:var(--green-800); }
+.status-badge.approved { background:var(--green-50); color:var(--teal-900); }
 .status-badge.pending  { background:#FEF3C7; color:#92400E; }
 .status-badge.rejected { background:var(--red-50); color:var(--red-800); }
 .status-badge.inactive { background:#F3F4F6; color:#6B7280; }

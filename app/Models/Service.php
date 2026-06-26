@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\City;
 
 class Service extends Model
 {
     protected $fillable = [
         'user_id', 'business_id', 'name', 'description',
-        'category', 'subcategory', 'city', 'latitude', 'longitude', 'image',
+        'category_id', 'subcategory_id', 'city_id', 'latitude', 'longitude', 'image',
         'price', 'price_type', 'is_active', 'status',
     ];
 
@@ -24,14 +25,18 @@ class Service extends Model
         return $this->belongsTo(Business::class);
     }
 
-    // Match by Arabic name string
     public function category()
     {
-        return $this->belongsTo(Category::class, 'category', 'name_ar');
+        return $this->belongsTo(Category::class);
     }
 
-    public function subCategory()
+    public function subcategory()
     {
-        return $this->belongsTo(Subcategory::class, 'subcategory', 'name_ar');
+        return $this->belongsTo(Subcategory::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 }

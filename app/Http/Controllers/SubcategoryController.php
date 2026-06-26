@@ -5,14 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class SubcategoryController extends Controller
 {
     public function index()
     {
         $subcategories = Subcategory::with('category')->latest()->get();
-        $categories    = Category::all();
-        return view('admin.subcategories.index', compact('subcategories', 'categories'));
+        $categories    = Category::orderBy('name_en')->get();
+        return Inertia::render('Admin/Subcategories', [
+            'subcategories' => $subcategories,
+            'categories'    => $categories,
+        ]);
     }
 
     public function store(Request $request)

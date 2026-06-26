@@ -14,9 +14,9 @@ return new class extends Migration
             $table->foreignId('business_id')->nullable()->constrained('businesses')->onDelete('set null');
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('category');
-            $table->string('subcategory');
-            $table->string('city');
+            $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
+            $table->foreignId('subcategory_id')->nullable()->constrained('subcategories')->onDelete('set null');
+            $table->foreignId('city_id')->nullable()->constrained('cities')->onDelete('set null');
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->string('image')->nullable();

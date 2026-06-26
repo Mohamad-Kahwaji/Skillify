@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
@@ -11,14 +11,14 @@
   <style>
     :root {
       --font: 'Inter', sans-serif;
-      --accent:        #1D9E75;
-      --accent-hover:  #0F6E56;
-      --accent-light:  #E1F5EE;
-      --green-800:     #085041;
+      --accent:        #0D9488;
+      --accent-hover:  #0F766E;
+      --accent-light: #F0FDFA;
+      --green-800: #166534;
       --sidebar-w:     300px;
       --header-h:      60px;
       --input-h:       68px;
-      --bg:            #F1EFE8;
+      --bg: #F8FAFC;
       --surface:       #ffffff;
       --sunken:        #F8F7F4;
       --border:        rgba(0,0,0,0.07);
@@ -26,7 +26,7 @@
       --text:          #1a1a1a;
       --text-sec:      #5F5E5A;
       --text-muted:    #B4B2A9;
-      --bubble-sent:   #1D9E75;
+      --bubble-sent:   #0D9488;
       --bubble-recv:   #ffffff;
       --msg-sent-text: #ffffff;
       --msg-recv-text: #1a1a1a;
@@ -89,7 +89,7 @@
     }
     .conv-item:hover { background: var(--sunken); }
     .conv-item.active { background: var(--accent-light); }
-    .conv-item.active .conv-name { color: var(--green-800); }
+    .conv-item.active .conv-name { color: var(--teal-900); }
     .conv-avatar {
       width: 42px; height: 42px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
@@ -282,7 +282,7 @@
 
 @php
   $me = Auth::guard('users')->user();
-  $avatarColors = ['#1D9E75','#0F6E56','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899'];
+  $avatarColors = ['#0D9488','#0891B2','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899'];
   $myColor    = $avatarColors[$me->id % count($avatarColors)];
   $otherColor = $avatarColors[$otherUser->id % count($avatarColors)];
 @endphp
@@ -637,7 +637,7 @@
       document.body.appendChild(stack);
     }
     const toast = document.createElement('div');
-    toast.style.cssText = `display:flex;align-items:center;gap:10px;background:#fff;border:0.5px solid rgba(0,0,0,.1);border-right:3px solid #1D9E75;border-radius:12px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:260px;max-width:320px;pointer-events:all;cursor:pointer;animation:toastIn 0.3s cubic-bezier(.34,1.56,.64,1) both;font-family:'Inter',sans-serif;`;
+    toast.style.cssText = `display:flex;align-items:center;gap:10px;background:#fff;border:0.5px solid rgba(0,0,0,.1);border-right:3px solid #0D9488;border-radius:12px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:260px;max-width:320px;pointer-events:all;cursor:pointer;animation:toastIn 0.3s cubic-bezier(.34,1.56,.64,1) both;font-family:'Inter',sans-serif;`;
     toast.innerHTML = `<div style="width:36px;height:36px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;">${initial}</div><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;margin-bottom:2px;">${escHtml(senderName)}</div><div style="font-size:12px;color:#5F5E5A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(preview)}</div></div><button style="background:none;border:none;font-size:16px;color:#B4B2A9;padding:2px;cursor:pointer;border-radius:4px;"><i class="ti ti-x"></i></button>`;
     toast.addEventListener('click', (e) => { if (!e.target.closest('button')) window.location.href = '/user/chat/' + conversationId; });
     toast.querySelector('button').addEventListener('click', () => { toast.style.opacity='0';toast.style.transform='translateX(-12px)';setTimeout(()=>toast.remove(),250); });

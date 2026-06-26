@@ -1,4 +1,4 @@
-@php
+﻿@php
   $biz = $service->business ?? $service->user?->businesses;
 
   $lat = null; $lng = null;
@@ -12,7 +12,7 @@
     $lng = (float) $biz->longitude;
   }
 
-  $avColors  = ['#1D9E75','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899'];
+  $avColors  = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899'];
   $avColor   = $avColors[($service->user_id ?? $service->id) % count($avColors)];
   $initial   = strtoupper(mb_substr($service->user?->first_name ?? 'H', 0, 1));
   $ownerName = trim(($service->user?->first_name ?? '') . ' ' . ($service->user?->last_name ?? '')) ?: 'Hirfa Craftsman';

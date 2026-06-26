@@ -3,9 +3,27 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
+@source '../**/*.jsx';
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+
+    /* Skillify Brand — Teal */
+    --color-brand:       #0D9488;
+    --color-brand-dark:  #134E4A;
+    --color-brand-hover: #0F766E;
+    --color-brand-light: #F0FDFA;
+    --color-brand-text:  #134E4A;
+    --color-sidebar:     #134E4A;
+}
+
+/* ── Skillify Global CSS Variables (used by Blade layouts) ── */
+:root {
+    --skillify-primary:       #0D9488;
+    --skillify-primary-hover: #0F766E;
+    --skillify-primary-dark:  #134E4A;
+    --skillify-primary-light: #F0FDFA;
+    --skillify-primary-text:  #134E4A;
+    --skillify-sidebar:       #134E4A;
 }

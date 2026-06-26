@@ -1,4 +1,4 @@
-@extends('user.layout')
+﻿@extends('user.layout')
 
 @section('title', 'Services')
 
@@ -13,7 +13,7 @@
   .filter-select:focus { border-color: var(--accent); }
   .chip { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 0.5px solid var(--border-md); background: var(--bg-surface); color: var(--text-secondary); cursor: pointer; transition: all 0.12s; white-space: nowrap; display: inline-block; }
   .chip:hover  { border-color: var(--accent); color: var(--accent); }
-  .chip.active { background: var(--accent-bg); border-color: var(--accent); color: var(--green-800); }
+  .chip.active { background: var(--accent-bg); border-color: var(--accent); color: var(--teal-900); }
   .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
   .service-card { background: var(--bg-surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s; display: flex; flex-direction: column; }
   .service-card:hover { border-color: var(--border-md); box-shadow: 0 4px 16px rgba(0,0,0,0.07); }

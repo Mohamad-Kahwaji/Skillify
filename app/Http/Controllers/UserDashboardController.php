@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActiveTypebusiness;
+use App\Models\Advertisement;
 use App\Models\Business;
 use App\Models\Category;
 use App\Models\City;
@@ -12,6 +13,7 @@ use App\Models\Subcategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class UserDashboardController extends Controller
 {
@@ -41,25 +43,57 @@ class UserDashboardController extends Controller
             })->count();
         $recentPosts        = $this->user()->posts()->latest()->limit(4)->get();
 
-        return view('user.dashboard', compact('postsCount', 'conversationsCount', 'servicesCount', 'recentPosts'));
+        $recentServices = Service::where('is_active', true)
+            ->where('status', 'approved')
+            ->with(['category', 'subcategory', 'city'])
+            ->latest()
+            ->take(6)
+            ->get();
+
+        $topBusinesses = Business::where('status', 'active')
+            ->latest()
+            ->take(6)
+            ->get();
+
+        $recentAds = Advertisement::where('status', 'active')
+            ->whereDate('end_date', '>=', now())
+            ->latest()
+            ->take(3)
+            ->get();
+
+        return Inertia::render('User/Dashboard', [
+            'postsCount'         => $postsCount,
+            'conversationsCount' => $conversationsCount,
+            'servicesCount'      => $servicesCount,
+            'recentServices'     => $recentServices,
+            'topBusinesses'      => $topBusinesses,
+            'recentAds'          => $recentAds,
+        ]);
     }
 
     // ── Profile ───────────────────────────────────────────────────────────────
 
     public function profile()
     {
-        $user             = $this->user()->load('businesses', 'services');
-        $business         = $user->businesses;
-        $userServices     = $user->services()->latest()->get();
-        $activeTypes      = ActiveTypebusiness::orderBy('name_ar')->get();
-        $categories       = Category::orderBy('name_ar')->get();
-        $subcategories    = Subcategory::orderBy('name_ar')->get();
-        $cities           = City::orderBy('name_ar')->get();
+        $user          = $this->user()->load('businesses', 'services');
+        $business      = $user->businesses;
+        $userServices  = $user->services()->with(['category','subcategory','city'])->latest()->get();
+        $activeTypes   = ActiveTypebusiness::orderBy('name_ar')->get();
+        $categories    = Category::orderBy('name_ar')->get();
+        $subcategories = Subcategory::orderBy('name_ar')->get();
+        $cities        = City::orderBy('name_ar')->get();
+        $verification  = \App\Models\IdentityVerification::where('user_id', $user->id)->latest()->first();
 
-        return view('user.profile', compact(
-            'user', 'business', 'userServices',
-            'activeTypes', 'categories', 'subcategories', 'cities'
-        ));
+        return Inertia::render('User/Profile', [
+            'user'          => $user,
+            'business'      => $business,
+            'userServices'  => $userServices,
+            'activeTypes'   => $activeTypes,
+            'categories'    => $categories,
+            'subcategories' => $subcategories,
+            'cities'        => $cities,
+            'verification'  => $verification ? ['status' => $verification->status, 'rejection_reason' => $verification->rejection_reason] : null,
+        ]);
     }
 
     public function updateProfile(Request $request)
@@ -181,14 +215,27 @@ class UserDashboardController extends Controller
             return $c->user_id_1 == $userId ? $c->user_id_2 : $c->user_id_1;
         });
 
-        $businesses->getCollection()->transform(function ($b) use ($conversations) {
-            $b->conversationId = isset($conversations[$b->user_id]) ? $conversations[$b->user_id]->id : null;
+        // Load identity verification status for each business owner
+        $identityStatuses = \App\Models\IdentityVerification::whereIn('user_id', $businessUserIds)
+            ->select('user_id', 'status')
+            ->latest()
+            ->get()
+            ->keyBy('user_id');
+
+        $businesses->getCollection()->transform(function ($b) use ($conversations, $identityStatuses) {
+            $b->conversationId  = isset($conversations[$b->user_id]) ? $conversations[$b->user_id]->id : null;
+            $b->joined          = $b->created_at->diffForHumans();
+            $b->identity_status = $identityStatuses[$b->user_id]?->status ?? null;
             return $b;
         });
 
         $activities = Business::where('status', 'active')->whereNotNull('activity')->distinct()->pluck('activity');
 
-        return view('user.explore', compact('businesses', 'activities'));
+        return Inertia::render('User/Explore', [
+            'businesses' => $businesses,
+            'activities' => $activities,
+            'filters'    => $request->only(['q', 'activity']),
+        ]);
     }
 
     // ── Services browse ───────────────────────────────────────────────────────
@@ -235,9 +282,18 @@ class UserDashboardController extends Controller
             ->with(['userOne', 'userTwo'])
             ->orderByDesc('last_message_at')
             ->orderByDesc('created_at')
-            ->get();
+            ->get()
+            ->map(function ($c) {
+                return array_merge($c->toArray(), [
+                    'user_one' => $c->userOne ? $c->userOne->only('id','first_name','last_name') : null,
+                    'user_two' => $c->userTwo ? $c->userTwo->only('id','first_name','last_name') : null,
+                ]);
+            });
 
-        return view('user.conversations', compact('conversations'));
+        return Inertia::render('User/Conversations', [
+            'conversations' => $conversations,
+            'authId'        => $userId,
+        ]);
     }
 
     // ── Chat ──────────────────────────────────────────────────────────────────

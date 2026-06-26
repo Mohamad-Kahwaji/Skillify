@@ -4,38 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class PostController extends Controller
 {
     public function index()
     {
         $posts = Post::with('user')->latest()->get();
-        return view('admin.posts.index', compact('posts'));
+        return Inertia::render('Admin/Posts', ['posts' => $posts]);
     }
 
     public function allUserPosts()
     {
         $authId = auth('users')->id();
-        $posts  = Post::with(['user', 'comments', 'likes'])
+        $posts  = Post::with(['user', 'comments.user', 'likes'])
             ->where('user_id', '!=', $authId)
             ->latest()
             ->get();
-        return view('user.all-posts', compact('posts', 'authId'));
+        return Inertia::render('User/AllPosts', ['posts' => $posts, 'authId' => $authId]);
     }
 
     public function showmypost()
     {
         $posts = Post::where('user_id', auth('users')->id())->latest()->get();
-        return view('user.posts', compact('posts'));
+        return Inertia::render('User/Posts', ['posts' => $posts]);
     }
 
     public function communityPosts()
     {
-        $posts = Post::with('user')
-            ->where('user_id', '!=', auth('users')->id())
+        $authId = auth('users')->id();
+        $posts  = Post::with(['user', 'comments.user', 'likes'])
+            ->where('user_id', '!=', $authId)
             ->latest()
             ->get();
-        return view('user.community-posts', compact('posts'));
+        return Inertia::render('User/CommunityPosts', ['posts' => $posts, 'authId' => $authId]);
+    }
+
+    public function storeUserPost(Request $request)
+    {
+        $request->validate(['title' => 'required|string|max:255', 'description' => 'required|string']);
+        Post::create([
+            'title'       => $request->title,
+            'description' => $request->description,
+            'user_id'     => auth('users')->id(),
+        ]);
+        return back()->with('success', 'Post published.');
+    }
+
+    public function destroyUserPost(int $id)
+    {
+        Post::where('id', $id)->where('user_id', auth('users')->id())->firstOrFail()->delete();
+        return back()->with('success', 'Post deleted.');
     }
 
     public function store(Request $request)
@@ -50,7 +69,7 @@ class PostController extends Controller
             'status'      => 'nullable|string',
         ]);
 
-        $post = Post::updateOrCreate(['id' => $request->id], $validated);
+        Post::updateOrCreate(['id' => $request->id], $validated);
         return redirect()->route('admin.posts.index')->with('success', 'Post created.');
     }
 

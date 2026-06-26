@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -15,7 +16,7 @@ class RolePermissionController extends Controller
     public function permissions()
     {
         $permissions = Permission::orderBy('guard_name')->orderBy('name')->get();
-        return view('super_admin.permissions.index', [
+        return Inertia::render('SuperAdmin/Permissions', [
             'permissions' => $permissions,
             'guards'      => $this->guards,
         ]);
@@ -48,7 +49,7 @@ class RolePermissionController extends Controller
     {
         $roles       = Role::with('permissions')->orderBy('guard_name')->orderBy('name')->get();
         $permissions = Permission::orderBy('guard_name')->orderBy('name')->get();
-        return view('super_admin.roles.index', [
+        return Inertia::render('SuperAdmin/Roles', [
             'roles'       => $roles,
             'permissions' => $permissions,
             'guards'      => $this->guards,

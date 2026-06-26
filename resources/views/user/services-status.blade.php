@@ -1,4 +1,4 @@
-@extends('user.layout')
+﻿@extends('user.layout')
 
 @section('title', 'Service Requests Status')
 
@@ -78,7 +78,7 @@
 </div>
 
 @if(session('success'))
-  <div style="padding:12px 16px;border-radius:var(--radius-md);background:var(--green-50);color:var(--green-800);border:.5px solid #9FE1CB;font-size:13px;">
+  <div style="padding:12px 16px;border-radius:var(--radius-md);background:var(--green-50);color:var(--teal-900);border:.5px solid #9FE1CB;font-size:13px;">
     {{ session('success') }}
   </div>
 @endif

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\ConfirmAdminPassword;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HasBusinessMiddleware;
 use App\Http\Middleware\SuperAdminMiddleware;
 use App\Http\Middleware\UserMiddleware;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [HandleInertiaRequests::class]);
         $middleware->alias([
             'auth_admin'         => AuthMiddleware::class,
             'auth_super_admin'   => SuperAdminMiddleware::class,

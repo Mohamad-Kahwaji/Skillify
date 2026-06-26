@@ -4,18 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Advertisement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AdvertisementController extends Controller
 {
     public function index()
     {
         $advertisements = Advertisement::latest()->get();
-        return view('admin.ads.index', compact('advertisements'));
+        $adminId        = Auth::guard('admins')->id();
+        return Inertia::render('Admin/Ads', ['advertisements' => $advertisements, 'adminId' => $adminId]);
     }
 
     public function create()
     {
-        return view('admin.ads.create');
+        return Inertia::render('Admin/Ads');
     }
 
     public function store(Request $request)
@@ -71,6 +74,6 @@ class AdvertisementController extends Controller
             ->latest()
             ->get();
 
-        return view('user.advertisements', compact('advertisements'));
+        return Inertia::render('User/Ads', ['advertisements' => $advertisements]);
     }
 }

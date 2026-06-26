@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\ActiveType;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ActiveTypeController extends Controller
 {
     public function index()
     {
         $types = ActiveType::latest()->get();
-        return view('admin.active_types.index', compact('types'));
+        return Inertia::render('Admin/ActiveTypes', ['types' => $types]);
     }
 
     public function store(Request $request)

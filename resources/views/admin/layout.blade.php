@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>@yield('title', 'Dashboard') — Hirfa Admin</title>
+  <title>@yield('title', 'Dashboard') — Skillify Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -12,12 +12,12 @@
   <style>
     :root {
       --font: 'Inter', sans-serif;
-      --green-50:  #E1F5EE;
-      --green-100: #9FE1CB;
-      --green-400: #1D9E75;
-      --green-600: #0F6E56;
-      --green-800: #085041;
-      --green-900: #04342C;
+      --teal-50:  #F0FDFA;
+      --teal-100: #C7D2FE;
+      --teal-500: #0D9488;
+      --teal-700: #0F766E;
+      --teal-900: #134E4A;
+      --indigo-900: #134E4A;
       --coral-50:  #FAECE7;
       --coral-400: #D85A30;
       --amber-400: #EF9F27;
@@ -31,46 +31,46 @@
       --radius-lg: 14px;
     }
     [data-theme="light"] {
-      --bg-base:       #F1EFE8;
+      --bg-base:       #F8FAFB;
       --bg-surface:    #ffffff;
-      --bg-sunken:     #F8F7F4;
-      --bg-hover:      #F0EEE8;
+      --bg-sunken:     #F0FDFA;
+      --bg-hover:      #CCFBF1;
       --border:        rgba(0,0,0,0.08);
       --border-md:     rgba(0,0,0,0.13);
       --text-primary:  #1a1a1a;
       --text-secondary:#5F5E5A;
       --text-muted:    #B4B2A9;
-      --sidebar-bg:    #04342C;
+      --sidebar-bg:    #134E4A;
       --sidebar-text:  rgba(255,255,255,0.85);
       --sidebar-dim:   rgba(255,255,255,0.45);
       --sidebar-rule:  rgba(255,255,255,0.08);
-      --sidebar-active:rgba(255,255,255,0.10);
-      --sidebar-hover: rgba(255,255,255,0.06);
-      --accent:        #1D9E75;
-      --accent-hover:  #0F6E56;
-      --accent-bg:     #E1F5EE;
-      --accent-txt:    #085041;
+      --sidebar-active:rgba(255,255,255,0.12);
+      --sidebar-hover: rgba(255,255,255,0.07);
+      --accent:        #0D9488;
+      --accent-hover:  #0F766E;
+      --accent-bg:     #F0FDFA;
+      --accent-txt:    #134E4A;
     }
     [data-theme="dark"] {
-      --bg-base:       #111a16;
-      --bg-surface:    #18231e;
-      --bg-sunken:     #1e2d27;
-      --bg-hover:      #1e2d27;
+      --bg-base:       #0D1F1E;
+      --bg-surface:    #0D2B27;
+      --bg-sunken:     #0D2B27;
+      --bg-hover:      #0D2B27;
       --border:        rgba(255,255,255,0.07);
       --border-md:     rgba(255,255,255,0.12);
-      --text-primary:  #e6f2ee;
-      --text-secondary:#9FE1CB;
-      --text-muted:    #5DCAA5;
-      --sidebar-bg:    #042C53;
+      --text-primary:  #e8e8ff;
+      --text-secondary:#a5b4fc;
+      --text-muted:    #0D9488;
+      --sidebar-bg:    #0D1F1E;
       --sidebar-text:  rgba(255,255,255,0.90);
       --sidebar-dim:   rgba(255,255,255,0.38);
       --sidebar-rule:  rgba(255,255,255,0.07);
       --sidebar-active:rgba(255,255,255,0.10);
       --sidebar-hover: rgba(255,255,255,0.05);
-      --accent:        #1D9E75;
-      --accent-hover:  #5DCAA5;
-      --accent-bg:     #04342C;
-      --accent-txt:    #9FE1CB;
+      --accent:        #0D9488;
+      --accent-hover:  #818cf8;
+      --accent-bg:     #134E4A;
+      --accent-txt:    #a5b4fc;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
@@ -311,7 +311,7 @@
       padding: 3px 9px; border-radius: 20px;
     }
     .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.7; }
-    .badge.active   { background: var(--green-50);  color: var(--green-800); }
+    .badge.active   { background: var(--teal-50);  color: var(--teal-900); }
     .badge.pending  { background: #FAEEDA;           color: #633806; }
     .badge.blocked  { background: var(--red-50);     color: var(--red-800); }
     .badge.rejected { background: var(--red-50);     color: var(--red-800); }
@@ -327,12 +327,12 @@
     }
     .stat-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .stat-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
-    .stat-icon.green { background: var(--green-50);  color: var(--green-600); }
+    .stat-icon.green { background: var(--teal-50);  color: var(--teal-500); }
     .stat-icon.coral { background: var(--coral-50);  color: var(--coral-400); }
     .stat-icon.amber { background: #FAEEDA; color: #BA7517; }
     .stat-icon.red   { background: var(--red-50);    color: var(--red-400); }
     .trend { font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
-    .trend.up   { background: var(--green-50); color: var(--green-800); }
+    .trend.up   { background: var(--teal-50); color: var(--teal-900); }
     .trend.down { background: var(--red-50);   color: var(--red-800); }
     .stat-value { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; }
     .stat-label { font-size: 12px; color: var(--text-secondary); }
@@ -381,7 +381,7 @@
       padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: 13px;
     }
     .alert > i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-    .alert.success { background: var(--green-50); color: var(--green-800); border: 0.5px solid var(--green-100); }
+    .alert.success { background: var(--teal-50); color: var(--teal-900); border: 0.5px solid var(--teal-100); }
     .alert.error   { background: var(--red-50);   color: var(--red-800);   border: 0.5px solid #fcc; }
 
     /* EMPTY STATE */
@@ -486,9 +486,9 @@
   {{-- SIDEBAR --}}
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-icon"><i class="ti ti-tool"></i></div>
+      <div class="brand-icon"><i class="ti ti-school"></i></div>
       <div>
-        <div class="brand-name">Hirfa</div>
+        <div class="brand-name">Skillify</div>
         <div class="brand-sub">Admin Panel</div>
       </div>
     </div>
@@ -678,8 +678,8 @@
   {{-- FOOTER --}}
   <footer class="footer">
     <div class="footer-left">
-      <span class="footer-brand">Hirfa</span>
-      <span class="footer-copy">© {{ date('Y') }} Hirfa Platform. All rights reserved.</span>
+      <span class="footer-brand">Skillify</span>
+      <span class="footer-copy">© {{ date('Y') }} Skillify Platform. All rights reserved.</span>
     </div>
     <div class="footer-links">
       <a href="#">Privacy Policy</a>

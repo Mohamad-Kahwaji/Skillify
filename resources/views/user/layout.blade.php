@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>@yield('title', 'My Account') — Hirfa</title>
+  <title>@yield('title', 'My Account') — Skillify</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
@@ -11,29 +11,36 @@
   <style>
     :root {
       --font: 'Inter', sans-serif;
-      --green-50:  #E1F5EE;
-      --green-400: #1D9E75;
-      --green-600: #0F6E56;
-      --green-800: #085041;
-      --red-400:   #E24B4A;
-      --red-50:    #FCEBEB;
-      --red-800:   #791F1F;
-      --header-h:  60px;
+      /* Brand */
+      --accent:        #0D9488;
+      --accent-hover:  #0F766E;
+      --accent-bg:     #F0FDFA;
+      --teal-900:    #134E4A;
+      /* Backgrounds — neutral, not crypto-blue */
+      --bg-base:       #F8FAFC;
+      --bg-surface:    #ffffff;
+      --bg-sunken:     #F1F5F9;
+      --bg-hover:      #E2E8F0;
+      /* Borders */
+      --border:        rgba(0,0,0,0.07);
+      --border-md:     rgba(0,0,0,0.12);
+      /* Text */
+      --text-primary:  #0F172A;
+      --text-secondary:#475569;
+      --text-muted:    #94A3B8;
+      /* Semantic status colors */
+      --green-50:      #F0FDF4;
+      --green-700:     #15803D;
+      --amber-50:      #FFFBEB;
+      --amber-700:     #B45309;
+      --red-50:        #FEF2F2;
+      --red-400:       #F87171;
+      --red-700:       #B91C1C;
+      /* Radii */
       --radius-sm: 6px;
       --radius-md: 10px;
       --radius-lg: 14px;
-      --bg-base:       #F1EFE8;
-      --bg-surface:    #ffffff;
-      --bg-sunken:     #F8F7F4;
-      --bg-hover:      #F0EEE8;
-      --border:        rgba(0,0,0,0.08);
-      --border-md:     rgba(0,0,0,0.13);
-      --text-primary:  #1a1a1a;
-      --text-secondary:#5F5E5A;
-      --text-muted:    #B4B2A9;
-      --accent:        #1D9E75;
-      --accent-hover:  #0F6E56;
-      --accent-bg:     #E1F5EE;
+      --header-h:  60px;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
@@ -65,7 +72,7 @@
       transition: background 0.12s, color 0.12s;
     }
     .nav-link:hover  { background: var(--bg-hover); color: var(--text-primary); }
-    .nav-link.active { background: var(--accent-bg); color: var(--green-800); font-weight: 500; }
+    .nav-link.active { background: var(--accent-bg); color: var(--teal-900); font-weight: 500; }
     .nav-link > i    { font-size: 16px; }
     .header-user { display: flex; align-items: center; gap: 12px; }
     .user-avatar {
@@ -98,14 +105,45 @@
 
     /* BADGE */
     .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
-    .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.7; }
-    .badge.active  { background: var(--green-50); color: var(--green-800); }
-    .badge.pending { background: #FAEEDA; color: #633806; }
+    .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.8; }
+    .badge.active   { background: var(--green-50);  color: var(--green-700); }
+    .badge.approved { background: var(--green-50);  color: var(--green-700); }
+    .badge.pending  { background: var(--amber-50);  color: var(--amber-700); }
+    .badge.inactive { background: var(--red-50);    color: var(--red-700); }
+    .badge.rejected { background: var(--red-50);    color: var(--red-700); }
 
     /* ALERTS */
-    .alert { padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: 13px; }
-    .alert.success { background: var(--green-50); color: var(--green-800); border: 0.5px solid #9FE1CB; }
-    .alert.error   { background: var(--red-50); color: var(--red-800); }
+    .alert { padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: 13px; border: 0.5px solid transparent; }
+    .alert.success { background: var(--green-50);  color: var(--green-700); border-color: #BBF7D0; }
+    .alert.error   { background: var(--red-50);    color: var(--red-700);   border-color: #FECACA; }
+    .alert.warning { background: var(--amber-50);  color: var(--amber-700); border-color: #FDE68A; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: var(--radius-md);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: none; transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary {
+      background: var(--accent); color: #fff;
+      box-shadow: 0 1px 3px rgba(13,148,136,.3);
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 4px 12px rgba(79,70,229,.35);
+    }
+    .btn-outline {
+      background: transparent; color: var(--accent);
+      border: 1.5px solid var(--accent);
+    }
+    .btn-outline:hover { background: var(--accent-bg); }
+    .btn-ghost {
+      background: transparent; color: var(--text-secondary);
+      border: 1px solid var(--border-md);
+    }
+    .btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
 
     /* INFO ROW */
     .info-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
@@ -188,8 +226,8 @@
 {{-- HEADER --}}
 <header class="header">
   <div class="header-brand">
-    <div class="brand-icon"><i class="ti ti-tool"></i></div>
-    <div class="brand-name">Hirfa</div>
+    <div class="brand-icon"><i class="ti ti-school"></i></div>
+    <div class="brand-name">Skillify</div>
   </div>
 
   <nav class="header-nav">
@@ -299,7 +337,7 @@
   const ME_ID       = {{ Auth::guard('users')->id() }};
   const CSRF        = document.querySelector('meta[name="csrf-token"]').content;
   const UNREAD_URL  = '{{ route("user.messages.unread") }}';
-  const AVATAR_COLORS = ['#1D9E75','#0F6E56','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899'];
+  const AVATAR_COLORS = ['#0D9488','#0891B2','#3B82F6','#0891B2','#059669','#D97706','#DC2626'];
 
   const badge      = document.getElementById('notif-badge');
   const toastStack = document.getElementById('toast-stack');

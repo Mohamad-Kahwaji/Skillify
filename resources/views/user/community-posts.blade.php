@@ -1,4 +1,4 @@
-@extends('user.layout')
+﻿@extends('user.layout')
 
 @section('title', 'Community Posts')
 
@@ -107,7 +107,7 @@
   @php
     $author   = $post->user;
     $initial  = strtoupper(substr($author?->first_name ?? 'U', 0, 1));
-    $colors   = ['#1D9E75','#0F6E56','#3B82F6','#8B5CF6','#F59E0B','#EF4444'];
+    $colors   = ['#0D9488','#0891B2','#3B82F6','#8B5CF6','#F59E0B','#EF4444'];
     $color    = $colors[$post->user_id % count($colors)];
     $authorName = trim(($author?->first_name ?? '') . ' ' . ($author?->last_name ?? '')) ?: 'Unknown User';
   @endphp

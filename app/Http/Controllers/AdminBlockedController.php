@@ -7,6 +7,7 @@ use App\Models\Blocked;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AdminBlockedController extends Controller
 {
@@ -14,13 +15,13 @@ class AdminBlockedController extends Controller
     {
         $blocked = Blocked::with(['user', 'admin'])->latest()->get();
         $users   = User::where('status', 'active')->orderBy('first_name')->get();
-        return view('admin.blocked.index', compact('blocked', 'users'));
+        return Inertia::render('Admin/Blocked', ['blocked' => $blocked, 'users' => $users]);
     }
 
     public function create()
     {
         $users = User::where('status', 'active')->orderBy('first_name')->get();
-        return view('admin.blocked.create', compact('users'));
+        return Inertia::render('Admin/Blocked', ['blocked' => collect(), 'users' => $users]);
     }
 
     public function store(Request $request)
