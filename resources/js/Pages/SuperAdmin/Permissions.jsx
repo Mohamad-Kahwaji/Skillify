@@ -157,7 +157,7 @@ export default function Permissions({ permissions, guards }) {
                         <span style={{ fontSize: 15, fontWeight: 700, color: '#1E1B4B' }}>إنشاء صلاحية جديدة</span>
                     </div>
                     <form onSubmit={submit}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ display: 'grid', gap: 14 }}>
                             <div>
                                 <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>اسم الصلاحية *</label>
                                 <input style={INPUT} value={data.name} onChange={e => setData('name', e.target.value)} placeholder="مثال: users.view" required />
@@ -241,7 +241,7 @@ export default function Permissions({ permissions, guards }) {
 
                         {/* Module table */}
                         {!isCollapsed && (
-                            <div style={{ padding: '4px 0' }}>
+                            <div style={{ padding: '4px 0', overflowX: 'auto' }}>
                                 {moduleKeys.map((mod, mi) => {
                                     const modPerms = modules[mod];
                                     const modLabel = MODULE_LABELS[mod] ?? mod;
@@ -249,6 +249,7 @@ export default function Permissions({ permissions, guards }) {
                                         <div key={mod} style={{
                                             display: 'grid', gridTemplateColumns: '200px 1fr auto',
                                             alignItems: 'center', gap: 16, padding: '13px 22px',
+                                            minWidth: 560,
                                             borderBottom: mi < moduleKeys.length - 1 ? '0.5px solid rgba(0,0,0,0.05)' : 'none',
                                             transition: 'background 0.12s',
                                         }}

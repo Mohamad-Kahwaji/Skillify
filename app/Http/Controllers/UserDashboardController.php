@@ -77,16 +77,18 @@ class UserDashboardController extends Controller
     {
         $user          = $this->user()->load('businesses', 'services');
         $business      = $user->businesses;
+        $gallery       = $business ? $business->gallery()->get() : collect();
         $userServices  = $user->services()->with(['category','subcategory','city'])->latest()->get();
-        $activeTypes   = ActiveTypebusiness::orderBy('name_ar')->get();
-        $categories    = Category::orderBy('name_ar')->get();
-        $subcategories = Subcategory::orderBy('name_ar')->get();
-        $cities        = City::orderBy('name_ar')->get();
+        $activeTypes   = ActiveTypebusiness::orderBy('name')->get();
+        $categories    = Category::orderBy('name')->get();
+        $subcategories = Subcategory::orderBy('name')->get();
+        $cities        = City::orderBy('name')->get();
         $verification  = \App\Models\IdentityVerification::where('user_id', $user->id)->latest()->first();
 
         return Inertia::render('User/Profile', [
             'user'          => $user,
             'business'      => $business,
+            'gallery'       => $gallery->values(),
             'userServices'  => $userServices,
             'activeTypes'   => $activeTypes,
             'categories'    => $categories,
@@ -99,15 +101,27 @@ class UserDashboardController extends Controller
     public function updateProfile(Request $request)
     {
         $request->validate([
-            'first_name' => 'required|string|max:60',
-            'last_name'  => 'required|string|max:60',
-            'phone'      => 'required|string|max:20',
-            'city'       => 'required|string|max:60',
-            'gender'     => 'required|in:male,female',
-            'birthdate'  => 'required|date',
+            'first_name'    => 'required|string|max:60',
+            'middle_name'   => 'nullable|string|max:60',
+            'last_name'     => 'required|string|max:60',
+            'phone'         => 'required|string|max:20',
+            'city'          => 'required|string|max:60',
+            'gender'        => 'required|in:male,female',
+            'birthdate'     => 'required|date',
+            'profile_photo' => 'nullable|image|max:2048',
         ]);
 
-        $this->user()->update($request->only('first_name','last_name','phone','city','gender','birthdate'));
+        $user = $this->user();
+        $data = $request->only('first_name','middle_name','last_name','phone','city','gender','birthdate');
+
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            $data['profile_photo'] = $request->file('profile_photo')->store('avatars', 'public');
+        }
+
+        $user->update($data);
 
         return back()->with('success', 'تم تحديث المعلومات الشخصية بنجاح.');
     }
@@ -149,19 +163,17 @@ class UserDashboardController extends Controller
             ->firstOrFail();
 
         $request->validate([
-            'name'        => 'required|string|max:120',
-            'description' => 'nullable|string|max:1000',
-            'category'    => 'required|string|max:60',
-            'subcategory' => 'required|string|max:60',
-            'city'        => 'required|string|max:60',
-            'latitude'    => 'nullable|numeric|between:-90,90',
-            'longitude'   => 'nullable|numeric|between:-180,180',
-            'price'       => 'required|numeric|min:0',
-            'price_type'  => 'required|in:usd,syp',
-            'image'       => 'nullable|image|max:2048',
+            'name'           => 'required|string|max:255',
+            'description'    => 'nullable|string|max:1000',
+            'category_id'    => 'required|exists:categories,id',
+            'subcategory_id' => 'required|exists:subcategories,id',
+            'city_id'        => 'required|exists:cities,id',
+            'price'          => 'required|numeric|min:0',
+            'price_type'     => 'required|in:usd,syp',
+            'image'          => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only('name','description','category','subcategory','city','latitude','longitude','price','price_type');
+        $data = $request->only('name', 'description', 'category_id', 'subcategory_id', 'city_id', 'price', 'price_type');
 
         if ($request->hasFile('image')) {
             if ($service->image) Storage::disk('public')->delete($service->image);

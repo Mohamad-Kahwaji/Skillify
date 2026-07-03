@@ -138,8 +138,8 @@ class UserSeedeers extends Seeder
             ]],
         ];
 
-        $activeTypes = ActiveType::pluck('id', 'name_ar')->toArray();
-        $businessTypes = ActiveTypebusiness::pluck('id', 'name_ar')->toArray();
+        $activeTypes = ActiveType::pluck('id', 'name')->toArray();
+        $businessTypes = ActiveTypebusiness::pluck('id', 'name')->toArray();
 
         // ── إنشاء المستخدمين ──────────────────────────────────────────────
         foreach ($users as $i => $data) {

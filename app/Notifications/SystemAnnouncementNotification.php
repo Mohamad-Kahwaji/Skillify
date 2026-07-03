@@ -2,55 +2,48 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\ViaFcm;
 use Illuminate\Bus\Queueable;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
 class SystemAnnouncementNotification extends Notification
 {
-    use Queueable;
+    use Queueable, ViaFcm;
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct(private string $title,private string $message)
-    {
-        //
-    }
+    public function __construct(private string $title, private string $message) {}
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
-        return ['database','broadcast'];
+        return $this->channels($notifiable);
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
-    
-    public function toDatabase(object $notifiable):array
+    public function toDatabase(object $notifiable): array
     {
         return [
-            'title' => $this->title,
+            'title'   => $this->title,
             'message' => $this->message,
-            'type' => 'announcement',
-
+            'type'    => 'announcement',
         ];
     }
+
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage($this->toDatabase($notifiable));
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
+    public function broadcastOn(?object $notifiable = null): array
+    {
+        if (!$notifiable) return [];
+        $guard = match (true) {
+            $notifiable instanceof \App\Models\SuperAdmin => 'superadmins',
+            $notifiable instanceof \App\Models\Admin      => 'admins',
+            default                                        => 'users',
+        };
+        return [new PrivateChannel("{$guard}.{$notifiable->id}.notifications")];
+    }
+
     public function toArray(object $notifiable): array
     {
         return $this->toDatabase($notifiable);

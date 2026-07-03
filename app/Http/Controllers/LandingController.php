@@ -26,7 +26,7 @@ class LandingController extends Controller
 
         $categories = Category::withCount('subcategories')
             ->take(8)
-            ->get(['id', 'name_ar', 'name_en']);
+            ->get(['id', 'name']);
 
         $stats = [
             'professionals' => Business::where('status', 'approved')->count(),

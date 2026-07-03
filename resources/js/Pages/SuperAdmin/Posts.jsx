@@ -22,30 +22,50 @@ function timeAgo(dateStr) {
 }
 
 function PostCard({ post, index, onDelete }) {
-    const [expanded, setExpanded] = useState(false);
+    const [expanded, setExpanded]   = useState(false);
+    const [imgError, setImgError]   = useState(false);
     const sc  = STATUS_CFG[post.status] ?? DEFAULT_STATUS;
     const av  = AV_COLORS[index % AV_COLORS.length];
-    const hasImage = !!post.image;
+    const av2 = AV_COLORS[(index + 2) % AV_COLORS.length];
     const desc = post.description ?? '';
     const isLong = desc.length > 200;
+
+    const imgSrc = post.image
+        ? (post.image.startsWith('http') ? post.image : `/storage/${post.image}`)
+        : null;
+    const showImage = imgSrc && !imgError;
 
     return (
         <div style={{
             background: '#fff',
             border: '1px solid rgba(0,0,0,0.07)',
-            borderRadius: 16,
+            borderRadius: 18,
             overflow: 'hidden',
-            boxShadow: '0 1px 8px rgba(0,0,0,0.04)',
-            transition: 'box-shadow 0.15s',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+            transition: 'box-shadow 0.2s, transform 0.2s',
         }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.08)'}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 8px rgba(0,0,0,0.04)'}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}
         >
             {/* Post image */}
-            {hasImage && (
-                <div style={{ width: '100%', height: 200, overflow: 'hidden', background: '#F1F5F9' }}>
-                    <img src={`/storage/${post.image}`} alt="صورة المنشور"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {showImage ? (
+                <div style={{ position: 'relative', width: '100%', height: 200, overflow: 'hidden', background: '#F1F5F9' }}>
+                    <img src={imgSrc} alt={post.title ?? 'صورة المنشور'}
+                        onError={() => setImgError(true)}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    {/* gradient overlay */}
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 55%)', pointerEvents: 'none' }} />
+                    {/* title on image if exists */}
+                    {post.title && (
+                        <div style={{ position: 'absolute', bottom: 12, right: 16, left: 16, fontSize: 14, fontWeight: 800, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)', lineHeight: 1.4 }}>
+                            {post.title}
+                        </div>
+                    )}
+                </div>
+            ) : (
+                /* Placeholder when no image */
+                <div style={{ width: '100%', height: 90, background: `linear-gradient(135deg,${av}22,${av2}22)`, borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <i className="ti ti-photo-off" style={{ fontSize: 28, color: `${av}66` }} />
                 </div>
             )}
 
@@ -91,8 +111,8 @@ function PostCard({ post, index, onDelete }) {
                     </button>
                 </div>
 
-                {/* Title */}
-                {post.title && (
+                {/* Title — يظهر هنا فقط إذا ما في صورة */}
+                {post.title && !showImage && (
                     <div style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', marginBottom: 8, letterSpacing: -0.2 }}>
                         {post.title}
                     </div>

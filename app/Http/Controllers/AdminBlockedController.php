@@ -43,7 +43,7 @@ class AdminBlockedController extends Controller
         // Mark user as inactive
         User::findOrFail($data['user_id'])->update(['status' => 'inactive']);
 
-        return redirect()->route('admin.blocked.index')->with('success', 'User blocked successfully.');
+        return back()->with('success', 'User blocked successfully.');
     }
 
     public function destroy(int $id)
@@ -54,6 +54,6 @@ class AdminBlockedController extends Controller
         User::findOrFail($blocked->user_id)->update(['status' => 'active']);
 
         $blocked->delete();
-        return redirect()->route('admin.blocked.index')->with('success', 'User unblocked successfully.');
+        return back()->with('success', 'User unblocked successfully.');
     }
 }

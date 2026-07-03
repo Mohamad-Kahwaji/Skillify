@@ -29,7 +29,7 @@ function StatCard({ icon, iconBg, iconColor, value, label }) {
 }
 
 function ServiceCard({ service }) {
-    const categoryName = service.category?.name_ar ?? service.category?.name_en ?? service.subcategory?.name_ar ?? service.subcategory?.name_en ?? '';
+    const categoryName = service.category?.name ?? service.subcategory?.name ?? '';
     const price = Number(service.price).toLocaleString();
 
     return (
@@ -171,7 +171,7 @@ export default function Dashboard({ postsCount, conversationsCount, servicesCoun
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.07)', fontWeight: 700, fontSize: 14 }}>
                     إجراءات سريعة
                 </div>
-                <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
+                <div className="grid grid-cols-2 sm:grid-cols-4" style={{ padding: '16px 20px', gap: 10 }}>
                     {QUICK_LINKS.map(({ href, icon, label }) => (
                         <Link key={href} href={href} style={{
                             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,

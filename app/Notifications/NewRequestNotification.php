@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\ViaFcm;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
@@ -9,24 +10,23 @@ use Illuminate\Broadcasting\PrivateChannel;
 
 class NewRequestNotification extends Notification
 {
-    use Queueable;
+    use Queueable, ViaFcm;
 
     public function __construct(
         private string $username,
-        private int $requestId,
-        private ?object $notifiable = null
+        private int $requestId
     ) {}
 
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return $this->channels($notifiable);
     }
 
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title'      => 'New Request',
-            'message'    => "You have a new request from {$this->username}",
+            'title'      => 'طلب حساب أعمال جديد',
+            'message'    => "طلب جديد من {$this->username}",
             'type'       => 'info',
             'request_id' => $this->requestId,
         ];
@@ -37,11 +37,15 @@ class NewRequestNotification extends Notification
         return new BroadcastMessage($this->toDatabase($notifiable));
     }
 
-    public function broadcastOn(): array
+    public function broadcastOn(?object $notifiable = null): array
     {
-        return [
-            new PrivateChannel('admins.' . $this->notifiable->id . '.notifications'),
-        ];
+        if (!$notifiable) return [];
+        $guard = match (true) {
+            $notifiable instanceof \App\Models\SuperAdmin => 'superadmins',
+            $notifiable instanceof \App\Models\Admin      => 'admins',
+            default                                        => 'users',
+        };
+        return [new PrivateChannel("{$guard}.{$notifiable->id}.notifications")];
     }
 
     public function toArray(object $notifiable): array

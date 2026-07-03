@@ -71,14 +71,14 @@ const DEMO_ADS = [
 ];
 
 const DEMO_CATEGORIES = [
-    { id: 'c1', name_ar: 'الصحة والطب' },
-    { id: 'c2', name_ar: 'القانون والاستشارات' },
-    { id: 'c3', name_ar: 'الهندسة' },
-    { id: 'c4', name_ar: 'التعليم والتدريس' },
-    { id: 'c5', name_ar: 'المحاسبة والمالية' },
-    { id: 'c6', name_ar: 'تقنية المعلومات' },
-    { id: 'c7', name_ar: 'الفن والتصميم' },
-    { id: 'c8', name_ar: 'الإعلام والصحافة' },
+    { id: 'c1', name: 'الصحة والطب' },
+    { id: 'c2', name: 'القانون والاستشارات' },
+    { id: 'c3', name: 'الهندسة' },
+    { id: 'c4', name: 'التعليم والتدريس' },
+    { id: 'c5', name: 'المحاسبة والمالية' },
+    { id: 'c6', name: 'تقنية المعلومات' },
+    { id: 'c7', name: 'الفن والتصميم' },
+    { id: 'c8', name: 'الإعلام والصحافة' },
 ];
 
 export default function Landing({ ads = [], topProfessionals = [], categories = [], stats = {} }) {
@@ -269,7 +269,7 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                                         </svg>
                                     </div>
                                     <div className="text-sm font-semibold text-gray-800 group-hover:text-white transition-colors">
-                                        {cat.name_ar ?? cat.name_en}
+                                        {cat.name}
                                     </div>
                                 </Link>
                             ))}

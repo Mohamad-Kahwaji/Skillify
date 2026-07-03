@@ -11,7 +11,7 @@ class Admin extends Authenticatable
     use HasRoles, Notifiable;
 
     protected $guard_name = 'admins';
-    protected $fillable = ['id_number', 'first_name', 'last_name', 'email', 'password', 'phone', 'role', 'status'];
+    protected $fillable = ['id_number', 'first_name', 'last_name', 'email', 'password', 'phone', 'role', 'status', 'fcm_token'];
 
     protected $hidden = ['password', 'remember_token'];
 

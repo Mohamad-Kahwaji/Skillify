@@ -40,7 +40,7 @@ export default function ServiceDetails({ service }) {
                 <span>{service.name}</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, alignItems: 'start' }}>
+            <div className="grid-cols-1 lg:grid-cols-[1fr_320px]" style={{ display: 'grid', gap: 20, alignItems: 'start' }}>
                 {/* Left */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     {/* Image */}
@@ -60,9 +60,9 @@ export default function ServiceDetails({ service }) {
                             </span>
                         </div>
 
-                        <InfoRow label="الفئة"        value={service.category?.name_ar ?? service.category?.name_en} />
-                        <InfoRow label="الفئة الفرعية" value={service.subcategory?.name_ar ?? service.subcategory?.name_en} />
-                        <InfoRow label="المدينة"      value={service.city?.name_ar ?? service.city?.name_en} />
+                        <InfoRow label="الفئة"        value={service.category?.name} />
+                        <InfoRow label="الفئة الفرعية" value={service.subcategory?.name} />
+                        <InfoRow label="المدينة"      value={service.city?.name} />
                         <InfoRow label="السعر"        value={`${price} ${service.price_type?.toUpperCase()}`} />
                         {service.description && (
                             <div style={{ marginTop: 14 }}>

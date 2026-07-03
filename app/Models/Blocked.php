@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Blocked extends Model
 {
+    protected $table    = 'blocked';
     protected $fillable = ['admin_id', 'user_id', 'reason', 'blocker_date', 'status'];
 
     public function admin()

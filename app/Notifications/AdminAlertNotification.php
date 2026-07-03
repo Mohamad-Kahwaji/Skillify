@@ -2,29 +2,27 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\ViaFcm;
 use Illuminate\Bus\Queueable;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Broadcasting\PrivateChannel;
 
 class AdminAlertNotification extends Notification
 {
-    use Queueable;
+    use Queueable, ViaFcm;
 
-    public function __construct(
-        private string $message,
-        private ?object $notifiable = null
-    ) {}
+    public function __construct(private string $message) {}
 
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return $this->channels($notifiable);
     }
 
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title'   => 'Admin Alert',
+            'title'   => 'تنبيه إداري',
             'message' => $this->message,
             'type'    => 'alert',
         ];
@@ -35,11 +33,15 @@ class AdminAlertNotification extends Notification
         return new BroadcastMessage($this->toDatabase($notifiable));
     }
 
-    public function broadcastOn(): array
+    public function broadcastOn(?object $notifiable = null): array
     {
-        return [
-            new PrivateChannel('admins.' . $this->notifiable->id . '.notifications'),
-        ];
+        if (!$notifiable) return [];
+        $guard = match (true) {
+            $notifiable instanceof \App\Models\SuperAdmin => 'superadmins',
+            $notifiable instanceof \App\Models\Admin      => 'admins',
+            default                                        => 'users',
+        };
+        return [new PrivateChannel("{$guard}.{$notifiable->id}.notifications")];
     }
 
     public function toArray(object $notifiable): array

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActiveType;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,7 +18,7 @@ class PostController extends Controller
     public function allUserPosts()
     {
         $authId = auth('users')->id();
-        $posts  = Post::with(['user', 'comments.user', 'likes'])
+        $posts  = Post::with(['user.businesses', 'comments.user.businesses', 'likes'])
             ->where('user_id', '!=', $authId)
             ->latest()
             ->get();
@@ -26,14 +27,15 @@ class PostController extends Controller
 
     public function showmypost()
     {
-        $posts = Post::where('user_id', auth('users')->id())->latest()->get();
-        return Inertia::render('User/Posts', ['posts' => $posts]);
+        $posts       = Post::with('activeType')->where('user_id', auth('users')->id())->latest()->get();
+        $activeTypes = ActiveType::orderBy('id')->get(['id', 'name']);
+        return Inertia::render('User/Posts', ['posts' => $posts, 'activeTypes' => $activeTypes]);
     }
 
     public function communityPosts()
     {
         $authId = auth('users')->id();
-        $posts  = Post::with(['user', 'comments.user', 'likes'])
+        $posts  = Post::with(['user.businesses', 'comments.user.businesses', 'likes'])
             ->where('user_id', '!=', $authId)
             ->latest()
             ->get();
@@ -42,13 +44,26 @@ class PostController extends Controller
 
     public function storeUserPost(Request $request)
     {
-        $request->validate(['title' => 'required|string|max:255', 'description' => 'required|string']);
-        Post::create([
-            'title'       => $request->title,
-            'description' => $request->description,
-            'user_id'     => auth('users')->id(),
+        $request->validate([
+            'title'          => 'required|string|max:255',
+            'description'    => 'required|string',
+            'active_type_id' => 'required|exists:active_types,id',
+            'image'          => 'nullable|image|max:4096',
         ]);
-        return back()->with('success', 'Post published.');
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('posts', 'public');
+        }
+
+        Post::create([
+            'title'          => $request->input('title'),
+            'description'    => $request->input('description'),
+            'active_type_id' => $request->input('active_type_id'),
+            'user_id'        => auth('users')->id(),
+            'image'          => $imagePath,
+        ]);
+        return back()->with('success', 'تم نشر المنشور بنجاح.');
     }
 
     public function destroyUserPost(int $id)

@@ -147,7 +147,7 @@ export default function SuperAdminDashboard(props) {
             </div>
 
             {/* Bottom panels */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2" style={{ display: 'grid', gap: 18 }}>
 
                 {/* Admins */}
                 <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 16, overflow: 'hidden' }}>

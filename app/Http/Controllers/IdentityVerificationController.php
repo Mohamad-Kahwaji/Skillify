@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use App\Models\IdentityVerification;
+use App\Models\SuperAdmin;
+use App\Notifications\IdentityVerificationNotification;
+use App\Notifications\NewVerificationRequestNotification;
 use App\Services\GeminiIdentityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,7 +53,7 @@ class IdentityVerificationController extends Controller
             }
         }
 
-        IdentityVerification::create([
+        $verification = IdentityVerification::create([
             'user_id'      => $user->id,
             'full_name'    => $data['full_name'],
             'id_number'    => $data['id_number'],
@@ -58,6 +62,12 @@ class IdentityVerificationController extends Controller
             'back_image'   => $paths['back_image'] ?? null,
             'selfie_image' => $paths['selfie_image'] ?? null,
         ]);
+
+        // Notify all admins and super-admins of the new verification request
+        $senderName   = trim("{$user->first_name} {$user->last_name}") ?: $user->email;
+        $notification = new NewVerificationRequestNotification($senderName, $verification->id);
+        Admin::all()->each(fn($admin) => $admin->notify($notification));
+        SuperAdmin::all()->each(fn($sa)    => $sa->notify($notification));
 
         return back()->with('success', 'تم إرسال طلب التوثيق بنجاح. سنراجعه قريباً.');
     }
@@ -78,11 +88,14 @@ class IdentityVerificationController extends Controller
     public function approve(IdentityVerification $verification)
     {
         $verification->update([
-            'status'      => 'approved',
-            'reviewed_by' => Auth::guard('admins')->id(),
-            'reviewed_at' => now(),
+            'status'           => 'approved',
+            'reviewed_by'      => Auth::guard('admins')->id() ?? Auth::guard('super_admins')->id(),
+            'reviewed_at'      => now(),
             'rejection_reason' => null,
         ]);
+
+        // Notify the user
+        $verification->user?->notify(new IdentityVerificationNotification('approved'));
 
         return back()->with('success', 'تم قبول طلب التوثيق.');
     }
@@ -96,10 +109,13 @@ class IdentityVerificationController extends Controller
 
         $verification->update([
             'status'           => 'rejected',
-            'reviewed_by'      => Auth::guard('admins')->id(),
+            'reviewed_by'      => Auth::guard('admins')->id() ?? Auth::guard('super_admins')->id(),
             'reviewed_at'      => now(),
             'rejection_reason' => $request->reason,
         ]);
+
+        // Notify the user with the rejection reason
+        $verification->user?->notify(new IdentityVerificationNotification('rejected', $request->reason));
 
         return back()->with('success', 'تم رفض طلب التوثيق.');
     }

@@ -16,32 +16,51 @@ class CommentController extends Controller
 
     public function store(Request $request)
     {
+        // Accept post_id from URL param or request body
+        $postId = $request->route('post') ?? $request->post_id;
+
         $request->validate([
             'content'   => 'required|string|max:1000',
-            'post_id'   => 'required|exists:posts,id',
             'parent_id' => 'nullable|exists:comments,id',
         ]);
 
         $authId = auth('users')->id();
+        $user   = auth('users')->user();
 
-        Comment::create([
-            'content'      => $request->content,
+        $comment = Comment::create([
+            'content'      => $request->input('content'),
             'user_id'      => $authId,
-            'post_id'      => $request->post_id,
-            'parent_id'    => $request->parent_id ?? null,
+            'post_id'      => $postId,
+            'parent_id'    => $request->input('parent_id'),
             'comment_date' => now(),
             'likes'        => 0,
         ]);
 
-        // Only notify for top-level comments (not replies)
-        if (!$request->parent_id) {
-            $post = Post::with('user')->find($request->post_id);
+        // Only notify for top-level comments
+        if (!$request->input('parent_id')) {
+            $post = Post::with('user')->find($postId);
             if ($post && $post->user_id !== $authId) {
-                $post->user->notify(new PostCommentedNotification(auth('users')->user(), $post));
+                $post->user->notify(new PostCommentedNotification($user, $post));
             }
         }
 
-        return back()->with('commented_post', $request->post_id);
+        if ($request->wantsJson()) {
+            $user->load('businesses');
+            return response()->json([
+                'id'         => $comment->id,
+                'content'    => $comment->content,
+                'user'       => [
+                    'id'            => $user->id,
+                    'first_name'    => $user->first_name,
+                    'last_name'     => $user->last_name,
+                    'profile_photo' => $user->profile_photo,
+                    'businesses'    => $user->businesses ? ['image' => $user->businesses->image] : null,
+                ],
+                'created_at' => $comment->created_at,
+            ], 201);
+        }
+
+        return back()->with('commented_post', $postId);
     }
 
     public function show(int $id)

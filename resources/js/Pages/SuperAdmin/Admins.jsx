@@ -324,7 +324,7 @@ export default function Admins({ admins, roles }) {
 
                     <form onSubmit={submit}>
                         {/* Personal info */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20 }}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ display: 'grid', gap: 14, marginBottom: 20 }}>
                             <div>
                                 <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>الاسم الأول *</label>
                                 <input style={INPUT} value={data.first_name} onChange={e => setData('first_name', e.target.value)} placeholder="محمد" required />
@@ -394,6 +394,7 @@ export default function Admins({ admins, roles }) {
 
             {/* ─── Table ─── */}
             <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                     <thead>
                         <tr style={{ background: 'linear-gradient(135deg,#F8FAFC,#F1F5F9)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
@@ -467,6 +468,7 @@ export default function Admins({ admins, roles }) {
                         })}
                     </tbody>
                 </table>
+                </div>
             </div>
         </SuperAdminLayout>
     );

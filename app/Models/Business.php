@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Business extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['name', 'name_job', 'number', 'description', 'latitude', 'longitude', 'activity', 'image', 'status', 'user_id', 'active_typebusiness_id'];
+    protected $fillable = ['name', 'name_job', 'number', 'description', 'latitude', 'longitude', 'city', 'area', 'street', 'activity', 'image', 'status', 'user_id', 'active_typebusiness_id'];
 
     protected $casts = [
         'latitude'  => 'decimal:7',
@@ -18,6 +18,11 @@ class Business extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function gallery()
+    {
+        return $this->hasMany(BusinessGallery::class, 'business_id')->latest();
     }
 
     public function distanceTo(User $other): float

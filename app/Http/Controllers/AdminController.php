@@ -9,6 +9,8 @@ use App\Models\Post;
 use App\Models\Report;
 use App\Models\Service;
 use App\Models\User;
+use App\Notifications\BusinessStatusNotification;
+use App\Notifications\ServiceStatusNotification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -101,19 +103,21 @@ class AdminController extends Controller
     public function businessto_approve(Business $business)
     {
         $business->update(['status' => 'active']);
-        return redirect()->route('admin.verifications.index')->with('success', 'تم قبول حساب الأعمال.');
+        $business->user?->notify(new BusinessStatusNotification('approved', $business->name));
+        return back()->with('success', 'تم قبول حساب الأعمال.');
     }
 
     public function businessto_rejected(Business $business)
     {
         $business->update(['status' => 'rejected']);
-        return redirect()->route('admin.verifications.index')->with('success', 'تم رفض حساب الأعمال.');
+        $business->user?->notify(new BusinessStatusNotification('rejected', $business->name));
+        return back()->with('success', 'تم رفض حساب الأعمال.');
     }
 
     public function businessto_pending(Business $business)
     {
         $business->update(['status' => 'pending']);
-        return redirect()->route('admin.verifications.index')->with('success', 'تم إعادة الطلب لقيد الانتظار.');
+        return back()->with('success', 'تم إعادة الطلب لقيد الانتظار.');
     }
 
     public function businesses_approved(){
@@ -128,25 +132,38 @@ class AdminController extends Controller
 
 
 //////////////////////////services/////////////////////////
-    public function services_pending()
+    public function serviceRequests()
     {
-        $services = Service::where('status', 'pending')->latest()->get();
-        return view('', compact('services   '));
+        $services = Service::with(['user','category','subcategory','city'])
+            ->latest()->get();
+        return Inertia::render('Admin/ServiceRequests', ['services' => $services]);
     }
+
+    public function businessRequests()
+    {
+        $businesses = Business::with('user')->latest()->get();
+        return Inertia::render('Admin/BusinessRequests', ['businesses' => $businesses]);
+    }
+
     public function serviceto_approve(Service $service)
     {
         $service->update(['status' => 'approved']);
-        return back()->with('success', '');
+        $service->user?->notify(new ServiceStatusNotification('approved', $service->name));
+        return back()->with('success', 'تم قبول الخدمة.');
     }
+
     public function serviceto_rejected(Service $service)
     {
         $service->update(['status' => 'rejected']);
-        return back()->with('success', '');
+        $service->user?->notify(new ServiceStatusNotification('rejected', $service->name));
+        return back()->with('success', 'تم رفض الخدمة.');
     }
+
     public function serviceto_pending(Service $service)
     {
         $service->update(['status' => 'pending']);
-        return back()->with('success', '');
+        $service->user?->notify(new ServiceStatusNotification('pending', $service->name));
+        return back()->with('success', 'تم إعادة الخدمة لقيد المراجعة.');
     }
 
     public function services_approved(){
@@ -156,6 +173,30 @@ class AdminController extends Controller
     public function services_rejected(){
         $services = Service::where('status','rejected')->get();
         return view('', compact('services'));
+    }
+
+    // ── Notifications ─────────────────────────────────────────────────────────
+    public function notifications()
+    {
+        $admin         = auth('admins')->user();
+        $notifications = $admin->notifications()->latest()->paginate(20);
+
+        return Inertia::render('Admin/Notifications', [
+            'notifications' => $notifications,
+            'unread_count'  => $admin->unreadNotifications()->count(),
+        ]);
+    }
+
+    public function markNotificationRead($id)
+    {
+        auth('admins')->user()->notifications()->findOrFail($id)->markAsRead();
+        return back();
+    }
+
+    public function markAllNotificationsRead()
+    {
+        auth('admins')->user()->unreadNotifications->markAsRead();
+        return back();
     }
 /////////////////////////////////////////////////////////////////
 

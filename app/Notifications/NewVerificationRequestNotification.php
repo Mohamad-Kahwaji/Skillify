@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Notifications;
+
+use App\Notifications\Concerns\ViaFcm;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Notifications\Notification;
+
+class NewVerificationRequestNotification extends Notification
+{
+    use Queueable, ViaFcm;
+
+    public function __construct(
+        private string $username,
+        private int    $verificationId
+    ) {}
+
+    public function via(object $notifiable): array
+    {
+        return $this->channels($notifiable);
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        return [
+            'title'           => 'طلب توثيق هوية جديد',
+            'message'         => "قدّم {$this->username} طلب توثيق هوية ويحتاج إلى مراجعة.",
+            'type'            => 'info',
+            'verification_id' => $this->verificationId,
+        ];
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage($this->toDatabase($notifiable));
+    }
+
+    public function broadcastOn(?object $notifiable = null): array
+    {
+        if (!$notifiable) return [];
+        $guard = match (true) {
+            $notifiable instanceof \App\Models\SuperAdmin => 'superadmins',
+            $notifiable instanceof \App\Models\Admin      => 'admins',
+            default                                        => 'users',
+        };
+        return [new PrivateChannel("{$guard}.{$notifiable->id}.notifications")];
+    }
+
+    public function toArray(object $notifiable): array
+    {
+        return $this->toDatabase($notifiable);
+    }
+}

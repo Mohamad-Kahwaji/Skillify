@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ActiveType;
 
 class Post extends Model
 {
@@ -11,6 +12,11 @@ class Post extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function activeType()
+    {
+        return $this->belongsTo(ActiveType::class);
     }
 
     public function comments()

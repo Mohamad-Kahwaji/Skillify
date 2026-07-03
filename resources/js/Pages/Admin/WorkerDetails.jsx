@@ -33,7 +33,7 @@ export default function WorkerDetails({ business }) {
                 <span style={{ fontSize: 12, color: '#0F172A' }}>{business.name}</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 18, alignItems: 'start' }}>
+            <div className="grid-cols-1 lg:grid-cols-[1fr_320px]" style={{ display: 'grid', gap: 18, alignItems: 'start' }}>
                 <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 14, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '18px 20px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
                         <div style={{ width: 60, height: 60, borderRadius: 12, background: '#F1F5F9', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, color: '#94A3B8', flexShrink: 0 }}>

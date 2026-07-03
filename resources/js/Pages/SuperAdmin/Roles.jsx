@@ -143,7 +143,7 @@ function RoleCard({ role, onEdit, onDelete }) {
                         لا توجد صلاحيات مُعيّنة لهذا الدور
                     </div>
                 ) : (
-                    <div style={{ padding: '4px 0' }}>
+                    <div style={{ padding: '4px 0', overflowX: 'auto' }}>
                         {moduleKeys.map((mod, mi) => {
                             const modPerms = modules[mod];
                             const modLabel = MODULE_LABELS[mod] ?? mod;
@@ -151,6 +151,7 @@ function RoleCard({ role, onEdit, onDelete }) {
                                 <div key={mod} style={{
                                     display: 'grid', gridTemplateColumns: '200px 1fr',
                                     alignItems: 'center', gap: 14, padding: '11px 20px',
+                                    minWidth: 480,
                                     borderBottom: mi < moduleKeys.length - 1 ? '0.5px solid rgba(0,0,0,0.05)' : 'none',
                                     transition: 'background 0.12s',
                                 }}
@@ -351,7 +352,7 @@ export default function Roles({ roles, permissions, guards }) {
                         <span style={{ fontSize: 15, fontWeight: 700, color: '#1E1B4B' }}>إنشاء دور جديد</span>
                     </div>
                     <form onSubmit={submitCreate}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 18 }}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ display: 'grid', gap: 14, marginBottom: 18 }}>
                             <div>
                                 <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>اسم الدور *</label>
                                 <input style={INPUT} value={createForm.data.name} onChange={e => createForm.setData('name', e.target.value)} placeholder="مثال: content_moderator" required />

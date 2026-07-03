@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
 
@@ -30,9 +30,12 @@ export default function Chat({ conversation, messages: initialMessages, conversa
         return () => channel.stopListening('.MessageSent');
     }, [conversation.id]);
 
-    // Mark as read on open
+    // Mark as read on open (fire-and-forget AJAX, not Inertia)
     useEffect(() => {
-        router.post(`/user/messages/${conversation.id}/mark-read`, {}, { preserveScroll: true });
+        fetch(`/user/messages/${conversation.id}/mark-read`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '' },
+        });
     }, [conversation.id]);
 
     const send = async (e) => {
@@ -86,9 +89,9 @@ export default function Chat({ conversation, messages: initialMessages, conversa
         <UserLayout title="الرسائل">
             <Head title={`محادثة مع ${otherUser?.first_name ?? 'مستخدم'} — Skillify`} />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16, minHeight: 520 }}>
-                {/* Sidebar: conversation list */}
-                <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]" style={{ gap: 16, minHeight: 520 }}>
+                {/* Sidebar: conversation list — hidden on mobile, shown from md+ */}
+                <div className="hidden md:flex" style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 14, overflow: 'hidden', flexDirection: 'column' }}>
                     <div style={{ padding: '14px 16px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', fontSize: 13, fontWeight: 700 }}>
                         المحادثات
                     </div>
@@ -125,6 +128,12 @@ export default function Chat({ conversation, messages: initialMessages, conversa
                 <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 14, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     {/* Header */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
+                        <a href="/user/conversations" className="flex md:hidden" style={{
+                            width: 32, height: 32, borderRadius: 8, background: '#F1F5F9', color: '#475569',
+                            alignItems: 'center', justifyContent: 'center', flexShrink: 0, textDecoration: 'none',
+                        }}>
+                            <i className="ti ti-arrow-right" />
+                        </a>
                         <div style={{ width: 40, height: 40, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, flexShrink: 0 }}>
                             {initial}
                         </div>

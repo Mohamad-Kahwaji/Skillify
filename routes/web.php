@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminCityController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdvertisementController;
 use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\BusinessGalleryController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
@@ -25,11 +26,15 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\IdentityVerificationController;
 use App\Http\Controllers\Auth_SuperAdmin\LoginController as SuperAdminLoginController;
 use App\Http\Controllers\Auth_User\LogoutController as UserLogoutController;
+use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\NotificationController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth routes (login, register, forgot/reset password) ────────────────────
 require __DIR__.'/auth.php';
+
+// Broadcasting auth is registered in AppServiceProvider to take priority over the framework route.
 
 // ════════════════════════════════════════════════════════════════════════════
 // ADMIN PANEL
@@ -61,8 +66,16 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
         ->middleware('permission:businesses.approve');
     Route::patch('/workers/{business}/reject', [AdminController::class, 'businessto_rejected'])->name('workers.reject')
         ->middleware('permission:businesses.reject');
+    Route::patch('/workers/{business}/pending',[AdminController::class, 'businessto_pending'])->name('workers.pending');
     Route::delete('/workers/{id}',       [BusinessController::class, 'destroy'])->name('workers.destroy')
         ->middleware('permission:businesses.delete');
+
+    // Requests pages
+    Route::get('/business-requests', [AdminController::class, 'businessRequests'])->name('business-requests.index');
+    Route::get('/service-requests',  [AdminController::class, 'serviceRequests'])->name('service-requests.index');
+    Route::patch('/service-requests/{service}/approve', [AdminController::class, 'serviceto_approve'])->name('service-requests.approve');
+    Route::patch('/service-requests/{service}/reject',  [AdminController::class, 'serviceto_rejected'])->name('service-requests.reject');
+    Route::patch('/service-requests/{service}/pending', [AdminController::class, 'serviceto_pending'])->name('service-requests.pending');
 
     // Business Verifications
     Route::get('/verifications',                 [AdminController::class, 'verifications'])->name('verifications.index')
@@ -138,6 +151,8 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
         ->middleware('permission:active_types.view');
     Route::post('/active-types',         [ActiveTypeController::class, 'store'])->name('active_types.store')
         ->middleware('permission:active_types.create');
+    Route::patch('/active-types/{id}',   [ActiveTypeController::class, 'update'])->name('active_types.update')
+        ->middleware('permission:active_types.create');
     Route::delete('/active-types/{id}',  [ActiveTypeController::class, 'destroy'])->name('active_types.destroy')
         ->middleware('permission:active_types.delete');
 
@@ -145,6 +160,8 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::get('/active-type-businesses',          [ActiveTypebusinessController::class, 'index'])->name('active_typebusinesses.index')
         ->middleware('permission:active_type_businesses.view');
     Route::post('/active-type-businesses',         [ActiveTypebusinessController::class, 'store'])->name('active_typebusinesses.store')
+        ->middleware('permission:active_type_businesses.create');
+    Route::patch('/active-type-businesses/{id}',   [ActiveTypebusinessController::class, 'update'])->name('active_typebusinesses.update')
         ->middleware('permission:active_type_businesses.create');
     Route::delete('/active-type-businesses/{id}',  [ActiveTypebusinessController::class, 'destroy'])->name('active_typebusinesses.destroy')
         ->middleware('permission:active_type_businesses.delete');
@@ -184,9 +201,9 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
         ->middleware('permission:blocked.delete');
 
     // Notifications
-    Route::get('/notifications',              [NotificationController::class, 'index'])->name('notifications.index');
-    Route::patch('/notifications/{id}/read',  [NotificationController::class, 'markAsread'])->name('notifications.read');
-    Route::patch('/notifications/read-all',   [NotificationController::class, 'makeAllread'])->name('notifications.read-all');
+    Route::get('/notifications',              [AdminController::class, 'notifications'])->name('notifications.index');
+    Route::patch('/notifications/read-all',   [AdminController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
+    Route::patch('/notifications/{id}/read',  [AdminController::class, 'markNotificationRead'])->name('notifications.read');
     Route::post('/notifications/notify-user', [NotificationController::class, 'notifyUser'])->name('notifications.notify-user');
 });
 
@@ -245,6 +262,16 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::patch('/services/{service}/pending',    [SuperAdminController::class, 'serviceto_pending'])->name('services.pending');
     Route::delete('/services/{service}',           [SuperAdminController::class, 'destroyService'])->name('services.destroy');
 
+    // Requests pages
+    Route::get('/business-requests',                          [SuperAdminController::class, 'businessRequests'])->name('business-requests.index');
+    Route::get('/service-requests',                           [SuperAdminController::class, 'serviceRequests'])->name('service-requests.index');
+    Route::patch('/service-requests/{service}/approve',       [SuperAdminController::class, 'serviceto_approve'])->name('service-requests.approve');
+    Route::patch('/service-requests/{service}/reject',        [SuperAdminController::class, 'serviceto_rejected'])->name('service-requests.reject');
+    Route::patch('/service-requests/{service}/pending',       [SuperAdminController::class, 'serviceto_pending'])->name('service-requests.pending');
+    Route::patch('/business-requests/{business}/approve',     [SuperAdminController::class, 'businessto_approve'])->name('business-requests.approve');
+    Route::patch('/business-requests/{business}/reject',      [SuperAdminController::class, 'businessto_rejected'])->name('business-requests.reject');
+    Route::patch('/business-requests/{business}/pending',     [SuperAdminController::class, 'businessto_pending'])->name('business-requests.pending');
+
     // Ads
     Route::get('/ads',               [SuperAdminController::class, 'ads'])->name('ads.index');
     Route::patch('/ads/{ad}/toggle', [SuperAdminController::class, 'toggleAd'])->name('ads.toggle');
@@ -261,6 +288,44 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::patch('/identity-verifications/{verification}/reject',      [SuperAdminController::class, 'rejectIdentity'])->name('identity.reject');
     Route::patch('/identity-verifications/{verification}/pending',     [SuperAdminController::class, 'pendingIdentity'])->name('identity.pending');
     Route::post('/identity-verifications/{verification}/analyse-ai',   [SuperAdminController::class, 'analyseIdentityWithAi'])->name('identity.analyse');
+
+    // Reports
+    Route::get('/reports', [SuperAdminController::class, 'reports'])->name('reports.index');
+
+    // Blocked
+    Route::get('/blocked',          [SuperAdminController::class,  'blocked'])->name('blocked.index');
+    Route::post('/blocked',         [AdminBlockedController::class, 'store'])->name('blocked.store');
+    Route::delete('/blocked/{id}',  [AdminBlockedController::class, 'destroy'])->name('blocked.destroy');
+
+    // Categories
+    Route::get('/categories',           [SuperAdminController::class, 'categories'])->name('categories.index');
+    Route::post('/categories',          [CategoryController::class,   'store'])->name('categories.store');
+    Route::put('/categories/{id}',      [CategoryController::class,   'update'])->name('categories.update');
+    Route::delete('/categories/{id}',   [CategoryController::class,   'destroy'])->name('categories.destroy');
+
+    // Subcategories
+    Route::get('/subcategories',        [SuperAdminController::class,  'subcategories'])->name('subcategories.index');
+    Route::post('/subcategories',       [SubcategoryController::class, 'store'])->name('subcategories.store');
+    Route::put('/subcategories/{id}',   [SubcategoryController::class, 'update'])->name('subcategories.update');
+    Route::delete('/subcategories/{id}',[SubcategoryController::class, 'destroy'])->name('subcategories.destroy');
+
+    // Active Types
+    Route::get('/active-types',         [SuperAdminController::class, 'activeTypes'])->name('active_types.index');
+    Route::post('/active-types',        [ActiveTypeController::class, 'store'])->name('active_types.store');
+    Route::patch('/active-types/{id}',  [ActiveTypeController::class, 'update'])->name('active_types.update');
+    Route::delete('/active-types/{id}', [ActiveTypeController::class, 'destroy'])->name('active_types.destroy');
+
+    // Active Type Businesses
+    Route::get('/active-type-businesses',         [SuperAdminController::class,       'activeTypeBusinesses'])->name('active_typebusinesses.index');
+    Route::post('/active-type-businesses',        [ActiveTypebusinessController::class,'store'])->name('active_typebusinesses.store');
+    Route::patch('/active-type-businesses/{id}',  [ActiveTypebusinessController::class,'update'])->name('active_typebusinesses.update');
+    Route::delete('/active-type-businesses/{id}', [ActiveTypebusinessController::class,'destroy'])->name('active_typebusinesses.destroy');
+
+    // Cities
+    Route::get('/cities',           [SuperAdminController::class, 'cities'])->name('cities.index');
+    Route::post('/cities',          [AdminCityController::class,  'store'])->name('cities.store');
+    Route::put('/cities/{id}',      [AdminCityController::class,  'update'])->name('cities.update');
+    Route::delete('/cities/{id}',   [AdminCityController::class,  'destroy'])->name('cities.destroy');
 });
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -278,11 +343,21 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     // Business
     Route::post('/business', [BusinessController::class, 'store'])->name('business.store')
         ->middleware('permission:business.create');
-    Route::put('/business',  [BusinessController::class, 'edit'])->name('business.update')
+    Route::put('/business',    [BusinessController::class, 'edit'])->name('business.update')
+        ->middleware('permission:business.update');
+    Route::patch('/business/resubmit', [BusinessController::class, 'resubmit'])->name('business.resubmit')
         ->middleware('permission:business.update');
 
+    // Business Gallery
+    Route::post('/business/gallery',                           [BusinessGalleryController::class, 'store'])->name('business.gallery.store');
+    Route::delete('/business/gallery/{gallery}',               [BusinessGalleryController::class, 'destroy'])->name('business.gallery.destroy');
+    Route::patch('/business/gallery/{gallery}/caption',        [BusinessGalleryController::class, 'updateCaption'])->name('business.gallery.caption');
+
+    // My Services (read)
+    Route::get('/my-services', [UserController::class, 'myservices'])->name('my-services');
+
     // My Services (write) — requires active business account
-    Route::post('/my-services',        [UserDashboardController::class, 'storeService'])->name('my-services.store')
+    Route::post('/my-services',        [ServiceController::class, 'createService'])->name('my-services.store')
         ->middleware(['has_business', 'permission:my_services.create']);
     Route::put('/my-services/{id}',    [UserDashboardController::class, 'updateService'])->name('my-services.update')
         ->middleware(['has_business', 'permission:my_services.edit']);
@@ -294,6 +369,7 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     Route::get('/services',              [ServiceController::class,       'servicesusers'])->name('services');
     Route::get('/services/{id}/details', [ServiceController::class,       'serviceDetails'])->name('services.details');
     Route::post('/chat/start',           [UserDashboardController::class, 'startChat'])->name('chat.start');
+    Route::get('/users/{id}',            [UserController::class,          'publicProfile'])->name('users.profile');
 
     // My Services (read)
     Route::get('/my-services-list',   [UserController::class, 'myservices'])->name('my-services.list');
@@ -329,11 +405,61 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     Route::get('/messages/{conversationId}',            [MessageController::class, 'index'])->name('messages.index');
 
     // Notifications
-    Route::get('/notifications',              [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications',              [NotificationController::class, 'userPage'])->name('notifications.index');
+    Route::get('/notifications/data',         [NotificationController::class, 'index'])->name('notifications.data');
     Route::get('/notifications/unread',       [NotificationController::class, 'unread'])->name('notifications.unread');
     Route::patch('/notifications/{id}/read',  [NotificationController::class, 'markAsread'])->name('notifications.read');
     Route::patch('/notifications/read-all',   [NotificationController::class, 'makeAllread'])->name('notifications.read-all');
     Route::delete('/notifications/{id}',      [NotificationController::class, 'destroy'])->name('notifications.destroy');
+
+    // FCM push token registration
+    Route::post('/fcm-token', [FcmTokenController::class, 'store'])->name('fcm.token');
+});
+
+// ── Custom broadcasting auth (supports users, admins, super_admins guards) ────
+Route::post('/skillify-broadcast-auth', function (\Illuminate\Http\Request $request) {
+    $channel = $request->input('channel_name', '');
+
+    if (str_starts_with($channel, 'private-superadmins.')) {
+        $authed = $request->user('super_admins');
+    } elseif (str_starts_with($channel, 'private-admins.')) {
+        $authed = $request->user('admins');
+    } else {
+        $authed = $request->user('users');
+    }
+
+    if (!$authed) return response()->json(['error' => 'Unauthenticated.'], 403);
+    $request->setUserResolver(fn () => $authed);
+    return \Illuminate\Support\Facades\Broadcast::auth($request);
+})->middleware('web')->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class);
+
+// ── Test broadcast (REMOVE IN PRODUCTION) ────────────────────────────────────
+Route::get('/test-broadcast/{guard?}', function (string $guard = 'admins') {
+    $broadcaster = app(\Illuminate\Contracts\Broadcasting\Broadcaster::class);
+
+    if ($guard === 'super_admins') {
+        $model = \App\Models\SuperAdmin::first();
+        $channelPrefix = 'superadmins';
+    } elseif ($guard === 'users') {
+        $model = \App\Models\User::first();
+        $channelPrefix = 'users';
+    } else {
+        $model = \App\Models\Admin::first();
+        $channelPrefix = 'admins';
+    }
+
+    $channel = "private-{$channelPrefix}.{$model->id}.notifications";
+    $broadcaster->broadcast(
+        [$channel],
+        'Illuminate\\Notifications\\Events\\BroadcastNotificationCreated',
+        [
+            'id'      => (string) \Illuminate\Support\Str::uuid(),
+            'type'    => 'App\\Notifications\\NewRequestNotification',
+            'title'   => 'اختبار إشعار فوري',
+            'message' => 'هذا اختبار — وصل الإشعار بنجاح!',
+        ]
+    );
+    return response()->json(['sent_to' => $channel, 'model' => $model->id]);
 });
 
 // ── Root ─────────────────────────────────────────────────────────────────────

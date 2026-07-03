@@ -5,37 +5,59 @@ import SuperAdminLayout from '../../Layouts/SuperAdminLayout';
 const AV = ['#6D28D9','#0D9488','#2563EB','#D97706','#DC2626','#0891B2','#7C3AED','#059669'];
 
 const STATUS_CFG = {
-    approved:     { bg: '#D1FAE5', color: '#065F46', label: 'مقبول',          icon: 'ti-circle-check',  border: '#6EE7B7' },
-    pending:      { bg: '#FEF3C7', color: '#92400E', label: 'قيد المراجعة',   icon: 'ti-clock',         border: '#FDE68A' },
-    rejected:     { bg: '#FEE2E2', color: '#991B1B', label: 'مرفوض',          icon: 'ti-circle-x',      border: '#FCA5A5' },
-    under_review: { bg: '#DBEAFE', color: '#1E40AF', label: 'تحت المراجعة',  icon: 'ti-eye',           border: '#93C5FD' },
+    approved: { bg: '#ECFDF5', color: '#065F46', label: 'مقبول',         icon: 'ti-circle-check', border: '#6EE7B7', dot: '#10B981' },
+    pending:  { bg: '#FEF3C7', color: '#92400E', label: 'قيد المراجعة', icon: 'ti-clock',         border: '#FDE68A', dot: '#F59E0B' },
+    rejected: { bg: '#FEF2F2', color: '#991B1B', label: 'مرفوض',         icon: 'ti-circle-x',     border: '#FCA5A5', dot: '#EF4444' },
 };
-const DEFAULT_ST = STATUS_CFG.pending;
 
 const TABS = [
-    { key: 'all',      label: 'الكل',           color: '#1E1B4B', bg: '#EEF2FF', border: '#C7D2FE', icon: 'ti-apps' },
-    { key: 'pending',  label: 'قيد المراجعة',  color: '#92400E', bg: '#FEF3C7', border: '#FDE68A', icon: 'ti-clock' },
-    { key: 'approved', label: 'مقبول',           color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7', icon: 'ti-circle-check' },
-    { key: 'rejected', label: 'مرفوض',          color: '#991B1B', bg: '#FEE2E2', border: '#FCA5A5', icon: 'ti-circle-x' },
+    { key: 'all',      label: 'الكل',          color: '#3730A3', bg: '#EEF2FF', border: '#C7D2FE', icon: 'ti-apps' },
+    { key: 'pending',  label: 'قيد المراجعة', color: '#92400E', bg: '#FEF3C7', border: '#FDE68A', icon: 'ti-clock' },
+    { key: 'approved', label: 'مقبول',          color: '#065F46', bg: '#ECFDF5', border: '#6EE7B7', icon: 'ti-circle-check' },
+    { key: 'rejected', label: 'مرفوض',         color: '#991B1B', bg: '#FEF2F2', border: '#FCA5A5', icon: 'ti-circle-x' },
 ];
 
-const PRICE_TYPE_LABEL = { usd: '$', syp: 'ل.س' };
+function ServiceImage({ service, size = 40, colorIdx = 0 }) {
+    const [err, setErr] = useState(false);
+    const av1 = AV[colorIdx % AV.length];
+    const av2 = AV[(colorIdx + 2) % AV.length];
+    const img = (!err && service.image)
+        ? (service.image.startsWith('http') ? service.image : `/storage/${service.image}`)
+        : null;
+
+    if (img) {
+        return (
+            <img src={img} alt={service.name} onError={() => setErr(true)}
+                style={{ width: size, height: size, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(0,0,0,0.07)' }} />
+        );
+    }
+    return (
+        <div style={{
+            width: size, height: size, borderRadius: 10, flexShrink: 0,
+            background: `linear-gradient(135deg,${av1},${av2})`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: size * 0.38, color: '#fff',
+        }}>
+            <i className="ti ti-tool" />
+        </div>
+    );
+}
 
 export default function Services({ services }) {
     const [tab,    setTab]    = useState('all');
     const [search, setSearch] = useState('');
 
-    const allServices = services ?? [];
+    const all = services ?? [];
 
-    const filtered = allServices
+    const filtered = all
         .filter(s => tab === 'all' || s.status === tab)
         .filter(s =>
-            `${s.name ?? ''} ${s.user?.first_name ?? ''} ${s.user?.last_name ?? ''} ${s.category?.name_ar ?? s.category?.name_en ?? ''} ${s.city?.name_ar ?? s.city?.name_en ?? ''}`
+            `${s.name ?? ''} ${s.user?.first_name ?? ''} ${s.user?.last_name ?? ''} ${s.category?.name ?? ''} ${s.city?.name ?? ''}`
                 .toLowerCase().includes(search.toLowerCase())
         );
 
     const counts = TABS.reduce((acc, t) => {
-        acc[t.key] = t.key === 'all' ? allServices.length : allServices.filter(s => s.status === t.key).length;
+        acc[t.key] = t.key === 'all' ? all.length : all.filter(s => s.status === t.key).length;
         return acc;
     }, {});
 
@@ -46,56 +68,66 @@ export default function Services({ services }) {
         <SuperAdminLayout title="الخدمات">
             <Head title="الخدمات — Skillify" />
 
-            {/* ─── Header ─── */}
+            {/* Header */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1E1B4B', margin: 0, letterSpacing: -0.5 }}>جميع الخدمات</h1>
-                    <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 4 }}>{filtered.length} خدمة</p>
+                    <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 4 }}>{all.length} خدمة مدرجة</p>
                 </div>
-
-                {/* Search */}
-                <div style={{ position: 'relative', minWidth: 260 }}>
-                    <i className="ti ti-search" style={{ position: 'absolute', top: '50%', right: 12, transform: 'translateY(-50%)', color: '#94A3B8', fontSize: 15, pointerEvents: 'none' }} />
+                <div style={{ position: 'relative' }}>
+                    <i className="ti ti-search" style={{ position: 'absolute', top: '50%', right: 12, transform: 'translateY(-50%)', color: '#94A3B8', fontSize: 14, pointerEvents: 'none' }} />
                     <input value={search} onChange={e => setSearch(e.target.value)}
                         placeholder="بحث بالاسم، المزود، الفئة، المدينة..."
-                        style={{ width: '100%', padding: '9px 38px 9px 13px', border: '1px solid rgba(0,0,0,0.11)', borderRadius: 9, fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: "'Cairo','Inter',sans-serif", background: '#FAFAFA' }} />
+                        style={{ width: 280, padding: '9px 38px 9px 14px', border: '1px solid rgba(0,0,0,0.09)', borderRadius: 10, fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: "'Cairo','Inter',sans-serif", background: '#FAFAFA', direction: 'rtl', transition: 'border-color .15s' }}
+                        onFocus={e => e.target.style.borderColor = '#7C3AED'}
+                        onBlur={e => e.target.style.borderColor = 'rgba(0,0,0,0.09)'} />
                 </div>
             </div>
 
-            {/* ─── Status tabs ─── */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 {TABS.map(t => (
                     <button key={t.key} onClick={() => setTab(t.key)} style={{
                         display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 24,
-                        border: `1px solid ${tab === t.key ? t.color : 'rgba(0,0,0,0.10)'}`,
+                        border: `1.5px solid ${tab === t.key ? t.color : 'rgba(0,0,0,0.08)'}`,
                         background: tab === t.key ? t.bg : '#fff',
                         color: tab === t.key ? t.color : '#64748B',
                         fontSize: 12.5, fontWeight: tab === t.key ? 700 : 500, cursor: 'pointer',
                         fontFamily: "'Cairo','Inter',sans-serif", transition: 'all 0.13s',
+                        boxShadow: tab === t.key ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
                     }}>
                         <i className={`ti ${t.icon}`} style={{ fontSize: 13 }} />
                         {t.label}
-                        <span style={{ background: tab === t.key ? 'rgba(0,0,0,0.10)' : '#F1F5F9', color: tab === t.key ? t.color : '#64748B', borderRadius: 20, padding: '0 7px', fontSize: 11, fontWeight: 700 }}>
+                        <span style={{ background: tab === t.key ? 'rgba(0,0,0,0.1)' : '#F1F5F9', color: tab === t.key ? t.color : '#64748B', borderRadius: 20, padding: '1px 8px', fontSize: 11, fontWeight: 700 }}>
                             {counts[t.key]}
                         </span>
                     </button>
                 ))}
+                {search && (
+                    <span style={{ fontSize: 12, color: '#64748B', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <i className="ti ti-filter" /> {filtered.length} نتيجة
+                        <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: 11, padding: '0 4px' }}>
+                            <i className="ti ti-x" />
+                        </button>
+                    </span>
+                )}
             </div>
 
-            {/* ─── Table ─── */}
-            <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+            {/* Table */}
+            <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+                <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                     <thead>
-                        <tr style={{ background: 'linear-gradient(135deg,#F8FAFC,#F1F5F9)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+                        <tr style={{ background: 'linear-gradient(to left,#F8FAFC,#EEF2FF)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                             {[
-                                { label: 'الخدمة',    w: '28%' },
-                                { label: 'الفئة',     w: '15%' },
+                                { label: 'الخدمة',    w: '26%' },
+                                { label: 'التصنيف',   w: '15%' },
                                 { label: 'المزود',    w: '15%' },
-                                { label: 'السعر',     w: '12%' },
-                                { label: 'الحالة',   w: '13%' },
-                                { label: 'إجراءات',  w: '17%' },
+                                { label: 'السعر',     w: '11%' },
+                                { label: 'الحالة',   w: '12%' },
+                                { label: 'إجراءات',  w: '21%' },
                             ].map(h => (
-                                <th key={h.label} style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: '#374151', whiteSpace: 'nowrap', width: h.w, fontSize: 12 }}>
+                                <th key={h.label} style={{ padding: '13px 16px', textAlign: 'right', fontWeight: 700, color: '#4C1D95', whiteSpace: 'nowrap', width: h.w, fontSize: 11.5 }}>
                                     {h.label}
                                 </th>
                             ))}
@@ -104,45 +136,36 @@ export default function Services({ services }) {
                     <tbody>
                         {!filtered.length ? (
                             <tr>
-                                <td colSpan={6} style={{ padding: '64px 24px', textAlign: 'center', color: '#94A3B8' }}>
-                                    <i className="ti ti-tool" style={{ fontSize: 48, display: 'block', marginBottom: 12, opacity: 0.12 }} />
-                                    <div style={{ fontSize: 14, fontWeight: 600, color: '#64748B', marginBottom: 6 }}>لا توجد خدمات</div>
-                                    <p style={{ fontSize: 13, margin: 0 }}>جرّب تغيير الفلتر أو كلمة البحث.</p>
+                                <td colSpan={6} style={{ padding: '72px 24px', textAlign: 'center' }}>
+                                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                                        <i className="ti ti-tool" style={{ fontSize: 28, color: '#C4B5FD' }} />
+                                    </div>
+                                    <div style={{ fontSize: 14, fontWeight: 700, color: '#64748B', marginBottom: 6 }}>لا توجد خدمات</div>
+                                    <p style={{ fontSize: 13, color: '#94A3B8', margin: 0 }}>جرّب تغيير الفلتر أو كلمة البحث.</p>
                                 </td>
                             </tr>
                         ) : filtered.map((s, i) => {
-                            const st    = STATUS_CFG[s.status] ?? DEFAULT_ST;
-                            const price = Number(s.price ?? 0).toLocaleString('ar');
-                            const unit  = s.price_type === 'usd' ? '$' : 'ل.س';
-                            const catName  = s.category?.name_ar ?? s.category?.name_en ?? '—';
-                            const subName  = s.subcategory?.name_ar ?? s.subcategory?.name_en ?? '';
-                            const cityName = s.city?.name_ar ?? s.city?.name_en ?? '';
-                            const av = AV[i % AV.length];
+                            const st  = STATUS_CFG[s.status] ?? STATUS_CFG.pending;
+                            const uv1 = AV[(i + 1) % AV.length];
+                            const uv2 = AV[(i + 3) % AV.length];
 
                             return (
                                 <tr key={s.id}
-                                    style={{ borderBottom: '0.5px solid rgba(0,0,0,0.05)', transition: 'background 0.12s' }}
+                                    style={{ borderBottom: '1px solid rgba(0,0,0,0.04)', transition: 'background 0.12s' }}
                                     onMouseEnter={e => e.currentTarget.style.background = '#FAFAFF'}
                                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                 >
-                                    {/* Service name + city */}
-                                    <td style={{ padding: '13px 16px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                            <div style={{
-                                                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                                                background: `linear-gradient(135deg,${av},${AV[(i + 2) % AV.length]})`,
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                fontSize: 15, color: '#fff',
-                                            }}>
-                                                <i className="ti ti-tool" />
-                                            </div>
+                                    {/* Service */}
+                                    <td style={{ padding: '12px 16px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                                            <ServiceImage service={s} size={40} colorIdx={i} />
                                             <div style={{ minWidth: 0 }}>
-                                                <div style={{ fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
+                                                <div style={{ fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 190, fontSize: 13 }}>
                                                     {s.name}
                                                 </div>
-                                                {cityName && (
+                                                {s.city?.name && (
                                                     <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2, display: 'flex', alignItems: 'center', gap: 3 }}>
-                                                        <i className="ti ti-map-pin" style={{ fontSize: 11 }} />{cityName}
+                                                        <i className="ti ti-map-pin" style={{ fontSize: 10 }} />{s.city.name}
                                                     </div>
                                                 )}
                                             </div>
@@ -150,34 +173,32 @@ export default function Services({ services }) {
                                     </td>
 
                                     {/* Category */}
-                                    <td style={{ padding: '13px 16px' }}>
-                                        <div style={{ fontSize: 12.5, fontWeight: 600, color: '#334155' }}>{catName}</div>
-                                        {subName && <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>{subName}</div>}
+                                    <td style={{ padding: '12px 16px' }}>
+                                        <div style={{ fontSize: 12.5, fontWeight: 600, color: '#334155' }}>{s.category?.name ?? '—'}</div>
+                                        {s.subcategory?.name && <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>{s.subcategory.name}</div>}
                                     </td>
 
                                     {/* Provider */}
-                                    <td style={{ padding: '13px 16px' }}>
+                                    <td style={{ padding: '12px 16px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                             <div style={{
-                                                width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                                                background: `linear-gradient(135deg,${AV[(i + 1) % AV.length]},${AV[(i + 4) % AV.length]})`,
+                                                width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                                                background: `linear-gradient(135deg,${uv1},${uv2})`,
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 fontSize: 11, fontWeight: 700, color: '#fff',
                                             }}>
                                                 {(s.user?.first_name?.[0] ?? 'م').toUpperCase()}
                                             </div>
-                                            <div>
-                                                <div style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A', whiteSpace: 'nowrap' }}>
-                                                    {s.user?.first_name} {s.user?.last_name}
-                                                </div>
+                                            <div style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 110 }}>
+                                                {s.user?.first_name} {s.user?.last_name}
                                             </div>
                                         </div>
                                     </td>
 
                                     {/* Price */}
-                                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap' }}>
-                                        <div style={{ fontSize: 14, fontWeight: 800, color: '#0F172A' }}>
-                                            {s.price_type === 'usd' ? `$${price}` : price}
+                                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                                        <div style={{ fontSize: 14, fontWeight: 800, color: '#1E1B4B', fontVariantNumeric: 'tabular-nums' }}>
+                                            {s.price_type === 'usd' ? `$${Number(s.price ?? 0).toLocaleString()}` : Number(s.price ?? 0).toLocaleString()}
                                         </div>
                                         <div style={{ fontSize: 10, color: '#94A3B8', marginTop: 1 }}>
                                             {s.price_type === 'usd' ? 'دولار' : 'ل.س'}
@@ -185,69 +206,64 @@ export default function Services({ services }) {
                                     </td>
 
                                     {/* Status */}
-                                    <td style={{ padding: '13px 16px' }}>
+                                    <td style={{ padding: '12px 16px' }}>
                                         <span style={{
                                             display: 'inline-flex', alignItems: 'center', gap: 5,
-                                            fontSize: 11, fontWeight: 700, padding: '5px 11px', borderRadius: 20,
-                                            background: st.bg, color: st.color,
-                                            border: `1px solid ${st.border}`,
+                                            fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 20,
+                                            background: st.bg, color: st.color, border: `1px solid ${st.border}`,
                                         }}>
-                                            <i className={`ti ${st.icon}`} style={{ fontSize: 11 }} />
+                                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: st.dot, display: 'inline-block' }} />
                                             {st.label}
                                         </span>
                                     </td>
 
                                     {/* Actions */}
-                                    <td style={{ padding: '13px 16px' }}>
-                                        <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                                    <td style={{ padding: '12px 16px' }}>
+                                        <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'wrap' }}>
                                             {s.status !== 'approved' && (
-                                                <button onClick={() => patch(s.id, 'approve')} title="قبول" style={{
+                                                <button onClick={() => patch(s.id, 'approve')} style={{
                                                     display: 'inline-flex', alignItems: 'center', gap: 4,
-                                                    padding: '5px 10px', borderRadius: 7,
-                                                    border: '1px solid #6EE7B7', background: '#D1FAE5', color: '#065F46',
-                                                    fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                                                    fontFamily: "'Cairo','Inter',sans-serif", transition: 'all 0.13s',
+                                                    padding: '5px 11px', borderRadius: 8,
+                                                    border: '1px solid #6EE7B7', background: '#ECFDF5', color: '#065F46',
+                                                    fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: "'Cairo','Inter',sans-serif", transition: 'all .13s',
                                                 }}
-                                                    onMouseEnter={e => e.currentTarget.style.background = '#A7F3D0'}
-                                                    onMouseLeave={e => e.currentTarget.style.background = '#D1FAE5'}
+                                                    onMouseEnter={e => e.currentTarget.style.background = '#D1FAE5'}
+                                                    onMouseLeave={e => e.currentTarget.style.background = '#ECFDF5'}
                                                 >
-                                                    <i className="ti ti-check" style={{ fontSize: 12 }} /> قبول
+                                                    <i className="ti ti-check" /> قبول
                                                 </button>
                                             )}
                                             {s.status !== 'rejected' && (
-                                                <button onClick={() => patch(s.id, 'reject')} title="رفض" style={{
+                                                <button onClick={() => patch(s.id, 'reject')} style={{
                                                     display: 'inline-flex', alignItems: 'center', gap: 4,
-                                                    padding: '5px 10px', borderRadius: 7,
-                                                    border: '1px solid #FCA5A5', background: '#FEE2E2', color: '#991B1B',
-                                                    fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                                                    fontFamily: "'Cairo','Inter',sans-serif", transition: 'all 0.13s',
+                                                    padding: '5px 11px', borderRadius: 8,
+                                                    border: '1px solid #FCA5A5', background: '#FEF2F2', color: '#991B1B',
+                                                    fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: "'Cairo','Inter',sans-serif", transition: 'all .13s',
                                                 }}
-                                                    onMouseEnter={e => e.currentTarget.style.background = '#FECACA'}
-                                                    onMouseLeave={e => e.currentTarget.style.background = '#FEE2E2'}
+                                                    onMouseEnter={e => e.currentTarget.style.background = '#FEE2E2'}
+                                                    onMouseLeave={e => e.currentTarget.style.background = '#FEF2F2'}
                                                 >
-                                                    <i className="ti ti-x" style={{ fontSize: 12 }} /> رفض
+                                                    <i className="ti ti-x" /> رفض
                                                 </button>
                                             )}
                                             {s.status !== 'pending' && (
-                                                <button onClick={() => patch(s.id, 'pending')} title="قيد المراجعة" style={{
-                                                    width: 30, height: 30, borderRadius: 7,
-                                                    border: '1px solid rgba(0,0,0,0.11)', background: '#F8FAFC', color: '#64748B',
-                                                    fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    transition: 'all 0.13s',
+                                                <button onClick={() => patch(s.id, 'pending')} title="إعادة للمراجعة" style={{
+                                                    width: 32, height: 32, borderRadius: 8,
+                                                    border: '1px solid rgba(0,0,0,0.1)', background: '#FAFAFA', color: '#64748B',
+                                                    fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .13s',
                                                 }}
                                                     onMouseEnter={e => e.currentTarget.style.background = '#FEF3C7'}
-                                                    onMouseLeave={e => e.currentTarget.style.background = '#F8FAFC'}
+                                                    onMouseLeave={e => e.currentTarget.style.background = '#FAFAFA'}
                                                 >
                                                     <i className="ti ti-clock" />
                                                 </button>
                                             )}
                                             <button onClick={() => destroy(s.id)} title="حذف" style={{
-                                                width: 30, height: 30, borderRadius: 7,
+                                                width: 32, height: 32, borderRadius: 8, cursor: 'pointer',
                                                 border: '1px solid #FCA5A5', background: '#FEF2F2', color: '#DC2626',
-                                                fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                transition: 'all 0.13s',
+                                                fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .13s',
                                             }}
-                                                onMouseEnter={e => { e.currentTarget.style.background = '#FEE2E2'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                                                onMouseEnter={e => { e.currentTarget.style.background = '#FEE2E2'; e.currentTarget.style.transform = 'scale(1.08)'; }}
                                                 onMouseLeave={e => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.transform = 'scale(1)'; }}
                                             >
                                                 <i className="ti ti-trash" />
@@ -259,6 +275,13 @@ export default function Services({ services }) {
                         })}
                     </tbody>
                 </table>
+                </div>
+
+                {filtered.length > 0 && (
+                    <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(0,0,0,0.04)', background: '#FAFAFF', fontSize: 11.5, color: '#94A3B8', textAlign: 'center' }}>
+                        عرض {filtered.length} من {all.length} خدمة
+                    </div>
+                )}
             </div>
         </SuperAdminLayout>
     );

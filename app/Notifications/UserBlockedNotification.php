@@ -2,30 +2,28 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\ViaFcm;
 use Illuminate\Bus\Queueable;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Broadcasting\PrivateChannel;
 
 class UserBlockedNotification extends Notification
 {
-    use Queueable;
+    use Queueable, ViaFcm;
 
-    public function __construct(
-        private string $reason = 'No reason specified',
-        private ?object $notifiable = null
-    ) {}
+    public function __construct(private string $reason = 'لم يتم تحديد سبب') {}
 
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return $this->channels($notifiable);
     }
 
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title'   => 'Account Suspended',
-            'message' => 'Your account has been suspended. Reason: ' . $this->reason,
+            'title'   => 'تم تعليق حسابك',
+            'message' => 'تم تعليق حسابك. السبب: ' . $this->reason,
             'type'    => 'warning',
         ];
     }
@@ -35,11 +33,10 @@ class UserBlockedNotification extends Notification
         return new BroadcastMessage($this->toDatabase($notifiable));
     }
 
-    public function broadcastOn(): array
+    public function broadcastOn(?object $notifiable = null): array
     {
-        return [
-            new PrivateChannel('users.' . $this->notifiable->id . '.notifications'),
-        ];
+        if (!$notifiable) return [];
+        return [new PrivateChannel("users.{$notifiable->id}.notifications")];
     }
 
     public function toArray(object $notifiable): array

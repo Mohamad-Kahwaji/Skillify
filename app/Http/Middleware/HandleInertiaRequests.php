@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Business;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -66,6 +67,16 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error'   => $request->session()->get('error'),
+            ],
+            'badges' => [
+                'pending_businesses' => ($admin || $superAdmin)
+                    ? Business::where('status', 'pending')->count()
+                    : 0,
+                'unread_notifications' => $admin
+                    ? $admin->unreadNotifications()->count()
+                    : ($superAdmin
+                        ? $superAdmin->unreadNotifications()->count()
+                        : ($user ? $user->unreadNotifications()->count() : 0)),
             ],
         ];
     }

@@ -1,12 +1,26 @@
 ﻿import { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 
+function Field({ label, error, children }) {
+    return (
+        <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}</label>
+            {children}
+            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+        </div>
+    );
+}
+
+const inputClass = (err) =>
+    `w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] transition-all placeholder:text-gray-300 ${err ? 'border-red-400' : 'border-gray-200'}`;
+
 export default function Register() {
     const [showPass, setShowPass] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
         first_name: '',
+        middle_name: '',
         last_name: '',
         phone: '',
         email: '',
@@ -21,17 +35,6 @@ export default function Register() {
         e.preventDefault();
         post('/register');
     };
-
-    const Field = ({ label, error, children }) => (
-        <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}</label>
-            {children}
-            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-        </div>
-    );
-
-    const inputClass = (err) =>
-        `w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] transition-all placeholder:text-gray-300 ${err ? 'border-red-400' : 'border-gray-200'}`;
 
     return (
         <>
@@ -49,9 +52,9 @@ export default function Register() {
                     <span className="text-2xl font-extrabold text-gray-900">Skillify</span>
                 </Link>
 
-                <div className="w-full max-w-lg bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-[#0D9488] to-[#134E4A] px-8 py-7 text-white">
+                    <div className="bg-gradient-to-r from-[#0D9488] to-[#134E4A] px-10 py-8 text-white">
                         <h1 className="text-2xl font-extrabold mb-1">إنشاء حساب جديد</h1>
                         <p className="text-teal-200 text-sm">انضم إلى Skillify مجاناً وابدأ رحلتك</p>
                         <div className="flex items-center gap-2 mt-4">
@@ -67,13 +70,17 @@ export default function Register() {
                         </div>
                     </div>
 
-                    <form onSubmit={submit} className="px-8 py-7 space-y-5">
+                    <form onSubmit={submit} className="px-10 py-8 space-y-5">
 
-                        {/* Row: first + last name */}
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* Row: first + middle + last name */}
+                        <div className="grid grid-cols-3 gap-4">
                             <Field label="الاسم الأول" error={errors.first_name}>
                                 <input type="text" value={data.first_name} onChange={e => setData('first_name', e.target.value)}
                                     placeholder="محمد" className={inputClass(errors.first_name)} />
+                            </Field>
+                            <Field label="الاسم الأوسط" error={errors.middle_name}>
+                                <input type="text" value={data.middle_name} onChange={e => setData('middle_name', e.target.value)}
+                                    placeholder="علي" className={inputClass(errors.middle_name)} />
                             </Field>
                             <Field label="الاسم الأخير" error={errors.last_name}>
                                 <input type="text" value={data.last_name} onChange={e => setData('last_name', e.target.value)}

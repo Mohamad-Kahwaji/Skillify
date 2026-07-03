@@ -2,14 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActiveType;
+use App\Models\ActiveTypebusiness;
 use App\Models\Admin;
 use App\Models\Advertisement;
+use App\Models\Blocked;
 use App\Models\Business;
+use App\Models\Category;
+use App\Models\City;
 use App\Models\IdentityVerification;
 use App\Models\Post;
 use App\Models\Report;
 use App\Models\Service;
+use App\Models\Subcategory;
 use App\Models\User;
+use App\Notifications\BusinessStatusNotification;
+use App\Notifications\IdentityVerificationNotification;
+use App\Notifications\ServiceStatusNotification;
 use App\Services\GeminiIdentityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -173,13 +182,15 @@ class SuperAdminController extends Controller
 
     public function businessto_approve(Business $business)
     {
-        $business->update(['status' => 'approved']);
+        $business->update(['status' => 'active']);
+        $business->user?->notify(new BusinessStatusNotification('approved', $business->name));
         return back()->with('success', 'Business approved.');
     }
 
     public function businessto_rejected(Business $business)
     {
         $business->update(['status' => 'rejected']);
+        $business->user?->notify(new BusinessStatusNotification('rejected', $business->name));
         return back()->with('success', 'Business rejected.');
     }
 
@@ -205,19 +216,22 @@ class SuperAdminController extends Controller
     public function serviceto_approve(Service $service)
     {
         $service->update(['status' => 'approved']);
-        return back()->with('success', 'Service approved.');
+        $service->user?->notify(new ServiceStatusNotification('approved', $service->name));
+        return back()->with('success', 'تم قبول الخدمة.');
     }
 
     public function serviceto_rejected(Service $service)
     {
         $service->update(['status' => 'rejected']);
-        return back()->with('success', 'Service rejected.');
+        $service->user?->notify(new ServiceStatusNotification('rejected', $service->name));
+        return back()->with('success', 'تم رفض الخدمة.');
     }
 
     public function serviceto_pending(Service $service)
     {
         $service->update(['status' => 'pending']);
-        return back()->with('success', 'Service set to pending.');
+        $service->user?->notify(new ServiceStatusNotification('pending', $service->name));
+        return back()->with('success', 'تم إعادة الخدمة لقيد المراجعة.');
     }
 
     public function destroyService(Service $service)
@@ -256,13 +270,15 @@ class SuperAdminController extends Controller
 
     public function approveIdentity(IdentityVerification $verification)
     {
-        // reviewed_by references admins table; super_admins is a separate table — keep null
         $verification->update([
             'status'           => 'approved',
             'reviewed_by'      => null,
             'reviewed_at'      => now(),
             'rejection_reason' => null,
         ]);
+
+        $verification->user?->notify(new IdentityVerificationNotification('approved'));
+
         return back()->with('success', 'تم قبول طلب التوثيق.');
     }
 
@@ -275,6 +291,9 @@ class SuperAdminController extends Controller
             'reviewed_at'      => now(),
             'rejection_reason' => $request->reason,
         ]);
+
+        $verification->user?->notify(new IdentityVerificationNotification('rejected', $request->reason));
+
         return back()->with('success', 'تم رفض طلب التوثيق.');
     }
 
@@ -381,5 +400,76 @@ class SuperAdminController extends Controller
         return back()->with('success', 'تم تعيين جميع الإشعارات كمقروءة.');
     }
 
+    // ── Reports ──────────────────────────────────────────────────────────────────
+    public function reports()
+    {
+        $reports = Report::with('user')->latest()->get();
+        return Inertia::render('SuperAdmin/Reports', ['reports' => $reports]);
+    }
 
+    // ── Blocked ──────────────────────────────────────────────────────────────────
+    public function blocked()
+    {
+        $blocked = Blocked::with(['user'])->latest()->get();
+        $users   = User::where('status', 'active')->orderBy('first_name')->get();
+        return Inertia::render('SuperAdmin/Blocked', ['blocked' => $blocked, 'users' => $users]);
+    }
+
+    // ── Categories ───────────────────────────────────────────────────────────────
+    public function categories()
+    {
+        $categories    = Category::with('activeTypebusiness')->latest()->get();
+        $businessTypes = ActiveTypebusiness::all();
+        return Inertia::render('SuperAdmin/Categories', [
+            'categories'    => $categories,
+            'businessTypes' => $businessTypes,
+        ]);
+    }
+
+    // ── Subcategories ─────────────────────────────────────────────────────────────
+    public function subcategories()
+    {
+        $subcategories = Subcategory::with('category.activeTypebusiness')->latest()->get();
+        $categories    = Category::with('activeTypebusiness')->orderBy('name')->get();
+        $businessTypes = ActiveTypebusiness::orderBy('name')->get();
+        return Inertia::render('SuperAdmin/Subcategories', [
+            'subcategories' => $subcategories,
+            'categories'    => $categories,
+            'businessTypes' => $businessTypes,
+        ]);
+    }
+
+    // ── Active Types ─────────────────────────────────────────────────────────────
+    public function activeTypes()
+    {
+        $types = ActiveType::latest()->get();
+        return Inertia::render('SuperAdmin/ActiveTypes', ['types' => $types]);
+    }
+
+    // ── Active Type Businesses ────────────────────────────────────────────────────
+    public function activeTypeBusinesses()
+    {
+        $types = ActiveTypebusiness::latest()->get();
+        return Inertia::render('SuperAdmin/ActiveTypeBusinesses', ['types' => $types]);
+    }
+
+    // ── Cities ───────────────────────────────────────────────────────────────────
+    public function cities()
+    {
+        $cities = City::orderBy('name')->get();
+        return Inertia::render('SuperAdmin/Cities', ['cities' => $cities]);
+    }
+
+    // ── Requests ─────────────────────────────────────────────────────────────────
+    public function serviceRequests()
+    {
+        $services = Service::with(['user','category','subcategory','city'])->latest()->get();
+        return Inertia::render('SuperAdmin/ServiceRequests', ['services' => $services]);
+    }
+
+    public function businessRequests()
+    {
+        $businesses = Business::with('user')->latest()->get();
+        return Inertia::render('SuperAdmin/BusinessRequests', ['businesses' => $businesses]);
+    }
 }

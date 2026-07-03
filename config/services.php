@@ -39,4 +39,8 @@ return [
         'key' => env('GEMINI_API_KEY', ''),
     ],
 
+    'fcm' => [
+        'server_key' => env('FCM_SERVER_KEY', ''),
+    ],
+
 ];

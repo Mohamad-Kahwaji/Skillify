@@ -11,6 +11,18 @@ const TYPE_CONFIG = {
     'App\\Notifications\\UserBlockedNotification': {
         icon: 'ti-user-off', color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A', label: 'حظر مستخدم',
     },
+    'App\\Notifications\\NewRequestNotification': {
+        icon: 'ti-briefcase', color: '#0D9488', bg: '#F0FDFA', border: '#99F6E4', label: 'طلب أعمال جديد',
+    },
+    'App\\Notifications\\NewVerificationRequestNotification': {
+        icon: 'ti-id-badge-2', color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', label: 'طلب توثيق هوية',
+    },
+    'App\\Notifications\\NewServiceRequestNotification': {
+        icon: 'ti-tool', color: '#0891B2', bg: '#E0F2FE', border: '#BAE6FD', label: 'طلب خدمة جديد',
+    },
+    'App\\Notifications\\AdminAlertNotification': {
+        icon: 'ti-alert-triangle', color: '#EF4444', bg: '#FEF2F2', border: '#FECACA', label: 'تنبيه',
+    },
 };
 
 const DEFAULT_TYPE = {

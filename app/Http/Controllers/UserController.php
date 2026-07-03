@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
+use App\Models\City;
 use App\Models\Service;
+use App\Models\Subcategory;
 use App\Models\User;
 use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
@@ -25,8 +28,9 @@ class UserController extends Controller
         $user = auth('users')->user();
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
+            'middle_namae'=>'required|string',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'nullable|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'birthdate' => 'required|date',
             'gender' => 'required|in:male,female,other',
@@ -43,7 +47,10 @@ class UserController extends Controller
     }
     public function allusers()
     {
-        $users = User::latest()->get();
+        $users = User::withCount(['posts', 'services', 'comments'])
+            ->with('businesses:id,user_id,status,name')
+            ->latest()
+            ->get();
         return Inertia::render('Admin/Users', ['users' => $users]);
     }
 
@@ -70,11 +77,34 @@ class UserController extends Controller
             ->with(['category','subcategory','city'])
             ->latest()
             ->get();
-        return Inertia::render('User/MyServices', ['services' => $services]);
+        return Inertia::render('User/MyServices', [
+            'services'      => $services,
+            'categories'    => Category::orderBy('name')->get(['id','name']),
+            'subcategories' => Subcategory::orderBy('name')->get(['id','name','category_id']),
+            'cities'        => City::orderBy('name')->get(['id','name']),
+        ]);
     }
 
     public function status_myservice(){
         return redirect()->route('user.my-services.list', ['filter' => 'pending']);
+    }
+
+    public function publicProfile(int $id)
+    {
+        $authId  = auth('users')->id();
+        $profile = User::with([
+            'businesses',
+            'identityVerification',
+            'services' => fn($q) => $q->where('is_active', true)->where('status', 'approved')->with(['category', 'city'])->latest()->limit(6),
+            'posts'    => fn($q) => $q->latest()->limit(6),
+        ])->findOrFail($id);
+
+        return Inertia::render('User/PublicProfile', [
+            'profile'        => $profile,
+            'authId'         => $authId,
+            'isSelf'         => $authId === $id,
+            'verifyStatus'   => $profile->identityVerification?->status,
+        ]);
     }
 
 }

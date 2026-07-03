@@ -1,84 +1,264 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
-import AdminLayout from '../../Layouts/AdminLayout';
+import AdminLayout, { C } from '../../Layouts/AdminLayout';
 
-const STATUS = {
-    approved: { bg: '#F0FDF4', color: '#134E4A' },
-    pending:  { bg: '#FEF3C7', color: '#92400E' },
-    rejected: { bg: '#FEF2F2', color: '#B91C1C' },
+const AV = ['#6D28D9','#0D9488','#2563EB','#D97706','#DC2626','#0891B2','#7C3AED','#059669'];
+
+const STATUS_CFG = {
+    approved: { bg: '#ECFDF5', color: '#065F46', label: 'مقبول',         icon: 'ti-circle-check', border: '#6EE7B7', dot: '#10B981' },
+    pending:  { bg: '#FEF3C7', color: '#92400E', label: 'قيد المراجعة', icon: 'ti-clock',         border: '#FDE68A', dot: '#F59E0B' },
+    rejected: { bg: '#FEF2F2', color: '#991B1B', label: 'مرفوض',         icon: 'ti-circle-x',     border: '#FCA5A5', dot: '#EF4444' },
 };
 
-export default function Services({ services, flash }) {
+const TABS = [
+    { key: 'all',      label: 'الكل',          color: '#1E40AF', bg: '#EFF6FF', border: '#BFDBFE', icon: 'ti-apps' },
+    { key: 'pending',  label: 'قيد المراجعة', color: '#92400E', bg: '#FEF3C7', border: '#FDE68A', icon: 'ti-clock' },
+    { key: 'approved', label: 'مقبول',          color: '#065F46', bg: '#ECFDF5', border: '#6EE7B7', icon: 'ti-circle-check' },
+    { key: 'rejected', label: 'مرفوض',         color: '#991B1B', bg: '#FEF2F2', border: '#FCA5A5', icon: 'ti-circle-x' },
+];
+
+function ServiceImage({ service, size = 40, colorIdx = 0 }) {
+    const [err, setErr] = useState(false);
+    const av1 = AV[colorIdx % AV.length];
+    const av2 = AV[(colorIdx + 2) % AV.length];
+    const img = (!err && service.image)
+        ? (service.image.startsWith('http') ? service.image : `/storage/${service.image}`)
+        : null;
+
+    if (img) {
+        return (
+            <img src={img} alt={service.name} onError={() => setErr(true)}
+                style={{ width: size, height: size, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(0,0,0,0.06)' }} />
+        );
+    }
+    return (
+        <div style={{
+            width: size, height: size, borderRadius: 10, flexShrink: 0,
+            background: `linear-gradient(135deg,${av1},${av2})`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: size * 0.38, color: '#fff',
+        }}>
+            <i className="ti ti-tool" />
+        </div>
+    );
+}
+
+export default function Services({ services }) {
+    const [tab,    setTab]    = useState('all');
     const [search, setSearch] = useState('');
 
-    const filtered = (services ?? []).filter(s =>
-        `${s.name} ${s.category?.name_en ?? ''} ${s.city?.name_en ?? ''}`.toLowerCase().includes(search.toLowerCase())
-    );
+    const all = services ?? [];
 
-    const toggle = (id) => router.patch(`/admin/services/${id}/toggle`, {}, { preserveScroll: true });
-    const destroy = (id) => {
-        if (!confirm('حذف هذه الخدمة؟')) return;
-        router.delete(`/admin/services/${id}`, { preserveScroll: true });
-    };
+    const filtered = all
+        .filter(s => tab === 'all' || (s.status ?? 'pending') === tab)
+        .filter(s =>
+            `${s.name ?? ''} ${s.user?.first_name ?? ''} ${s.user?.last_name ?? ''} ${s.category?.name ?? ''} ${s.city?.name ?? ''}`
+                .toLowerCase().includes(search.toLowerCase())
+        );
+
+    const counts = TABS.reduce((acc, t) => {
+        acc[t.key] = t.key === 'all' ? all.length : all.filter(s => (s.status ?? 'pending') === t.key).length;
+        return acc;
+    }, {});
+
+    const toggle  = (id) => router.patch(`/admin/services/${id}/toggle`, {}, { preserveScroll: true });
+    const destroy = (id) => { if (!confirm('حذف هذه الخدمة نهائياً؟')) return; router.delete(`/admin/services/${id}`, { preserveScroll: true }); };
 
     return (
         <AdminLayout title="الخدمات">
             <Head title="الخدمات — Skillify" />
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
                 <div>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: '#0F172A' }}>الخدمات</div>
-                    <div style={{ fontSize: 12, color: '#475569' }}>{filtered.length} خدمة</div>
+                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.textDark, margin: 0, letterSpacing: -0.5 }}>جميع الخدمات</h1>
+                    <p style={{ fontSize: 12, color: C.textFaint, marginTop: 4 }}>{all.length} خدمة مدرجة</p>
                 </div>
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث..."
-                    style={{ padding: '8px 14px', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: 8, fontSize: 12, outline: 'none', width: 220 }} />
+                <div style={{ position: 'relative' }}>
+                    <i className="ti ti-search" style={{ position: 'absolute', top: '50%', right: 12, transform: 'translateY(-50%)', color: C.textFaint, fontSize: 14, pointerEvents: 'none' }} />
+                    <input value={search} onChange={e => setSearch(e.target.value)}
+                        placeholder="بحث بالاسم، المزود، الفئة، المدينة..."
+                        style={{ width: 280, padding: '9px 38px 9px 14px', border: C.cardBorder, borderRadius: 10, fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: "'Cairo','Inter',sans-serif", background: '#FAFAFA', direction: 'rtl', transition: 'border-color .15s' }}
+                        onFocus={e => e.target.style.borderColor = C.primary}
+                        onBlur={e => e.target.style.borderColor = 'rgba(15,23,42,0.06)'} />
+                </div>
             </div>
 
-            <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 14, overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            {/* Stats + Tabs */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                {TABS.map(t => (
+                    <button key={t.key} onClick={() => setTab(t.key)} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 24,
+                        border: `1.5px solid ${tab === t.key ? t.color : 'rgba(0,0,0,0.08)'}`,
+                        background: tab === t.key ? t.bg : '#fff',
+                        color: tab === t.key ? t.color : '#64748B',
+                        fontSize: 12.5, fontWeight: tab === t.key ? 700 : 500, cursor: 'pointer',
+                        fontFamily: "'Cairo','Inter',sans-serif", transition: 'all 0.13s',
+                        boxShadow: tab === t.key ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                    }}>
+                        <i className={`ti ${t.icon}`} style={{ fontSize: 13 }} />
+                        {t.label}
+                        <span style={{
+                            background: tab === t.key ? 'rgba(0,0,0,0.1)' : '#F1F5F9',
+                            color: tab === t.key ? t.color : '#64748B',
+                            borderRadius: 20, padding: '1px 8px', fontSize: 11, fontWeight: 700,
+                        }}>
+                            {counts[t.key]}
+                        </span>
+                    </button>
+                ))}
+                {search && (
+                    <span style={{ fontSize: 12, color: C.textMuted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <i className="ti ti-filter" /> {filtered.length} نتيجة
+                        <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textFaint, fontSize: 11, padding: '0 4px' }}>
+                            <i className="ti ti-x" />
+                        </button>
+                    </span>
+                )}
+            </div>
+
+            {/* Table */}
+            <div style={{ background: '#fff', border: C.cardBorder, borderRadius: 16, overflow: 'hidden', boxShadow: C.cardShadow }}>
+                <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                     <thead>
-                        <tr style={{ background: '#F8FAFC', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-                            {['الخدمة','الفئة','المدينة','السعر','الحالة','نشط','إجراءات'].map(h => (
-                                <th key={h} style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{h}</th>
+                        <tr style={{ background: 'linear-gradient(to left, #F8FAFC, #F0F9FF)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                            {[
+                                { label: 'الخدمة',    w: '28%' },
+                                { label: 'التصنيف',   w: '15%' },
+                                { label: 'المزود',    w: '16%' },
+                                { label: 'السعر',     w: '11%' },
+                                { label: 'الحالة',    w: '11%' },
+                                { label: 'نشط',       w: '8%'  },
+                                { label: 'إجراءات',   w: '11%' },
+                            ].map(h => (
+                                <th key={h.label} style={{ padding: '13px 16px', textAlign: 'right', fontWeight: 700, color: '#475569', whiteSpace: 'nowrap', width: h.w, fontSize: 11.5, letterSpacing: 0.2 }}>
+                                    {h.label}
+                                </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {!filtered.length ? (
-                            <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: '#94A3B8' }}>لا توجد خدمات</td></tr>
-                        ) : filtered.map(s => {
-                            const badge = STATUS[s.status ?? 'pending'] ?? STATUS.pending;
+                            <tr>
+                                <td colSpan={7} style={{ padding: '72px 24px', textAlign: 'center' }}>
+                                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                                        <i className="ti ti-tool" style={{ fontSize: 28, color: '#CBD5E1' }} />
+                                    </div>
+                                    <div style={{ fontSize: 14, fontWeight: 700, color: C.textMuted, marginBottom: 6 }}>لا توجد خدمات</div>
+                                    <p style={{ fontSize: 13, color: C.textFaint, margin: 0 }}>جرّب تغيير الفلتر أو كلمة البحث.</p>
+                                </td>
+                            </tr>
+                        ) : filtered.map((s, i) => {
+                            const st = STATUS_CFG[s.status] ?? STATUS_CFG.pending;
+                            const uv1 = AV[(i + 1) % AV.length];
+                            const uv2 = AV[(i + 3) % AV.length];
+
                             return (
-                                <tr key={s.id} style={{ borderBottom: '0.5px solid rgba(0,0,0,0.05)' }}
-                                    onMouseEnter={e => e.currentTarget.style.background = '#F8FAFC'}
+                                <tr key={s.id}
+                                    style={{ borderBottom: '1px solid rgba(0,0,0,0.04)', transition: 'background 0.12s' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#F8FAFF'}
                                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                 >
-                                    <td style={{ padding: '10px 14px' }}>
-                                        <div style={{ fontWeight: 600, color: '#0F172A' }}>{s.name}</div>
-                                        <div style={{ fontSize: 10, color: '#94A3B8' }}>{s.user?.first_name} {s.user?.last_name}</div>
+                                    {/* Service */}
+                                    <td style={{ padding: '12px 16px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                                            <ServiceImage service={s} size={40} colorIdx={i} />
+                                            <div style={{ minWidth: 0 }}>
+                                                <div style={{ fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 195, fontSize: 13 }}>
+                                                    {s.name}
+                                                </div>
+                                                {s.city?.name && (
+                                                    <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2, display: 'flex', alignItems: 'center', gap: 3 }}>
+                                                        <i className="ti ti-map-pin" style={{ fontSize: 10 }} />{s.city.name}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td style={{ padding: '10px 14px', color: '#475569' }}>{s.category?.name_en ?? '—'}</td>
-                                    <td style={{ padding: '10px 14px', color: '#475569' }}>{s.city?.name_en ?? '—'}</td>
-                                    <td style={{ padding: '10px 14px', color: '#0D9488', fontWeight: 700 }}>
-                                        {Number(s.price).toLocaleString()} <small style={{ color: '#94A3B8', fontWeight: 400 }}>{s.price_type?.toUpperCase()}</small>
+
+                                    {/* Category */}
+                                    <td style={{ padding: '12px 16px' }}>
+                                        <div style={{ fontSize: 12.5, fontWeight: 600, color: '#334155' }}>{s.category?.name ?? '—'}</div>
+                                        {s.subcategory?.name && <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>{s.subcategory.name}</div>}
                                     </td>
-                                    <td style={{ padding: '10px 14px' }}>
-                                        <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20, ...badge }}>{s.status ?? 'pending'}</span>
+
+                                    {/* Provider */}
+                                    <td style={{ padding: '12px 16px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <div style={{
+                                                width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                                                background: `linear-gradient(135deg,${uv1},${uv2})`,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: 11, fontWeight: 700, color: '#fff',
+                                            }}>
+                                                {(s.user?.first_name?.[0] ?? 'م').toUpperCase()}
+                                            </div>
+                                            <div style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 110 }}>
+                                                {s.user?.first_name} {s.user?.last_name}
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td style={{ padding: '10px 14px' }}>
-                                        <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: s.is_active ? '#F0FDF4' : '#F3F4F6', color: s.is_active ? '#134E4A' : '#6B7280' }}>
-                                            {s.is_active ? 'نعم' : 'لا'}
+
+                                    {/* Price */}
+                                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                                        <div style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', fontVariantNumeric: 'tabular-nums' }}>
+                                            {s.price_type === 'usd' ? `$${Number(s.price ?? 0).toLocaleString()}` : Number(s.price ?? 0).toLocaleString()}
+                                        </div>
+                                        <div style={{ fontSize: 10, color: '#94A3B8', marginTop: 1 }}>
+                                            {s.price_type === 'usd' ? 'دولار' : 'ل.س'}
+                                        </div>
+                                    </td>
+
+                                    {/* Status */}
+                                    <td style={{ padding: '12px 16px' }}>
+                                        <span style={{
+                                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                                            fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 20,
+                                            background: st.bg, color: st.color, border: `1px solid ${st.border}`,
+                                        }}>
+                                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: st.dot, display: 'inline-block' }} />
+                                            {st.label}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '10px 14px' }}>
-                                        <div style={{ display: 'flex', gap: 5 }}>
-                                            <Link href={`/admin/services/${s.id}`} style={{ padding: '4px 8px', borderRadius: 6, border: '0.5px solid rgba(0,0,0,0.12)', color: '#0F172A', textDecoration: 'none', fontSize: 11 }}>
+
+                                    {/* Active */}
+                                    <td style={{ padding: '12px 16px' }}>
+                                        <button onClick={() => toggle(s.id)} style={{
+                                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                                            fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 20, cursor: 'pointer',
+                                            background: s.is_active ? '#ECFDF5' : '#F1F5F9',
+                                            color: s.is_active ? '#065F46' : '#6B7280',
+                                            border: `1px solid ${s.is_active ? '#6EE7B7' : '#CBD5E1'}`,
+                                            transition: 'all .13s',
+                                        }}>
+                                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: s.is_active ? '#10B981' : '#9CA3AF', display: 'inline-block' }} />
+                                            {s.is_active ? 'نشط' : 'معطل'}
+                                        </button>
+                                    </td>
+
+                                    {/* Actions */}
+                                    <td style={{ padding: '12px 16px' }}>
+                                        <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                                            <Link href={`/admin/services/${s.id}`} title="عرض التفاصيل" style={{
+                                                width: 32, height: 32, borderRadius: 8,
+                                                border: '1px solid rgba(0,0,0,0.1)', background: '#F8FAFC', color: '#64748B',
+                                                fontSize: 14, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                                textDecoration: 'none', transition: 'all 0.13s',
+                                            }}
+                                                onMouseEnter={e => { e.currentTarget.style.background = '#EFF6FF'; e.currentTarget.style.color = C.primary; e.currentTarget.style.borderColor = '#BFDBFE'; }}
+                                                onMouseLeave={e => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.color = '#64748B'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)'; }}
+                                            >
                                                 <i className="ti ti-eye" />
                                             </Link>
-                                            <button onClick={() => toggle(s.id)} style={{ padding: '4px 8px', borderRadius: 6, border: '0.5px solid rgba(0,0,0,0.12)', background: 'none', color: '#F59E0B', fontSize: 11, cursor: 'pointer' }}>
-                                                <i className={s.is_active ? 'ti ti-toggle-right' : 'ti ti-toggle-left'} />
-                                            </button>
-                                            <button onClick={() => destroy(s.id)} style={{ padding: '4px 8px', borderRadius: 6, border: 'none', background: '#FEF2F2', color: '#EF4444', fontSize: 11, cursor: 'pointer' }}>
+                                            <button onClick={() => destroy(s.id)} title="حذف" style={{
+                                                width: 32, height: 32, borderRadius: 8, cursor: 'pointer',
+                                                border: '1px solid #FCA5A5', background: '#FEF2F2', color: '#DC2626',
+                                                fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.13s',
+                                            }}
+                                                onMouseEnter={e => { e.currentTarget.style.background = '#FEE2E2'; e.currentTarget.style.transform = 'scale(1.08)'; }}
+                                                onMouseLeave={e => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                            >
                                                 <i className="ti ti-trash" />
                                             </button>
                                         </div>
@@ -88,6 +268,14 @@ export default function Services({ services, flash }) {
                         })}
                     </tbody>
                 </table>
+                </div>
+
+                {/* Footer count */}
+                {filtered.length > 0 && (
+                    <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(0,0,0,0.04)', background: '#FAFAFA', fontSize: 11.5, color: C.textFaint, textAlign: 'center' }}>
+                        عرض {filtered.length} من {all.length} خدمة
+                    </div>
+                )}
             </div>
         </AdminLayout>
     );

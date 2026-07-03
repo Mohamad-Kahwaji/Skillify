@@ -22,12 +22,11 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name_ar'                => 'required|string|max:255',
-            'name_en'                => 'required|string|max:255',
+            'name'                   => 'required|string|max:255',
             'active_typebusiness_id' => 'required|exists:active_typebusinesses,id',
         ]);
         Category::create($data);
-        return redirect()->route('admin.categories.index')->with('success', 'تم إضافة التصنيف.');
+        return back()->with('success', 'تم إضافة التصنيف.');
     }
 
     public function edit(int $id)
@@ -40,17 +39,16 @@ class CategoryController extends Controller
     public function update(Request $request, int $id)
     {
         $data = $request->validate([
-            'name_ar'                => 'required|string|max:255',
-            'name_en'                => 'required|string|max:255',
+            'name'                   => 'required|string|max:255',
             'active_typebusiness_id' => 'required|exists:active_typebusinesses,id',
         ]);
         Category::findOrFail($id)->update($data);
-        return redirect()->route('admin.categories.index')->with('success', 'تم تعديل التصنيف.');
+        return back()->with('success', 'تم تعديل التصنيف.');
     }
 
     public function destroy(int $id)
     {
         Category::findOrFail($id)->delete();
-        return redirect()->route('admin.categories.index')->with('success', 'تم حذف التصنيف.');
+        return back()->with('success', 'تم حذف التصنيف.');
     }
 }

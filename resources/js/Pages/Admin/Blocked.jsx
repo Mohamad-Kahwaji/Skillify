@@ -1,12 +1,12 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
-import AdminLayout from '../../Layouts/AdminLayout';
+import AdminLayout, { C } from '../../Layouts/AdminLayout';
+import { PageHeader, INPUT_STYLE } from './Users';
+import { FormCard, FormActions } from './Ads';
 
-const INPUT = { width: '100%', padding: '8px 12px', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: 7, fontSize: 12, outline: 'none', boxSizing: 'border-box' };
-
-export default function Blocked({ blocked, users, flash }) {
+export default function Blocked({ blocked, users }) {
     const [showForm, setShowForm] = useState(false);
-    const { data, setData, post, processing, errors, reset } = useForm({ user_id: '', reason: '' });
+    const { data, setData, post, processing, reset } = useForm({ user_id: '', reason: '' });
 
     const submit = (e) => {
         e.preventDefault();
@@ -22,57 +22,50 @@ export default function Blocked({ blocked, users, flash }) {
         <AdminLayout title="المستخدمون المحظورون">
             <Head title="المحظورون — Skillify" />
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: '#0F172A' }}>المستخدمون المحظورون</div>
-                    <div style={{ fontSize: 12, color: '#475569' }}>{(blocked ?? []).length} محظور</div>
-                </div>
-                <button onClick={() => setShowForm(v => !v)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            <PageHeader title="المستخدمون المحظورون" sub={`${(blocked ?? []).length} محظور`}>
+                <button onClick={() => setShowForm(v => !v)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 8px rgba(239,68,68,0.35)' }}>
                     <i className="ti ti-ban" /> حظر مستخدم
                 </button>
-            </div>
+            </PageHeader>
 
             {showForm && (
-                <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: 12, padding: 18 }}>
+                <FormCard title="حظر مستخدم جديد">
                     <form onSubmit={submit}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <div className="grid-cols-1 sm:grid-cols-2" style={{ display: 'grid', gap: 14 }}>
                             <div>
-                                <label style={{ fontSize: 11, color: '#475569', display: 'block', marginBottom: 3 }}>المستخدم *</label>
-                                <select style={INPUT} value={data.user_id} onChange={e => setData('user_id', e.target.value)} required>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: C.textMuted, display: 'block', marginBottom: 5 }}>المستخدم *</label>
+                                <select style={INPUT_STYLE} value={data.user_id} onChange={e => setData('user_id', e.target.value)} required>
                                     <option value="">— اختر مستخدماً —</option>
                                     {(users ?? []).map(u => <option key={u.id} value={u.id}>{u.first_name} {u.last_name} ({u.email})</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label style={{ fontSize: 11, color: '#475569', display: 'block', marginBottom: 3 }}>السبب</label>
-                                <input style={INPUT} value={data.reason} onChange={e => setData('reason', e.target.value)} placeholder="سبب الحظر..." />
+                                <label style={{ fontSize: 11, fontWeight: 600, color: C.textMuted, display: 'block', marginBottom: 5 }}>السبب</label>
+                                <input style={INPUT_STYLE} value={data.reason} onChange={e => setData('reason', e.target.value)} placeholder="سبب الحظر..." />
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12 }}>
-                            <button type="button" onClick={() => setShowForm(false)} style={{ padding: '6px 12px', borderRadius: 6, border: '0.5px solid rgba(0,0,0,0.12)', background: 'none', fontSize: 12, cursor: 'pointer' }}>إلغاء</button>
-                            <button type="submit" disabled={processing} style={{ padding: '6px 14px', borderRadius: 6, background: '#EF4444', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>حظر</button>
-                        </div>
+                        <FormActions onCancel={() => setShowForm(false)} processing={processing} submitLabel="حظر" />
                     </form>
-                </div>
+                </FormCard>
             )}
 
-            <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 14, overflow: 'hidden' }}>
+            <div style={{ background: C.cardBg, borderRadius: 16, boxShadow: C.cardShadow, border: C.cardBorder, overflow: 'hidden' }}>
                 {!(blocked ?? []).length ? (
-                    <div style={{ padding: '48px', textAlign: 'center', color: '#94A3B8' }}>
-                        <i className="ti ti-ban" style={{ fontSize: 38, display: 'block', marginBottom: 10, opacity: 0.3 }} />
-                        <p>لا يوجد مستخدمون محظورون</p>
+                    <div style={{ padding: '56px', textAlign: 'center', color: C.textFaint }}>
+                        <i className="ti ti-ban" style={{ fontSize: 40, display: 'block', marginBottom: 10, opacity: 0.25 }} />
+                        <div style={{ fontSize: 13 }}>لا يوجد مستخدمون محظورون</div>
                     </div>
                 ) : (blocked ?? []).map((b, i) => (
-                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 18px', borderBottom: i < blocked.length - 1 ? '0.5px solid rgba(0,0,0,0.07)' : 'none' }}>
-                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#EF4444', flexShrink: 0 }}>
+                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i < blocked.length - 1 ? '1px solid rgba(15,23,42,0.06)' : 'none' }}>
+                        <div style={{ width: 38, height: 38, borderRadius: '50%', background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: C.dangerText, flexShrink: 0 }}>
                             <i className="ti ti-ban" />
                         </div>
                         <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: '#0F172A' }}>{b.user?.first_name} {b.user?.last_name}</div>
-                            <div style={{ fontSize: 11, color: '#94A3B8' }}>{b.user?.email} · {b.reason ?? 'لم يُذكر سبب'}</div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: C.textDark }}>{b.user?.first_name} {b.user?.last_name}</div>
+                            <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>{b.user?.email} · {b.reason ?? 'لم يُذكر سبب'}</div>
                         </div>
-                        <button onClick={() => unblock(b.id)} style={{ padding: '5px 12px', borderRadius: 7, border: '0.5px solid #0D9488', background: 'none', color: '#0D9488', fontSize: 11, cursor: 'pointer', fontWeight: 600 }}>
-                            إلغاء الحظر
+                        <button onClick={() => unblock(b.id)} style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${C.successBorder}`, background: C.successBg, color: C.successText, fontSize: 11, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <i className="ti ti-lock-open" /> إلغاء الحظر
                         </button>
                     </div>
                 ))}

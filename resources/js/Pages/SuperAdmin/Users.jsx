@@ -39,7 +39,7 @@ function UserDrawer({ user, index, onClose, onDelete }) {
 
             {/* Drawer */}
             <div style={{
-                position: 'fixed', top: 0, left: 0, bottom: 0, width: 380,
+                position: 'fixed', top: 0, left: 0, bottom: 0, width: 380, maxWidth: '92vw',
                 background: '#fff', zIndex: 101,
                 boxShadow: '4px 0 40px rgba(0,0,0,0.18)',
                 display: 'flex', flexDirection: 'column',
@@ -252,6 +252,7 @@ export default function Users({ users }) {
 
             {/* Table */}
             <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                     <thead>
                         <tr style={{ background: 'linear-gradient(135deg,#F8FAFC,#F1F5F9)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
@@ -361,6 +362,7 @@ export default function Users({ users }) {
                         })}
                     </tbody>
                 </table>
+                </div>
             </div>
         </SuperAdminLayout>
     );

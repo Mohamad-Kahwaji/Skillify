@@ -26,6 +26,7 @@ export default function NoServicesUsers({ users }) {
                 </div>
             ) : (
                 <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 14, overflow: 'hidden' }}>
+                    <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                         <thead>
                             <tr style={{ background: '#F8FAFC', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
@@ -58,6 +59,7 @@ export default function NoServicesUsers({ users }) {
                             ))}
                         </tbody>
                     </table>
+                    </div>
                 </div>
             )}
         </AdminLayout>

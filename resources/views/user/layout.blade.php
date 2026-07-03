@@ -1,16 +1,16 @@
 ﻿<!DOCTYPE html>
-<html lang="en" dir="ltr" data-theme="light">
+<html lang="ar" dir="rtl" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>@yield('title', 'My Account') — Skillify</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <style>
     :root {
-      --font: 'Inter', sans-serif;
+      --font: 'Cairo','Inter', sans-serif;
       /* Brand */
       --accent:        #0D9488;
       --accent-hover:  #0F766E;
@@ -48,52 +48,83 @@
     a { text-decoration: none; color: inherit; }
     button { font-family: var(--font); cursor: pointer; }
 
-    /* HEADER */
+    /* ── HEADER ── */
+    --header-h: 64px;
     .header {
       height: var(--header-h);
-      background: var(--bg-surface);
-      border-bottom: 0.5px solid var(--border);
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 1px 12px rgba(0,0,0,0.05);
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px; position: sticky; top: 0; z-index: 90;
+      padding: 0 28px; position: sticky; top: 0; z-index: 90;
+      gap: 16px;
     }
-    .header-brand { display: flex; align-items: center; gap: 10px; }
+
+    /* Brand */
+    .header-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .brand-icon {
-      width: 34px; height: 34px; border-radius: 10px;
-      background: var(--accent);
+      width: 38px; height: 38px; border-radius: 11px;
+      background: linear-gradient(135deg, var(--accent), #0F766E);
       display: flex; align-items: center; justify-content: center;
-      color: #fff; font-size: 18px;
+      color: #fff; font-size: 20px;
+      box-shadow: 0 3px 10px rgba(13,148,136,0.30);
     }
-    .brand-name { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
-    .header-nav { display: flex; align-items: center; gap: 4px; }
+    .brand-name {
+      font-size: 18px; font-weight: 800; color: #0F172A;
+      letter-spacing: -0.4px; font-family: 'Cairo',sans-serif;
+    }
+
+    /* Nav */
+    .header-nav { display: flex; align-items: center; gap: 2px; flex: 1; justify-content: center; }
     .nav-link {
       display: flex; align-items: center; gap: 6px;
-      padding: 7px 12px; border-radius: var(--radius-sm);
-      font-size: 13px; color: var(--text-secondary);
-      transition: background 0.12s, color 0.12s;
+      padding: 7px 13px; border-radius: 10px;
+      font-size: 13px; font-weight: 600; color: #64748B;
+      transition: all 0.15s; white-space: nowrap; position: relative;
     }
-    .nav-link:hover  { background: var(--bg-hover); color: var(--text-primary); }
-    .nav-link.active { background: var(--accent-bg); color: var(--teal-900); font-weight: 500; }
-    .nav-link > i    { font-size: 16px; }
-    .header-user { display: flex; align-items: center; gap: 12px; }
+    .nav-link i { font-size: 16px; }
+    .nav-link:hover { background: #F1F5F9; color: #0F172A; }
+    .nav-link.active {
+      background: linear-gradient(135deg,rgba(13,148,136,0.12),rgba(13,148,136,0.07));
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .nav-link.active::after {
+      content: '';
+      position: absolute; bottom: -3px; right: 50%; left: 50%;
+      height: 2px; background: var(--accent); border-radius: 2px;
+      transform: translateX(50%);
+      width: 24px; margin-right: -12px;
+    }
+
+    /* User section */
+    .header-user { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .user-avatar {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: var(--accent);
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #0F766E);
       display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 600; color: #fff;
+      font-size: 14px; font-weight: 800; color: #fff;
+      box-shadow: 0 3px 10px rgba(13,148,136,0.25);
+      flex-shrink: 0;
     }
-    .user-name  { font-size: 13px; font-weight: 500; }
-    .user-email { font-size: 11px; color: var(--text-muted); }
+    .user-info { line-height: 1.25; }
+    .user-name  { font-size: 13px; font-weight: 700; color: #0F172A; }
+    .user-email { font-size: 11px; color: #94A3B8; }
     .logout-btn {
-      display: flex; align-items: center; gap: 6px;
-      padding: 7px 12px; border-radius: var(--radius-sm);
-      font-size: 13px; color: var(--text-secondary);
-      background: none; border: none;
-      transition: background 0.12s, color 0.12s;
+      display: flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: 9px;
+      color: #94A3B8; background: none; border: 1px solid rgba(0,0,0,0.08);
+      transition: all 0.15s; font-size: 16px;
     }
-    .logout-btn:hover { background: var(--red-50); color: var(--red-800); }
+    .logout-btn:hover { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+
+    /* Divider */
+    .nav-divider {
+      width: 1px; height: 20px; background: rgba(0,0,0,0.08); margin: 0 4px; flex-shrink: 0;
+    }
 
     /* MAIN */
-    .main { max-width: 960px; margin: 0 auto; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; }
+    .main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; }
     .page-title { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
     .page-sub   { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
 
@@ -224,93 +255,87 @@
 <body>
 
 {{-- HEADER --}}
+@php
+  $authUser = Auth::guard('users')->user();
+  $initials = strtoupper(substr($authUser->first_name ?? 'U', 0, 1) . substr($authUser->last_name ?? '', 0, 1));
+@endphp
 <header class="header">
-  <div class="header-brand">
+
+  {{-- Brand --}}
+  <a href="{{ route('user.dashboard') }}" class="header-brand" style="text-decoration:none;">
     <div class="brand-icon"><i class="ti ti-school"></i></div>
     <div class="brand-name">Skillify</div>
-  </div>
+  </a>
 
+  {{-- Nav --}}
   <nav class="header-nav">
-
-    {{-- Home --}}
     <a href="{{ route('user.dashboard') }}"
        class="nav-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
-      <i class="ti ti-home"></i> Home
+      <i class="ti ti-home"></i> الرئيسية
     </a>
-
-    {{-- Explore --}}
     <a href="{{ route('user.explore') }}"
        class="nav-link {{ request()->routeIs('user.explore') ? 'active' : '' }}">
-      <i class="ti ti-search"></i> Explore
+      <i class="ti ti-compass"></i> استكشاف
     </a>
-
-    {{-- Available Services (other users) --}}
     <a href="{{ route('user.services') }}"
        class="nav-link {{ request()->routeIs('user.services') ? 'active' : '' }}">
-      <i class="ti ti-briefcase"></i> Services
+      <i class="ti ti-briefcase"></i> الخدمات
     </a>
-
-    {{-- My Services --}}
     <a href="{{ route('user.my-services.list') }}"
        class="nav-link {{ request()->routeIs('user.my-services.*') ? 'active' : '' }}">
-      <i class="ti ti-list-check"></i> My Services
+      <i class="ti ti-list-check"></i> خدماتي
     </a>
 
-    {{-- My Posts --}}
+    <div class="nav-divider"></div>
+
     <a href="{{ route('user.posts') }}"
        class="nav-link {{ request()->routeIs('user.posts') ? 'active' : '' }}">
-      <i class="ti ti-file-text"></i> My Posts
+      <i class="ti ti-pencil"></i> منشوراتي
     </a>
-
-    {{-- All Posts --}}
     <a href="{{ route('user.all-posts') }}"
        class="nav-link {{ request()->routeIs('user.all-posts') ? 'active' : '' }}">
-      <i class="ti ti-layout-list"></i> All Posts
+      <i class="ti ti-layout-list"></i> المنشورات
     </a>
-
-    {{-- Community Posts --}}
     <a href="{{ route('user.community-posts') }}"
        class="nav-link {{ request()->routeIs('user.community-posts') ? 'active' : '' }}">
-      <i class="ti ti-users"></i> Community
+      <i class="ti ti-users"></i> المجتمع
     </a>
 
-    {{-- Ads --}}
+    <div class="nav-divider"></div>
+
     <a href="{{ route('user.ads') }}"
        class="nav-link {{ request()->routeIs('user.ads') ? 'active' : '' }}">
-      <i class="ti ti-speakerphone"></i> Ads
+      <i class="ti ti-speakerphone"></i> الإعلانات
     </a>
-
-    {{-- Profile --}}
     <a href="{{ route('user.profile') }}"
-       class="nav-link {{ request()->routeIs('user.profile') ? 'active' : '' }}">
-      <i class="ti ti-user"></i> Profile
+       class="nav-link {{ request()->routeIs('user.profile') || request()->routeIs('user.identity.*') ? 'active' : '' }}">
+      <i class="ti ti-user-circle"></i> ملفي
     </a>
-
-    {{-- Messages --}}
     <a id="nav-messages-link" href="{{ route('user.conversations') }}"
-       class="nav-link {{ request()->routeIs('user.conversations') || request()->routeIs('user.chat') ? 'active' : '' }}">
-      <i class="ti ti-message-circle"></i> Messages
+       class="nav-link {{ request()->routeIs('user.conversations') || request()->routeIs('user.chat') ? 'active' : '' }}"
+       style="position:relative;">
+      <i class="ti ti-message-circle"></i> الرسائل
       <span class="notif-badge" id="notif-badge"></span>
     </a>
-
   </nav>
 
+  {{-- User section --}}
   <div class="header-user">
     <x-notifications />
-    <div class="user-avatar">
-      {{ strtoupper(substr(Auth::guard('users')->user()->first_name ?? 'U', 0, 1)) }}
-    </div>
-    <div>
-      <div class="user-name">{{ Auth::guard('users')->user()->first_name ?? '' }} {{ Auth::guard('users')->user()->last_name ?? '' }}</div>
-      <div class="user-email">{{ Auth::guard('users')->user()->email ?? '' }}</div>
+    <div class="nav-divider"></div>
+    <div class="user-avatar">{{ $initials }}</div>
+    <div class="user-info">
+      <div class="user-name">{{ $authUser->first_name ?? '' }} {{ $authUser->last_name ?? '' }}</div>
+      <div class="user-email">{{ $authUser->email ?? '' }}</div>
     </div>
     <form method="POST" action="{{ route('user.logout') }}">
       @csrf
-      <button type="submit" class="logout-btn">
+      <button type="submit" class="logout-btn" title="تسجيل الخروج">
         <i class="ti ti-logout"></i>
       </button>
     </form>
   </div>
+
 </header>
 
 {{-- MAIN --}}

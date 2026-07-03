@@ -131,6 +131,13 @@
       font-size: 13px; color: var(--text-primary); font-family: var(--font);
     }
     .input-wrap input::placeholder { color: var(--text-muted); }
+    .toggle-eye {
+      background: none; border: none; cursor: pointer;
+      padding: 0 12px; color: var(--text-muted); font-size: 16px;
+      display: flex; align-items: center; flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    .toggle-eye:hover { color: var(--accent); }
     .field-error {
       display: flex; align-items: center; gap: 5px;
       font-size: 11px; color: var(--red-400); margin-top: 6px;
@@ -181,8 +188,8 @@
         <div class="panel-icon"><i class="ti ti-tool"></i></div>
         <div class="panel-brand-name">Hirfa</div>
       </div>
-      <div class="panel-headline">Account<br>recovery</div>
-      <div class="panel-desc">Enter your registered email address and we'll send you a link to reset your admin password securely.</div>
+      <div class="panel-headline">إعادة تعيين<br>كلمة المرور</div>
+      <div class="panel-desc">أدخل بريدك الإلكتروني المسجّل وكلمة المرور الجديدة مباشرة دون الحاجة لأي بريد إلكتروني.</div>
     </div>
     <div class="panel-bottom">
       <div class="panel-footer-text">© {{ date('Y') }} Hirfa Platform. All rights reserved.</div>
@@ -194,49 +201,65 @@
 
       <div class="form-header">
         <div class="form-eyebrow"><i class="ti ti-lock" style="font-size:10px;"></i> Admin Access</div>
-        <div class="form-title">Forgot your password?</div>
-        <div class="form-sub">No worries. Enter your email and we'll send you a reset link.</div>
+        <div class="form-title">تعيين كلمة مرور جديدة</div>
+        <div class="form-sub">أدخل بريدك الإلكتروني وكلمة المرور الجديدة مباشرة.</div>
       </div>
 
-      @if(session('status'))
-        <div class="success-state">
-          <div class="success-icon"><i class="ti ti-mail-check"></i></div>
-          <div class="success-title">Check your inbox</div>
-          <div class="success-desc">We've sent a password reset link to your email address. The link will expire in 60 minutes.</div>
+      @if($errors->any())
+        <div class="alert error">
+          <i class="ti ti-alert-circle"></i>
+          <span>{{ $errors->first() }}</span>
         </div>
-      @else
-
-        @if($errors->any())
-          <div class="alert error">
-            <i class="ti ti-alert-circle"></i>
-            <span>{{ $errors->first() }}</span>
-          </div>
-        @endif
-
-        <form method="POST" action="{{ route('admin.forgot-password.send') }}" id="forgotForm">
-          @csrf
-          <div class="form-group">
-            <label class="form-label">Email Address</label>
-            <div class="input-wrap">
-              <i class="ti ti-mail input-icon"></i>
-              <input type="email" name="email" value="{{ old('email') }}"
-                     placeholder="admin@hirfa.com" autofocus required>
-            </div>
-            @error('email')
-              <div class="field-error">{{ $message }}</div>
-            @enderror
-          </div>
-
-          <button type="submit" class="btn-submit" id="submitBtn">
-            <div class="spinner"></div>
-            <span class="btn-text"><i class="ti ti-send" style="font-size:15px;"></i> Send Reset Link</span>
-          </button>
-        </form>
-
       @endif
 
+      <form method="POST" action="{{ route('admin.forgot-password.send') }}" id="forgotForm">
+        @csrf
+
+        <div class="form-group">
+          <label class="form-label">البريد الإلكتروني</label>
+          <div class="input-wrap">
+            <i class="ti ti-mail input-icon"></i>
+            <input type="email" name="email" value="{{ old('email') }}"
+                   placeholder="admin@hirfa.com" autofocus required dir="ltr">
+          </div>
+          @error('email')
+            <div class="field-error">{{ $message }}</div>
+          @enderror
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">كلمة المرور الجديدة</label>
+          <div class="input-wrap">
+            <i class="ti ti-lock input-icon"></i>
+            <input id="pwd" type="password" name="password" placeholder="8 أحرف على الأقل" required dir="ltr">
+            <button type="button" class="toggle-eye" onclick="togglePwd('pwd','eye1')">
+              <i id="eye1" class="ti ti-eye"></i>
+            </button>
+          </div>
+          @error('password')
+            <div class="field-error">{{ $message }}</div>
+          @enderror
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">تأكيد كلمة المرور</label>
+          <div class="input-wrap">
+            <i class="ti ti-lock-check input-icon"></i>
+            <input id="pwd2" type="password" name="password_confirmation" placeholder="أعد كتابة كلمة المرور" required dir="ltr">
+            <button type="button" class="toggle-eye" onclick="togglePwd('pwd2','eye2')">
+              <i id="eye2" class="ti ti-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <div class="spinner"></div>
+          <span class="btn-text"><i class="ti ti-device-floppy" style="font-size:15px;"></i> حفظ كلمة المرور</span>
+        </button>
+      </form>
+
       <div class="back-link">
-        <a href="{{ route('admin.login') }}">← Back to Sign In</a>
+        <a href="{{ route('admin.login') }}">← العودة لتسجيل الدخول</a>
       </div>
 
     </div>
@@ -250,6 +273,18 @@
     form.addEventListener('submit', function () {
       document.getElementById('submitBtn').classList.add('loading');
     });
+  }
+
+  function togglePwd(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon  = document.getElementById(iconId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.replace('ti-eye', 'ti-eye-off');
+    } else {
+      input.type = 'password';
+      icon.classList.replace('ti-eye-off', 'ti-eye');
+    }
   }
 </script>
 

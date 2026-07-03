@@ -9,9 +9,22 @@ use Illuminate\Http\JsonResponse;
 use App\Notifications\AdminBlockedNotification;
 use App\Notifications\SystemAnnouncementNotification;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class NotificationController extends Controller
 {
+    public function userPage(Request $request)
+    {
+        $user          = auth('users')->user();
+        $notifications = $user->notifications()->latest()->paginate(30);
+        $unreadCount   = $user->unreadNotifications()->count();
+
+        return Inertia::render('User/Notifications', [
+            'notifications' => $notifications,
+            'unreadCount'   => $unreadCount,
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();

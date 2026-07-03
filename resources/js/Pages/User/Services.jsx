@@ -26,53 +26,85 @@ function VerifiedBadge({ status }) {
     return null;
 }
 
-function ServiceCard({ service }) {
-    const category    = service.category?.name_ar ?? service.category?.name_en ?? '';
-    const subcategory = service.subcategory?.name_ar ?? service.subcategory?.name_en ?? '';
-    const cityName    = service.city?.name_ar ?? service.city?.name_en ?? '';
+function ProviderAvatar({ user, size = 24 }) {
+    const [err, setErr] = useState(false);
+    const src = user?.businesses?.image
+        ? `/storage/${user.businesses.image}`
+        : user?.profile_photo ? `/storage/${user.profile_photo}` : null;
+    const initial = (user?.first_name ?? '?')[0].toUpperCase();
+    const color = AV_COLORS[(user?.id ?? 0) % 7];
+    return (
+        <div style={{ width: size, height: size, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.42, fontWeight: 700, flexShrink: 0, overflow: 'hidden' }}>
+            {src && !err
+                ? <img src={src} alt="" onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : initial
+            }
+        </div>
+    );
+}
+
+function ServiceCard({ service, authId }) {
+    const [chatLoading, setChatLoading] = useState(false);
+    const category    = service.category?.name ?? '';
+    const subcategory = service.subcategory?.name ?? '';
+    const cityName    = service.city?.name ?? '';
     const price       = Number(service.price).toLocaleString();
     const imageSrc    = service.image
         ? (service.image.startsWith('http') ? service.image : `/storage/${service.image}`)
         : null;
+    const isOwner = service.user?.id === authId;
+    const identityStatus = service.user?.identity_verification?.status;
+
+    const startChat = (e) => {
+        e.preventDefault();
+        if (!service.user?.id || chatLoading) return;
+        setChatLoading(true);
+        router.post('/user/chat/start', { business_user_id: service.user.id }, {
+            onSuccess: () => setChatLoading(false),
+            onError:   () => setChatLoading(false),
+        });
+    };
 
     return (
         <div style={{
             background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)',
-            borderRadius: 14, overflow: 'hidden',
+            borderRadius: 16, overflow: 'hidden',
             display: 'flex', flexDirection: 'column',
             transition: 'border-color 0.15s, box-shadow 0.15s',
         }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.12)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.07)'; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(13,148,136,0.2)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(13,148,136,0.08)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.07)'; e.currentTarget.style.boxShadow = 'none'; }}
         >
             {/* Image */}
-            <div style={{ width: '100%', height: 150, background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: 156, background: 'linear-gradient(135deg,#F0FDFA,#E6FFFA)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
                 {imageSrc
                     ? <img src={imageSrc} alt={service.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <i className="ti ti-tool" style={{ fontSize: 36, color: '#94A3B8' }} />
+                    : <i className="ti ti-tool" style={{ fontSize: 38, color: '#0D9488', opacity: 0.35 }} />
                 }
+                {category && (
+                    <span style={{ position: 'absolute', top: 10, right: 10, fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 20, background: 'rgba(255,255,255,0.92)', color: '#0D9488', backdropFilter: 'blur(4px)' }}>
+                        {category}
+                    </span>
+                )}
             </div>
 
             {/* Body */}
-            <div style={{ padding: 16, flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{service.name}</div>
+            <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', lineHeight: 1.3 }}>{service.name}</div>
                 {service.description && (
-                    <div style={{ fontSize: 12, color: '#475569', lineHeight: 1.55, flex: 1 }}>{service.description}</div>
+                    <div style={{ fontSize: 12, color: '#64748B', lineHeight: 1.6, flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {service.description}
+                    </div>
                 )}
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                    {category && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#94A3B8' }}>
-                            <i className="ti ti-tag" style={{ fontSize: 13 }} /> {category}
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 2 }}>
+                    {cityName && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#94A3B8' }}>
+                            <i className="ti ti-map-pin" style={{ fontSize: 12 }} /> {cityName}
                         </span>
                     )}
                     {subcategory && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#94A3B8' }}>
-                            <i className="ti ti-point" style={{ fontSize: 13 }} /> {subcategory}
-                        </span>
-                    )}
-                    {cityName && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#94A3B8' }}>
-                            <i className="ti ti-map-pin" style={{ fontSize: 13 }} /> {cityName}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#94A3B8' }}>
+                            <i className="ti ti-tag" style={{ fontSize: 12 }} /> {subcategory}
                         </span>
                     )}
                 </div>
@@ -80,43 +112,47 @@ function ServiceCard({ service }) {
 
             {/* Provider */}
             {service.user && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 16px', borderTop: '0.5px solid rgba(0,0,0,0.05)', background: '#FAFAFA' }}>
-                    <div style={{
-                        width: 24, height: 24, borderRadius: '50%',
-                        background: AV_COLORS[(service.user.id ?? 0) % 7],
-                        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 10, fontWeight: 700, flexShrink: 0,
-                    }}>
-                        {(service.user.first_name ?? '?')[0].toUpperCase()}
-                    </div>
-                    <span style={{ fontSize: 11, color: '#475569', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderTop: '0.5px solid rgba(0,0,0,0.05)', background: '#FAFAFA' }}>
+                    <ProviderAvatar user={service.user} size={26} />
+                    <Link href={`/user/users/${service.user.id}`} style={{ fontSize: 11, color: '#475569', flex: 1, textDecoration: 'none', fontWeight: 500 }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#0D9488'}
+                        onMouseLeave={e => e.currentTarget.style.color = '#475569'}
+                    >
                         {service.user.first_name} {service.user.last_name}
-                    </span>
-                    <VerifiedBadge status={service.identity_status} />
+                    </Link>
+                    <VerifiedBadge status={identityStatus} />
                 </div>
             )}
 
             {/* Footer */}
             <div style={{ padding: '12px 16px', borderTop: '0.5px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: '#0D9488' }}>{price}</span>
-                    <span style={{ fontSize: 11, color: '#94A3B8', marginLeft: 4 }}>
-                        {service.price_type === 'usd' ? 'USD' : 'SYP'}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: '#0D9488' }}>{price}</span>
+                    <span style={{ fontSize: 10, color: '#94A3B8' }}>
+                        {service.price_type === 'usd' ? 'دولار أمريكي' : 'ليرة سورية'}
                     </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{
-                        fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20,
-                        background: service.is_active ? '#F0FDF4' : '#FEF2F2',
-                        color: service.is_active ? '#15803D' : '#B91C1C',
-                    }}>
-                        {service.is_active ? 'متاح' : 'غير متاح'}
-                    </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {!isOwner && (
+                        <button onClick={startChat} disabled={chatLoading} title="مراسلة مقدم الخدمة" style={{
+                            width: 34, height: 34, borderRadius: 8, border: '1px solid rgba(13,148,136,0.25)',
+                            background: chatLoading ? '#F0FDFA' : '#fff', color: '#0D9488',
+                            cursor: chatLoading ? 'not-allowed' : 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0,
+                            transition: 'all .15s',
+                        }}
+                            onMouseEnter={e => { if (!chatLoading) { e.currentTarget.style.background = '#F0FDFA'; e.currentTarget.style.borderColor = '#0D9488'; } }}
+                            onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = 'rgba(13,148,136,0.25)'; }}
+                        >
+                            <i className={chatLoading ? 'ti ti-loader-2' : 'ti ti-message-circle'} style={chatLoading ? { animation: 'spin 1s linear infinite' } : {}} />
+                        </button>
+                    )}
                     <Link href={`/user/services/${service.id}/details`} style={{
-                        padding: '5px 12px', background: '#0D9488', color: '#fff',
-                        borderRadius: 6, fontSize: 12, fontWeight: 500, textDecoration: 'none',
+                        padding: '7px 16px', background: 'linear-gradient(135deg,#0D9488,#0F766E)', color: '#fff',
+                        borderRadius: 8, fontSize: 12, fontWeight: 600, textDecoration: 'none',
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
                     }}>
-                        التفاصيل
+                        التفاصيل <i className="ti ti-arrow-left" style={{ fontSize: 12 }} />
                     </Link>
                 </div>
             </div>
@@ -124,7 +160,7 @@ function ServiceCard({ service }) {
     );
 }
 
-export default function Services({ services, cities, categories, filters }) {
+export default function Services({ services, cities, categories, filters, authId }) {
     const [q, setQ] = useState(filters?.q ?? '');
     const [city, setCity] = useState(filters?.city ?? '');
     const [priceType, setPriceType] = useState(filters?.price_type ?? '');
@@ -154,85 +190,114 @@ export default function Services({ services, cities, categories, filters }) {
     return (
         <UserLayout title="الخدمات">
             <Head title="الخدمات — Skillify" />
+            <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-            <div>
-                <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.3px', color: '#0F172A' }}>الخدمات المتاحة</div>
-                <div style={{ fontSize: 13, color: '#475569', marginTop: 2 }}>تصفح وابحث عن الخدمة المناسبة</div>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <div>
+                    <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.3px', color: '#0F172A' }}>الخدمات المتاحة</div>
+                    <div style={{ fontSize: 13, color: '#64748B', marginTop: 2 }}>تصفح وابحث عن الخدمة المناسبة</div>
+                </div>
+                <Link href="/user/my-services" style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '8px 16px', borderRadius: 10,
+                    background: '#F0FDFA', border: '1px solid #99F6E4',
+                    color: '#0D9488', fontSize: 12, fontWeight: 600, textDecoration: 'none',
+                }}>
+                    <i className="ti ti-plus" /> خدماتي
+                </Link>
             </div>
 
-            {/* Filters */}
+            {/* Search bar */}
             <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {/* Search */}
-                <div style={{ position: 'relative' }}>
-                    <i className="ti ti-search" style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: 12, fontSize: 16, color: '#94A3B8', pointerEvents: 'none' }} />
-                    <input
-                        type="text" value={q} onChange={e => setQ(e.target.value)}
-                        placeholder="ابحث عن خدمة..."
-                        onKeyDown={e => e.key === 'Enter' && submit(e)}
-                        style={{ width: '100%', padding: '9px 14px 9px 38px', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: 10, background: '#fff', fontSize: 13, color: '#0F172A', outline: 'none' }}
-                    />
-                </div>
-
-                {/* Dropdowns */}
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
+                        <i className="ti ti-search" style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: 12, fontSize: 16, color: '#94A3B8', pointerEvents: 'none' }} />
+                        <input
+                            type="text" value={q} onChange={e => setQ(e.target.value)}
+                            placeholder="ابحث عن خدمة..."
+                            onKeyDown={e => e.key === 'Enter' && submit(e)}
+                            style={{ width: '100%', padding: '10px 14px 10px 40px', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: 10, background: '#fff', fontSize: 13, color: '#0F172A', outline: 'none' }}
+                        />
+                    </div>
                     <select value={city} onChange={e => { setCity(e.target.value); applyFilter({ city: e.target.value }); }}
-                        style={{ padding: '7px 12px', borderRadius: 6, border: '0.5px solid rgba(0,0,0,0.12)', background: '#fff', fontSize: 12, color: '#475569', outline: 'none', cursor: 'pointer' }}>
+                        style={{ padding: '10px 12px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.12)', background: '#fff', fontSize: 12, color: '#475569', outline: 'none', cursor: 'pointer', minWidth: 110 }}>
                         <option value="">كل المدن</option>
-                        {(cities ?? []).map(c => <option key={c.id} value={c.id}>{c.name_ar ?? c.name_en}</option>)}
+                        {(cities ?? []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                     <select value={priceType} onChange={e => { setPriceType(e.target.value); applyFilter({ price_type: e.target.value }); }}
-                        style={{ padding: '7px 12px', borderRadius: 6, border: '0.5px solid rgba(0,0,0,0.12)', background: '#fff', fontSize: 12, color: '#475569', outline: 'none', cursor: 'pointer' }}>
+                        style={{ padding: '10px 12px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.12)', background: '#fff', fontSize: 12, color: '#475569', outline: 'none', cursor: 'pointer', minWidth: 100 }}>
                         <option value="">كل العملات</option>
                         <option value="usd">USD</option>
                         <option value="syp">SYP</option>
                     </select>
                     {hasFilters && (
-                        <button type="button" onClick={clearFilters} style={{
-                            padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500,
-                            border: '0.5px solid #F87171', background: '#fff', color: '#F87171', cursor: 'pointer',
-                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                        <button type="button" onClick={clearFilters} title="مسح التصفية" style={{
+                            padding: '10px 14px', borderRadius: 10, fontSize: 12,
+                            border: '0.5px solid #FCA5A5', background: '#FEF2F2', color: '#EF4444',
+                            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0,
                         }}>
-                            <i className="ti ti-x" style={{ fontSize: 11 }} /> مسح التصفية
+                            <i className="ti ti-x" style={{ fontSize: 13 }} /> مسح
                         </button>
                     )}
                 </div>
 
-                {/* Category chips */}
+                {/* Category chips — horizontally scrollable */}
                 {(categories ?? []).length > 0 && (
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        {['', ...categories].map(cat => {
-                            const catId  = cat?.id ?? '';
-                            const catName = cat?.name_ar ?? cat?.name_en ?? 'الكل';
-                            const isActive = catId === category;
-                            return (
-                                <button key={catId || '__all'} type="button"
-                                    onClick={() => { setCategory(catId); applyFilter({ category: catId }); }}
-                                    style={{
-                                        padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500,
-                                        border: `0.5px solid ${isActive ? '#0D9488' : 'rgba(0,0,0,0.12)'}`,
-                                        background: isActive ? '#F0FDFA' : '#fff',
-                                        color: isActive ? '#134E4A' : '#475569',
-                                        cursor: 'pointer', whiteSpace: 'nowrap',
-                                        display: 'inline-block',
-                                    }}>
-                                    {catName}
-                                </button>
-                            );
-                        })}
+                    <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
+                        <div style={{ display: 'flex', gap: 6, width: 'max-content' }}>
+                            {['', ...categories].map(cat => {
+                                const catId   = cat?.id ?? '';
+                                const catName = cat?.name ?? 'الكل';
+                                const isActive = catId === category;
+                                return (
+                                    <button key={catId || '__all'} type="button"
+                                        onClick={() => { setCategory(catId); applyFilter({ category: catId }); }}
+                                        style={{
+                                            padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500,
+                                            border: `1px solid ${isActive ? '#0D9488' : 'rgba(0,0,0,0.1)'}`,
+                                            background: isActive ? '#0D9488' : '#fff',
+                                            color: isActive ? '#fff' : '#64748B',
+                                            cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all .12s',
+                                        }}>
+                                        {catName}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
             </form>
 
-            <div style={{ fontSize: 12, color: '#94A3B8' }}>{total} خدمة</div>
+            {/* Count */}
+            <div style={{ fontSize: 12, color: '#94A3B8', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <i className="ti ti-layout-grid" style={{ fontSize: 13 }} />
+                {total} خدمة متاحة
+            </div>
 
+            {/* Grid */}
             {items.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 24px', color: '#94A3B8' }}>
-                    <i className="ti ti-briefcase-off" style={{ fontSize: 48, display: 'block', marginBottom: 12, opacity: 0.35 }} />
-                    <p style={{ fontSize: 14 }}>لا توجد خدمات مطابقة لمعاييرك</p>
+                <div style={{ textAlign: 'center', padding: '60px 24px', color: '#94A3B8', background: '#fff', borderRadius: 16, border: '0.5px solid rgba(0,0,0,0.07)' }}>
+                    <i className="ti ti-briefcase-off" style={{ fontSize: 52, display: 'block', marginBottom: 16, opacity: 0.25 }} />
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#64748B', marginBottom: 6 }}>
+                        {hasFilters ? 'لا توجد خدمات مطابقة لبحثك' : 'لا توجد خدمات متاحة حالياً'}
+                    </div>
+                    <div style={{ fontSize: 13, marginBottom: 20 }}>
+                        {hasFilters ? 'جرّب تغيير معايير البحث أو مسح التصفية.' : 'كن أول من يضيف خدمة على المنصة!'}
+                    </div>
+                    {hasFilters ? (
+                        <button onClick={clearFilters} style={{ padding: '9px 22px', borderRadius: 10, background: '#0D9488', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                            مسح التصفية
+                        </button>
+                    ) : (
+                        <Link href="/user/my-services" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 22px', borderRadius: 10, background: '#0D9488', color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+                            <i className="ti ti-plus" /> أضف خدمتك
+                        </Link>
+                    )}
                 </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(270px,1fr))', gap: 14 }}>
-                    {items.map(s => <ServiceCard key={s.id} service={s} />)}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(270px,1fr))', gap: 16 }}>
+                    {items.map(s => <ServiceCard key={s.id} service={s} authId={authId} />)}
                 </div>
             )}
 
@@ -243,7 +308,7 @@ export default function Services({ services, cities, categories, filters }) {
                         link.url ? (
                             <button key={i} onClick={() => router.get(link.url)}
                                 style={{
-                                    padding: '6px 12px', borderRadius: 8, fontSize: 12,
+                                    padding: '7px 14px', borderRadius: 8, fontSize: 12,
                                     border: `1px solid ${link.active ? '#0D9488' : 'rgba(0,0,0,0.12)'}`,
                                     background: link.active ? '#0D9488' : '#fff',
                                     color: link.active ? '#fff' : '#475569', cursor: 'pointer',
@@ -251,7 +316,7 @@ export default function Services({ services, cities, categories, filters }) {
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
                         ) : (
-                            <span key={i} style={{ padding: '6px 12px', fontSize: 12, color: '#94A3B8' }}
+                            <span key={i} style={{ padding: '7px 14px', fontSize: 12, color: '#94A3B8' }}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
                         )
