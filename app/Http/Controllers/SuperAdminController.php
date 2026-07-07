@@ -183,6 +183,7 @@ class SuperAdminController extends Controller
     public function businessto_approve(Business $business)
     {
         $business->update(['status' => 'active']);
+        $business->user?->syncBusinessRole();
         $business->user?->notify(new BusinessStatusNotification('approved', $business->name));
         return back()->with('success', 'Business approved.');
     }
@@ -190,6 +191,7 @@ class SuperAdminController extends Controller
     public function businessto_rejected(Business $business)
     {
         $business->update(['status' => 'rejected']);
+        $business->user?->syncBusinessRole();
         $business->user?->notify(new BusinessStatusNotification('rejected', $business->name));
         return back()->with('success', 'Business rejected.');
     }
@@ -197,6 +199,7 @@ class SuperAdminController extends Controller
     public function businessto_pending(Business $business)
     {
         $business->update(['status' => 'pending']);
+        $business->user?->syncBusinessRole();
         return back()->with('success', 'Business set to pending.');
     }
 
@@ -363,7 +366,7 @@ class SuperAdminController extends Controller
     // ── Posts ────────────────────────────────────────────────────────────────────
     public function posts()
     {
-        $posts = Post::with('user')
+        $posts = Post::with(['user', 'comments.user.businesses', 'comments.replies.user.businesses'])
             ->withCount(['likes', 'comments'])
             ->latest()
             ->get();

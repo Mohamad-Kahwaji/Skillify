@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth_SuperAdmin\LoginController as SuperAdminLoginController;
+use App\Http\Controllers\Auth_User\ForgotPasswordController as UserForgotPasswordController;
 use App\Http\Controllers\Auth_User\LoginController    as UserLoginController;
 use App\Http\Controllers\Auth_User\RegisterController  as UserRegisterController;
 use Illuminate\Support\Facades\Route;
@@ -48,9 +49,14 @@ Route::name('user.')->group(function () {
     Route::get('/register',                     [UserRegisterController::class,'showRegister'])->name('register');
     Route::post('/register',                    [UserRegisterController::class,'register'])->name('register.post');
 
-    Route::get('/forgot-password',              fn() => view('auth.user.forgot-password'))->name('forgot-password');
-    Route::post('/forgot-password',             fn() => back()->with('status', 'If an account with that email exists, a reset link has been sent.'))->name('forgot-password.send');
+    Route::get('/forgot-password',              [UserForgotPasswordController::class, 'showForgotPassword'])->name('forgot-password');
+    Route::post('/forgot-password',             [UserForgotPasswordController::class, 'sendOtp'])
+                                                ->middleware('throttle:3,1')->name('forgot-password.send');
 
-    Route::get('/reset-password/{token}',       fn($token) => view('auth.user.reset-password', compact('token')))->name('reset-password');
-    Route::post('/reset-password',              fn() => redirect()->route('user.login')->with('status', 'Your password has been reset successfully. Please sign in.'))->name('reset-password.update');
+    Route::get('/verify-otp',                   [UserForgotPasswordController::class, 'showVerifyOtp'])->name('verify-otp');
+    Route::post('/verify-otp',                  [UserForgotPasswordController::class, 'verifyOtp'])
+                                                ->middleware('throttle:10,1')->name('verify-otp.post');
+
+    Route::get('/reset-password',               [UserForgotPasswordController::class, 'showResetForm'])->name('reset-password');
+    Route::post('/reset-password',              [UserForgotPasswordController::class, 'resetPassword'])->name('reset-password.update');
 });

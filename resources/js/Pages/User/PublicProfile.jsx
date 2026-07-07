@@ -40,6 +40,18 @@ function VerifyBadge({ status }) {
     );
 }
 
+function Lightbox({ src, onClose }) {
+    if (!src) return null;
+    return (
+        <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <img src={src} alt="" onClick={e => e.stopPropagation()} style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 14, boxShadow: '0 24px 80px rgba(0,0,0,0.6)', objectFit: 'contain' }} />
+            <button onClick={onClose} style={{ position: 'absolute', top: 20, left: 20, width: 40, height: 40, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.12)', color: '#fff', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+                <i className="ti ti-x" />
+            </button>
+        </div>
+    );
+}
+
 function SectionCard({ icon, title, subtitle, children }) {
     return (
         <div style={{ background: '#fff', border: '1.5px solid #F1F5F9', borderRadius: 18, overflow: 'hidden' }}>
@@ -59,6 +71,7 @@ function SectionCard({ icon, title, subtitle, children }) {
 
 export default function PublicProfile({ profile, authId, isSelf, verifyStatus }) {
     const [chatLoading, setChatLoading] = useState(false);
+    const [lightbox, setLightbox] = useState(null);
     const business = profile.businesses;
     const fullName = `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim();
 
@@ -73,6 +86,8 @@ export default function PublicProfile({ profile, authId, isSelf, verifyStatus })
     return (
         <UserLayout title={fullName}>
             <Head title={`${fullName} — Skillify`} />
+
+            <Lightbox src={lightbox} onClose={() => setLightbox(null)} />
 
             {/* Breadcrumb */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94A3B8' }}>
@@ -219,6 +234,23 @@ export default function PublicProfile({ profile, authId, isSelf, verifyStatus })
                 </SectionCard>
             )}
 
+            {/* Portfolio Gallery */}
+            {business?.gallery?.length > 0 && (
+                <SectionCard icon="photo" title="معرض الأعمال" subtitle={`${business.gallery.length} عمل منجز`}>
+                    <div style={{ padding: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12 }}>
+                        {business.gallery.map(g => (
+                            <div key={g.id}
+                                onClick={() => setLightbox(`/storage/${g.image}`)}
+                                style={{ cursor: 'zoom-in', borderRadius: 12, overflow: 'hidden', border: '1px solid #F1F5F9', aspectRatio: '4 / 3', position: 'relative' }}>
+                                <img src={`/storage/${g.image}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform .15s' }}
+                                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'} />
+                            </div>
+                        ))}
+                    </div>
+                </SectionCard>
+            )}
+
             {/* Services */}
             {profile.services?.length > 0 && (
                 <SectionCard icon="tool" title={`خدمات ${fullName}`} subtitle={`${profile.services.length} خدمة متاحة`}>
@@ -281,7 +313,7 @@ export default function PublicProfile({ profile, authId, isSelf, verifyStatus })
             )}
 
             {/* Empty state when nothing to show */}
-            {!business && !profile.services?.length && !profile.posts?.length && (
+            {!business && !profile.services?.length && !profile.posts?.length && !business?.gallery?.length && (
                 <div style={{ textAlign: 'center', padding: '48px 24px', color: '#94A3B8', background: '#fff', borderRadius: 18, border: '1.5px solid #F1F5F9' }}>
                     <i className="ti ti-user-off" style={{ fontSize: 44, display: 'block', marginBottom: 12, opacity: 0.3 }} />
                     <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>لا توجد معلومات إضافية</div>

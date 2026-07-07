@@ -72,6 +72,15 @@ class User extends Authenticatable
         return $this->hasOne(Business::class);
     }
 
+    /**
+     * يزامن رتبة المستخدم مع حالة حساب الأعمال تبعه: business_owner إذا كان نشطاً، وإلا user.
+     */
+    public function syncBusinessRole(): void
+    {
+        $role = $this->businesses()->where('status', 'active')->exists() ? 'business_owner' : 'user';
+        $this->syncRoles([$role]);
+    }
+
     public function services()
     {
         return $this->hasMany(Service::class);

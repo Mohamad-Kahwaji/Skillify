@@ -11,14 +11,17 @@ class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with('user')->latest()->get();
+        $posts = Post::with(['user', 'comments.user.businesses', 'comments.replies.user.businesses'])
+            ->withCount(['likes', 'comments'])
+            ->latest()
+            ->get();
         return Inertia::render('Admin/Posts', ['posts' => $posts]);
     }
 
     public function allUserPosts()
     {
         $authId = auth('users')->id();
-        $posts  = Post::with(['user.businesses', 'comments.user.businesses', 'likes'])
+        $posts  = Post::with(['user.businesses', 'comments.user.businesses', 'comments.replies.user.businesses', 'likes'])
             ->where('user_id', '!=', $authId)
             ->latest()
             ->get();
@@ -35,7 +38,7 @@ class PostController extends Controller
     public function communityPosts()
     {
         $authId = auth('users')->id();
-        $posts  = Post::with(['user.businesses', 'comments.user.businesses', 'likes'])
+        $posts  = Post::with(['user.businesses', 'comments.user.businesses', 'comments.replies.user.businesses', 'likes'])
             ->where('user_id', '!=', $authId)
             ->latest()
             ->get();

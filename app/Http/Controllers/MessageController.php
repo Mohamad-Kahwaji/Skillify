@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Events\MessageSent;
-use App\Events\NewMessageNotification;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\User;
+use App\Notifications\NewMessageNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -75,9 +76,15 @@ class MessageController extends Controller
 
         // إرسال Real-time للطرف الثاني
         broadcast(new MessageSent($message))->toOthers();
-        // إرسال إشعار للطرف الثاني
-        broadcast(new NewMessageNotification($message));
-        return response()->json($message->load('user'), 201);
+
+        // إرسال إشعار فوري (بالمخطط + الجرس) للطرف الثاني
+        $receiverId = $conversation->user_id_1 == Auth::guard('users')->id()
+            ? $conversation->user_id_2
+            : $conversation->user_id_1;
+        $message->load('user');
+        User::find($receiverId)?->notify(new NewMessageNotification($message));
+
+        return response()->json($message, 201);
     }
 
     public function show($id)

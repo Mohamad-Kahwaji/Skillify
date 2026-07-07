@@ -24,10 +24,10 @@ export default function Chat({ conversation, messages: initialMessages, conversa
     useEffect(() => {
         if (!window.Echo) return;
         const channel = window.Echo.private(`conversation.${conversation.id}`)
-            .listen('.MessageSent', (e) => {
+            .listen('.message.sent', (e) => {
                 if (e.message) setMessages(prev => [...prev, e.message]);
             });
-        return () => channel.stopListening('.MessageSent');
+        return () => channel.stopListening('.message.sent');
     }, [conversation.id]);
 
     // Mark as read on open (fire-and-forget AJAX, not Inertia)
@@ -51,6 +51,9 @@ export default function Chat({ conversation, messages: initialMessages, conversa
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
                     'Accept': 'application/json',
+                    // Without this, Laravel's toOthers() has no socket to exclude and
+                    // echoes the broadcast back to the sender's own tab too (duplicate message).
+                    'X-Socket-Id': window.Echo?.socketId() ?? '',
                 },
                 body: JSON.stringify({ conversation_id: conversation.id, message_text: text }),
             });

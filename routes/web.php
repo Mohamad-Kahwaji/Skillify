@@ -56,6 +56,8 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
         ->middleware('permission:users.delete');
     Route::get('/users/no-services',        [UserController::class,  'services_users'])->name('users.no-services')
         ->middleware('permission:users.view_no_services');
+    Route::get('/users/{user}/profile',     [UserController::class,  'adminProfile'])->name('users.profile')
+        ->middleware('permission:users.view');
 
     // Workers (Businesses)
     Route::get('/workers',               [BusinessController::class, 'index'])->name('workers.index')
@@ -100,6 +102,8 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::get('/posts',         [PostController::class, 'index'])->name('posts.index')
         ->middleware('permission:posts.view_all');
     Route::delete('/posts/{id}', [PostController::class, 'destroy'])->name('posts.destroy')
+        ->middleware('permission:posts.delete');
+    Route::delete('/comments/{comment}', [CommentController::class, 'adminDestroy'])->name('comments.destroy')
         ->middleware('permission:posts.delete');
 
     // Reports
@@ -246,6 +250,7 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
 
     // Users
     Route::get('/users',              [SuperAdminController::class, 'users'])->name('users.index');
+    Route::get('/users/{user}/profile', [UserController::class,     'superAdminProfile'])->name('users.profile');
     Route::delete('/users/{user}',    [SuperAdminController::class, 'destroyUser'])->name('users.destroy');
 
     // Businesses
@@ -280,6 +285,7 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     // Posts
     Route::get('/posts',             [SuperAdminController::class, 'posts'])->name('posts.index');
     Route::delete('/posts/{post}',   [SuperAdminController::class, 'destroyPost'])->name('posts.destroy');
+    Route::delete('/comments/{comment}', [CommentController::class, 'adminDestroy'])->name('comments.destroy');
 
     // Identity Verifications
     Route::get('/identity-verifications',                              [SuperAdminController::class, 'identityVerifications'])->name('identity.index');

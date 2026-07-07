@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admin;
 use App\Models\Business;
-use App\Models\BusinessGallery;
-use App\Models\SuperAdmin;
-use App\Notifications\NewRequestNotification;
+use App\Services\GeminiIdentityService;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class BusinessController extends Controller
@@ -20,7 +21,7 @@ class BusinessController extends Controller
         return Inertia::render('Admin/Workers', ['businesses' => $businesses]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, GeminiIdentityService $gemini)
     {
         $user = Auth::guard('users')->user();
 
@@ -28,103 +29,89 @@ class BusinessController extends Controller
             'name_job'               => 'required|string|max:120',
             'number'                 => 'required|string|max:40',
             'active_typebusiness_id' => 'required|exists:active_typebusinesses,id',
-            'city'                   => 'nullable|string|max:100',
-            'area'                   => 'nullable|string|max:100',
-            'street'                 => 'nullable|string|max:150',
+            'latitude'               => 'required|numeric|between:-90,90',
+            'longitude'              => 'required|numeric|between:-180,180',
             'description'            => 'nullable|string|max:1000',
             'image'                  => 'required|image|max:2048',
-            'gallery_images'         => 'nullable|array|max:20',
-            'gallery_images.*'       => 'image|max:5120',
         ]);
 
-        $data = $request->only('name_job', 'number', 'active_typebusiness_id', 'description', 'city', 'area', 'street');
-        $data['city']     = $request->city ?: $user->city;
+        $data = $request->only('name_job', 'number', 'active_typebusiness_id', 'description', 'latitude', 'longitude');
         $data['name']     = $user->first_name . ' ' . $user->last_name;
         $data['activity'] = $request->name_job;
         $data['user_id']  = $user->id;
         $data['status']   = 'pending';
 
+        $imageReason = null;
         if ($request->hasFile('image')) {
+            $imageReason = $this->verifyHumanImage($request->file('image'), $gemini);
             $data['image'] = $request->file('image')->store('businesses', 'public');
         }
 
-        $business = Business::create($data);
+        Business::create($data);
 
-        if ($request->hasFile('gallery_images')) {
-            foreach ($request->file('gallery_images') as $file) {
-                $path = $file->store('galleries', 'public');
-                BusinessGallery::create(['business_id' => $business->id, 'image' => $path, 'date' => now()]);
-            }
-        }
+        $message = 'تم إرسال طلب حساب الأعمال، سيتم مراجعته قريباً.';
+        if ($imageReason) $message .= ' ✅ ' . $imageReason;
 
-        // Upgrade user role so they can edit their pending business
-        $user->syncRoles(['business_owner']);
-
-        $senderName = $user->first_name . ' ' . $user->last_name;
-        $notification = new NewRequestNotification($senderName, $business->id);
-
-        Admin::all()->each(fn($admin) => $admin->notify($notification));
-        SuperAdmin::all()->each(fn($sa) => $sa->notify($notification));
-
-        return back()->with('success', 'تم إرسال طلب حساب الأعمال، سيتم مراجعته قريباً.');
+        return back()->with('success', $message);
     }
 
-    public function edit(Request $request)
+    public function edit(Request $request, GeminiIdentityService $gemini)
     {
         $business = Business::where('user_id', Auth::guard('users')->id())->firstOrFail();
 
         $request->validate([
             'name_job'    => 'required|string|max:120',
             'number'      => 'required|string|max:40',
-            'city'        => 'nullable|string|max:100',
-            'area'        => 'nullable|string|max:100',
-            'street'      => 'nullable|string|max:150',
+            'latitude'    => 'nullable|numeric|between:-90,90',
+            'longitude'   => 'nullable|numeric|between:-180,180',
             'description' => 'nullable|string|max:1000',
             'image'       => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only('name_job', 'number', 'description', 'city', 'area', 'street');
-        $data['activity'] = $request->input('name_job');
+        $data = $request->only('name_job', 'number', 'description');
+        $data['activity'] = $request->name_job;
 
+        if ($request->filled('latitude') && $request->filled('longitude')) {
+            $data['latitude']  = $request->latitude;
+            $data['longitude'] = $request->longitude;
+        }
+
+        $imageReason = null;
         if ($request->hasFile('image')) {
+            $imageReason = $this->verifyHumanImage($request->file('image'), $gemini);
             if ($business->image) Storage::disk('public')->delete($business->image);
             $data['image'] = $request->file('image')->store('businesses', 'public');
         }
 
         $business->update($data);
 
-        return back()->with('success', 'تم تحديث معلومات حساب الأعمال.');
+        $message = 'تم تحديث معلومات حساب الأعمال.';
+        if ($imageReason) $message .= ' ✅ ' . $imageReason;
+
+        return back()->with('success', $message);
     }
 
-    public function resubmit()
+    /**
+     * التحقق عبر Gemini أن الصورة المرفوعة صورة حقيقية لإنسان.
+     * ترفض الرفع برسالة validation إذا لم تكن كذلك، وتُرجع سبب القبول عند النجاح.
+     * تسمح بالمرور (fail-open) إذا تعطل الاتصال بالـ API.
+     */
+    private function verifyHumanImage(UploadedFile $file, GeminiIdentityService $gemini): ?string
     {
-        $user     = Auth::guard('users')->user();
-        $business = Business::where('user_id', $user->id)
-            ->where('status', 'rejected')
-            ->firstOrFail();
+        try {
+            $result = $gemini->analyseProfilePhoto($file);
 
-        $business->update(['status' => 'pending']);
+            if (!($result['is_human'] ?? true)) {
+                throw ValidationException::withMessages([
+                    'image' => 'الصورة يجب أن تكون صورة شخصية حقيقية لك. ' . ($result['reason'] ?? ''),
+                ]);
+            }
 
-        $notification = new NewRequestNotification(
-            $user->first_name . ' ' . $user->last_name,
-            $business->id
-        );
-        Admin::all()->each(fn($admin) => $admin->notify($notification));
-        SuperAdmin::all()->each(fn($sa) => $sa->notify($notification));
-
-        return back()->with('success', 'تم إعادة إرسال الطلب، سيتم مراجعته قريباً.');
+            return $result['reason'] ?? null;
+        } catch (\RuntimeException | ConnectionException $e) {
+            // fail-open: عطل الـ API (بما فيه انقطاع الاتصال/انتهاء المهلة) لا يمنع المستخدم، لكن نسجّل المشكلة
+            Log::warning('فشل فحص صورة حساب الأعمال عبر Gemini: ' . $e->getMessage());
+            return null;
+        }
     }
-
-    public function show(int $id)
-    {
-        $business = Business::withTrashed()->with('user')->findOrFail($id);
-        return Inertia::render('Admin/WorkerDetails', ['business' => $business]);
-    }
-
-    public function destroy(int $id)
-    {
-        Business::findOrFail($id)->delete();
-        return redirect()->route('admin.workers.index')->with('success', 'Business deleted.');
-    }
-
 }

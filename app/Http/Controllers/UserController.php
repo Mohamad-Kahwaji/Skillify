@@ -93,7 +93,7 @@ class UserController extends Controller
     {
         $authId  = auth('users')->id();
         $profile = User::with([
-            'businesses',
+            'businesses.gallery',
             'identityVerification',
             'services' => fn($q) => $q->where('is_active', true)->where('status', 'approved')->with(['category', 'city'])->latest()->limit(6),
             'posts'    => fn($q) => $q->latest()->limit(6),
@@ -104,6 +104,37 @@ class UserController extends Controller
             'authId'         => $authId,
             'isSelf'         => $authId === $id,
             'verifyStatus'   => $profile->identityVerification?->status,
+        ]);
+    }
+
+    // ملف المستخدم للمشاهدة من طرف الأدمن / السوبر أدمن (بدون أي إجراءات: مراسلة/تعديل)
+    private function loadProfileForStaff(int $id): User
+    {
+        return User::with([
+            'businesses.gallery',
+            'identityVerification',
+            'services' => fn($q) => $q->with(['category', 'city'])->latest(),
+            'posts'    => fn($q) => $q->latest()->limit(10),
+        ])->findOrFail($id);
+    }
+
+    public function adminProfile(int $user)
+    {
+        $profile = $this->loadProfileForStaff($user);
+
+        return Inertia::render('Admin/UserProfile', [
+            'profile'      => $profile,
+            'verifyStatus' => $profile->identityVerification?->status,
+        ]);
+    }
+
+    public function superAdminProfile(int $user)
+    {
+        $profile = $this->loadProfileForStaff($user);
+
+        return Inertia::render('SuperAdmin/UserProfile', [
+            'profile'      => $profile,
+            'verifyStatus' => $profile->identityVerification?->status,
         ]);
     }
 

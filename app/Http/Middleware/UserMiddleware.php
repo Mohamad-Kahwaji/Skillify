@@ -30,10 +30,7 @@ class UserMiddleware
         // Auto-assign default role if user has none
         if ($user->roles->isEmpty()) {
             try {
-                $role = $user->businesses()->where('status', 'approved')->exists()
-                    ? 'business_owner'
-                    : 'user';
-                $user->assignRole($role);
+                $user->syncBusinessRole();
             } catch (\Exception $e) {
                 // Roles not seeded yet — continue without assigning
             }

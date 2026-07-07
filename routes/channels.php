@@ -20,10 +20,6 @@ Broadcast::channel('conversation.{conversationId}', function ($user, $conversati
 });
 
 
-Broadcast::channel('notifications.{userId}', function ($user, $userId) {
-    return (int) $user->id === (int) $userId;
-});
-
 // Notification Channels
 Broadcast::channel('users.{id}.notifications', UserNotificationChannel::class);
 Broadcast::channel('admins.{id}.notifications', AdminNotificationChannel::class);

@@ -377,14 +377,6 @@ export default function Profile({ user, business, gallery, userServices, activeT
     const { badges } = usePage().props;
     const unreadBiz = badges?.unread_notifications ?? 0;
 
-    // Poll for notification badge every 6 seconds
-    useEffect(() => {
-        const id = setInterval(() => {
-            router.reload({ only: ['badges'], preserveScroll: true, preserveState: true });
-        }, 6000);
-        return () => clearInterval(id);
-    }, []);
-
     const imgRef     = useRef();
     const eImgRef    = useRef();
 
@@ -422,6 +414,16 @@ export default function Profile({ user, business, gallery, userServices, activeT
         street:      business?.street      ?? '',
         image:       null,
     });
+
+    // Poll for notification badge every 6 seconds — skipped while a form is submitting so a
+    // slow request (e.g. the AI image check) doesn't race the poll for the flash-session message
+    useEffect(() => {
+        const id = setInterval(() => {
+            if (profileForm.processing || bizForm.processing || editBizForm.processing) return;
+            router.reload({ only: ['badges'], preserveScroll: true, preserveState: true });
+        }, 6000);
+        return () => clearInterval(id);
+    }, [profileForm.processing, bizForm.processing, editBizForm.processing]);
 
     const submitProfile = e => { e.preventDefault(); profileForm.put('/user/profile', { forceFormData: true, preserveScroll: true, onSuccess: () => profileForm.setData('profile_photo', null) }); };
     const submitBiz = e => {

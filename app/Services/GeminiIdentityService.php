@@ -124,4 +124,78 @@ PROMPT
 
         return $result;
     }
+
+    /**
+     * فحص ما إذا كانت الصورة صورة حقيقية لإنسان.
+     * Returns array: { is_human: bool, confidence: int, reason: string }
+     */
+    public function analyseProfilePhoto(\Illuminate\Http\UploadedFile $file): array
+    {
+        if (empty($this->apiKey)) {
+            throw new \RuntimeException('GEMINI_API_KEY غير مضبوط في ملف .env');
+        }
+
+        $mime = $file->getMimeType();
+        $b64  = base64_encode(file_get_contents($file->getRealPath()));
+
+        $parts = [
+            ['inline_data' => ['mime_type' => $mime, 'data' => $b64]],
+            ['text' => <<<PROMPT
+أنت نظام فحص صور شخصية لمنصة خدمات. انظر إلى الصورة أعلاه وأجب بـ JSON فقط بدون أي نص إضافي:
+{
+  "is_human": true أو false,
+  "confidence": رقم من 0 إلى 100,
+  "reason": "سبب مختصر بالعربية في جملة واحدة"
+}
+
+قواعد:
+- is_human = true فقط إذا كانت الصورة بأكملها التقاطًا فوتوغرافيًا مباشرًا لشخص واحد، ووجهه هو المحتوى الرئيسي والواضح بالصورة (كصورة شخصية/بورتريه)
+- الشعارات، الرسومات، الرسوم الكرتونية، الحيوانات، المناظر، الأشياء، النصوص → is_human = false
+- لقطات الشاشة (screenshots) لصفحات ويب أو تطبيقات أو واجهات مستخدم → is_human = false دائمًا، حتى لو احتوت بداخلها على صورة صغيرة لشخص (مثل صورة حساب ضمن الواجهة) — الصورة الصغيرة داخل لقطة الشاشة لا تُحسب صورة شخصية صالحة
+- إذا كانت الصورة تحتوي على عناصر واجهة مستخدم (أزرار، نص كود، شريط تصفح متصفح، إلخ) فهي لقطة شاشة وليست صورة شخصية → is_human = false
+PROMPT
+            ],
+        ];
+
+        $payload = [
+            'contents' => [['parts' => $parts]],
+            'generationConfig' => [
+                'temperature'      => 0.1,
+                'responseMimeType' => 'application/json',
+            ],
+        ];
+
+        $response = null;
+        $lastError = '';
+        foreach ($this->models as $model) {
+            $response = Http::timeout(30)->connectTimeout(10)->post(
+                "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$this->apiKey}",
+                $payload
+            );
+            // Retry on 503/429 (unavailable / quota) with next model
+            if ($response->status() === 503 || $response->status() === 429) {
+                $lastError = $response->body();
+                continue;
+            }
+            break;
+        }
+
+        if (!$response || $response->failed()) {
+            throw new \RuntimeException('فشل الاتصال بـ Gemini API: ' . ($lastError ?: $response?->body()));
+        }
+
+        $text = $response->json('candidates.0.content.parts.0.text') ?? '{}';
+
+        // Clean markdown fences if present
+        $text = preg_replace('/^```(?:json)?\s*/i', '', trim($text));
+        $text = preg_replace('/\s*```$/i', '', $text);
+
+        $result = json_decode($text, true);
+
+        if (!is_array($result)) {
+            throw new \RuntimeException('استجابة غير صالحة من Gemini: ' . $text);
+        }
+
+        return $result;
+    }
 }

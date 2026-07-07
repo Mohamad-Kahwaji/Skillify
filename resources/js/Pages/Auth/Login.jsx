@@ -40,14 +40,14 @@ export default function Login() {
                             مرحباً بعودتك!
                         </h2>
                         <p className="text-teal-200 text-base leading-relaxed mb-10">
-                            سجّل دخولك للوصول إلى أفضل المحترفين والخدمات على المنصة.
+                            سجّل دخولك للوصول إلى أفضل المهنيين والخدمات على المنصة.
                         </p>
 
                         <div className="space-y-4 text-right">
                             {[
-                                { icon: '⚡', text: 'تواصل فوري مع المحترفين' },
+                                { icon: '⚡', text: 'تواصل فوري مع المهنيين' },
                                 { icon: '🔒', text: 'بيانات آمنة ومشفرة' },
-                                { icon: '🌟', text: 'آلاف المحترفين الموثوقين' },
+                                { icon: '🌟', text: 'آلاف المهنيين الموثوقين' },
                             ].map(f => (
                                 <div key={f.text} className="flex items-center gap-3 bg-white/10 rounded-2xl px-4 py-3 backdrop-blur-sm">
                                     <span className="text-xl">{f.icon}</span>

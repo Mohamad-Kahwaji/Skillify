@@ -51,6 +51,9 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
     const [liveToast,   setLiveToast]   = useState(null);
     const [unreadNotif, setUnreadNotif] = useState(badges?.unread_notifications ?? 0);
     const [navOpen,     setNavOpen]     = useState(false);
+    const [notifPerm,   setNotifPerm]   = useState(() =>
+        typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+    );
     const currentPath = window.location.pathname;
 
     useEffect(() => { setUnreadNotif(badges?.unread_notifications ?? 0); }, [badges?.unread_notifications]);
@@ -70,17 +73,31 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
         ? `${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase()
         : '?';
 
-    // Request browser notification permission + register service worker for FCM
+    // Try once on load — modern Chrome silently ignores this without a user gesture,
+    // so the explicit button below (requestNotifPermission) is the reliable path.
     useEffect(() => {
         if (!('Notification' in window)) return;
         if (Notification.permission === 'default') {
             Notification.requestPermission().then(perm => {
+                setNotifPerm(perm);
                 if (perm === 'granted') registerServiceWorker();
             });
         } else if (Notification.permission === 'granted') {
             registerServiceWorker();
         }
     }, []);
+
+    // Request browser notification permission — MUST be from a user gesture in modern Chrome
+    const requestNotifPermission = async () => {
+        if (typeof Notification === 'undefined') return;
+        if (Notification.permission === 'denied') {
+            alert('الإشعارات محظورة في إعدادات المتصفح. افتح إعدادات الموقع وأعد تفعيلها يدوياً.');
+            return;
+        }
+        const result = await Notification.requestPermission();
+        setNotifPerm(result);
+        if (result === 'granted') registerServiceWorker();
+    };
 
     function registerServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
@@ -103,7 +120,7 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
         const pusher = window.Echo.connector?.pusher;
         const channel = window.Echo.private(`users.${user.id}.notifications`);
 
-        channel.notification((payload) => {
+        const handleNotification = (payload) => {
             setLiveToast({ title: payload.title, message: payload.message ?? '' });
             setUnreadNotif(v => v + 1);
             setTimeout(() => setLiveToast(null), 6000);
@@ -115,10 +132,14 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
                     tag:  'skillify-user',
                 });
             }
-        });
+        };
+        channel.notification(handleNotification);
 
+        // Only detach this listener — don't Echo.leave() the channel, since this layout
+        // remounts on every Inertia page navigation (no persistent layout) and leaving
+        // would tear down the channel a newly-mounted page just (re)subscribed to.
         return () => {
-            window.Echo.leave(`users.${user.id}.notifications`);
+            channel.stopListeningForNotification(handleNotification);
         };
     }, [user?.id]);
 
@@ -187,6 +208,12 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
 
                 {/* User area */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                    {notifPerm !== 'granted' && notifPerm !== 'unsupported' && (
+                        <button onClick={requestNotifPermission} title={notifPerm === 'denied' ? 'الإشعارات محظورة — انقر للمساعدة' : 'تفعيل إشعارات المتصفح'}
+                            style={{ width: 32, height: 32, borderRadius: 9, cursor: 'pointer', border: `1px solid ${notifPerm === 'denied' ? '#FCA5A5' : '#FDE68A'}`, background: notifPerm === 'denied' ? '#FEF2F2' : '#FFFBEB', color: notifPerm === 'denied' ? '#DC2626' : '#D97706', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <i className={`ti ${notifPerm === 'denied' ? 'ti-bell-off' : 'ti-bell-plus'}`} />
+                        </button>
+                    )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{
                             width: 34, height: 34, borderRadius: '50%',

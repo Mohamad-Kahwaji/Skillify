@@ -91,4 +91,12 @@ class CommentController extends Controller
 
         return back();
     }
+
+    // حذف أي تعليق من قبل الأدمن أو السوبر أدمن (بدون شرط الملكية)
+    public function adminDestroy(Comment $comment)
+    {
+        $comment->delete();
+
+        return back()->with('success', 'تم حذف التعليق.');
+    }
 }

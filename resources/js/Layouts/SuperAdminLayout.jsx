@@ -160,17 +160,19 @@ export default function SuperAdminLayout({ children, title }) {
         }
 
         const pusher = window.Echo.connector?.pusher;
+        const onConnected    = () => setWsStatus('connected');
+        const onDisconnected = () => setWsStatus('disconnected');
         if (pusher) {
-            pusher.connection.bind('connected',    () => setWsStatus('connected'));
-            pusher.connection.bind('disconnected', () => setWsStatus('disconnected'));
-            pusher.connection.bind('failed',       () => setWsStatus('disconnected'));
-            pusher.connection.bind('unavailable',  () => setWsStatus('disconnected'));
+            pusher.connection.bind('connected',    onConnected);
+            pusher.connection.bind('disconnected', onDisconnected);
+            pusher.connection.bind('failed',       onDisconnected);
+            pusher.connection.bind('unavailable',  onDisconnected);
             if (pusher.connection.state === 'connected') setWsStatus('connected');
         }
 
         const channel = window.Echo.private(`superadmins.${admin.id}.notifications`);
 
-        channel.notification((payload) => {
+        const handleNotification = (payload) => {
             setUnreadNotif(prev => prev + 1);
             setLiveToast({ title: payload.title ?? 'إشعار جديد', message: payload.message ?? '' });
             setTimeout(() => setLiveToast(null), 6000);
@@ -182,15 +184,19 @@ export default function SuperAdminLayout({ children, title }) {
                     tag:  'skillify-superadmin',
                 });
             }
-        });
+        };
+        channel.notification(handleNotification);
 
+        // Only detach this listener — don't Echo.leave() the channel, since this layout
+        // remounts on every Inertia page navigation (no persistent layout) and leaving
+        // would tear down the channel a newly-mounted page just (re)subscribed to.
         return () => {
-            window.Echo.leave(`superadmins.${admin.id}.notifications`);
+            channel.stopListeningForNotification(handleNotification);
             if (pusher) {
-                pusher.connection.unbind('connected');
-                pusher.connection.unbind('disconnected');
-                pusher.connection.unbind('failed');
-                pusher.connection.unbind('unavailable');
+                pusher.connection.unbind('connected',    onConnected);
+                pusher.connection.unbind('disconnected', onDisconnected);
+                pusher.connection.unbind('failed',       onDisconnected);
+                pusher.connection.unbind('unavailable',  onDisconnected);
             }
         };
     }, [admin?.id]);

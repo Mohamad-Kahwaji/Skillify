@@ -94,7 +94,7 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
 
     return (
         <>
-            <Head title="Skillify — منصة المحترفين والشركات" />
+            <Head title="Skillify — منصة المهنيين والشركات" />
 
             <div dir="rtl">
 
@@ -115,7 +115,7 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                         {[
                             { href: '#how',           label: 'كيف يعمل' },
                             { href: '#categories',    label: 'الفئات' },
-                            { href: '#professionals', label: 'المحترفون' },
+                            { href: '#professionals', label: 'المهنيون' },
                             { href: '#ads',           label: 'الإعلانات' },
                         ].map(l => (
                             <a key={l.href} href={l.href}
@@ -150,7 +150,7 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                     <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-2">
                         <a href="#how"           className="block py-2 text-gray-600 hover:text-[#0D9488]" onClick={() => setMobileOpen(false)}>كيف يعمل</a>
                         <a href="#categories"    className="block py-2 text-gray-600 hover:text-[#0D9488]" onClick={() => setMobileOpen(false)}>الفئات</a>
-                        <a href="#professionals" className="block py-2 text-gray-600 hover:text-[#0D9488]" onClick={() => setMobileOpen(false)}>المحترفون</a>
+                        <a href="#professionals" className="block py-2 text-gray-600 hover:text-[#0D9488]" onClick={() => setMobileOpen(false)}>المهنيون</a>
                         <a href="#ads"           className="block py-2 text-gray-600 hover:text-[#0D9488]" onClick={() => setMobileOpen(false)}>الإعلانات</a>
                         <div className="flex gap-3 pt-3 border-t border-gray-100">
                             <Link href="/login"    className="flex-1 text-center py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700">تسجيل الدخول</Link>
@@ -170,19 +170,19 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                     <div className="relative max-w-5xl mx-auto px-4 text-center w-full py-20">
                         <span className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 bg-[#F0FDFA] text-[#0D9488] text-sm font-semibold rounded-full border border-[#0D9488]/20">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse" />
-                            منصة المحترفين والشركات
+                            منصة المهنيين والشركات
                         </span>
                         <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-[1.2] tracking-tight mb-6">
                             اكتشف أفضل
                             <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0D9488] to-[#0891B2]">
-                                المحترفين
+                                المهنيين
                             </span>
                             <br />
                             بكل سهولة
                         </h1>
                         <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-                            Skillify يربطك بأفضل المحترفين والشركات — تصفّح، تواصل، وابدأ مشروعك اليوم.
+                            Skillify يربطك بأفضل المهنيين والشركات — تصفّح، تواصل، وابدأ مشروعك اليوم.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Link href="/register"
@@ -194,12 +194,12 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                             </Link>
                             <a href="#professionals"
                                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-gray-800 font-bold rounded-2xl text-lg border border-gray-200 hover:border-[#0D9488] hover:text-[#0D9488] transition-all">
-                                تصفح المحترفين
+                                تصفح المهنيين
                             </a>
                         </div>
 
                         <div className="mt-12 flex items-center justify-center gap-6 text-sm text-gray-400 flex-wrap">
-                            {['✅ تسجيل مجاني', '🔒 آمن وموثوق', '⚡ تواصل فوري', '🌍 آلاف المحترفين'].map(t => (
+                            {['✅ تسجيل مجاني', '🔒 آمن وموثوق', '⚡ تواصل فوري', '🌍 آلاف المهنيين'].map(t => (
                                 <span key={t}>{t}</span>
                             ))}
                         </div>
@@ -210,7 +210,7 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                 <section className="bg-[#134E4A] text-white py-14">
                     <div className="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                         {[
-                            { label: 'محترف مسجّل',     value: stats.professionals ?? 0, icon: '👨‍💼' },
+                            { label: 'مهني مسجّل',      value: stats.professionals ?? 0, icon: '👨‍💼' },
                             { label: 'مستخدم نشط',      value: stats.users ?? 0,         icon: '👥' },
                             { label: 'فئة متخصصة',      value: stats.categories ?? 0,    icon: '📂' },
                             { label: 'خدمة متاحة',      value: stats.services ?? 0,      icon: '🛠️' },
@@ -233,8 +233,8 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {[
                                 { n: '١', icon: '📝', title: 'أنشئ حسابك', desc: 'سجّل مجاناً في أقل من دقيقة', color: 'bg-teal-50 text-teal-600' },
-                                { n: '٢', icon: '🔍', title: 'تصفح المحترفين', desc: 'استكشف مئات المحترفين وقارن خدماتهم وتقييماتهم', color: 'bg-violet-50 text-violet-600' },
-                                { n: '٣', icon: '💬', title: 'تواصل مباشرةً', desc: 'راسل المحترف فوراً وابدأ التعاون', color: 'bg-sky-50 text-sky-600' },
+                                { n: '٢', icon: '🔍', title: 'تصفح المهنيين', desc: 'استكشف مئات المهنيين وقارن خدماتهم وتقييماتهم', color: 'bg-violet-50 text-violet-600' },
+                                { n: '٣', icon: '💬', title: 'تواصل مباشرةً', desc: 'راسل المهني فوراً وابدأ التعاون', color: 'bg-sky-50 text-sky-600' },
                             ].map(item => (
                                 <div key={item.n} className="relative bg-gray-50 rounded-3xl p-8 text-center group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-[#0D9488] text-white text-sm font-extrabold rounded-full flex items-center justify-center shadow">
@@ -281,16 +281,16 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                 <section id="professionals" className="py-24 bg-white">
                     <div className="max-w-6xl mx-auto px-4">
                         <div className="text-center mb-14">
-                            <p className="text-[#0D9488] font-semibold text-sm mb-2 uppercase tracking-wider">المحترفون</p>
-                            <h2 className="text-4xl font-extrabold text-gray-900 mb-3">أبرز المحترفين الموثّقين</h2>
+                            <p className="text-[#0D9488] font-semibold text-sm mb-2 uppercase tracking-wider">المهنيون</p>
+                            <h2 className="text-4xl font-extrabold text-gray-900 mb-3">أبرز المهنيين الموثّقين</h2>
                             <p className="text-gray-500 text-lg">
                                 {isDemo
-                                    ? 'نموذج عن المحترفين الذين ستجدهم على Skillify'
-                                    : 'نخبة من المحترفين الموثّقين على المنصة'}
+                                    ? 'نموذج عن المهنيين الذين ستجدهم على Skillify'
+                                    : 'نخبة من المهنيين الموثّقين على المنصة'}
                             </p>
                             {isDemo && (
                                 <span className="inline-block mt-3 px-3 py-1 bg-amber-50 text-amber-600 text-xs font-semibold rounded-full border border-amber-200">
-                                    ✨ ملفات تجريبية — محترفون حقيقيون قريباً
+                                    ✨ ملفات تجريبية — مهنيون حقيقيون قريباً
                                 </span>
                             )}
                         </div>
@@ -380,7 +380,7 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                             هل أنت مستعد للبدء؟
                         </h2>
                         <p className="text-teal-200 text-xl mb-12 max-w-xl mx-auto">
-                            انضم إلى آلاف المحترفين والشركات على Skillify — مجاناً وفورياً.
+                            انضم إلى آلاف المهنيين والشركات على Skillify — مجاناً وفورياً.
                         </p>
 
                         <div className="max-w-sm mx-auto bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 shadow-2xl">

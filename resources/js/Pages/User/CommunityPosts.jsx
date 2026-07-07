@@ -19,6 +19,92 @@ function CommentAvatar({ user, size = 28 }) {
     );
 }
 
+function CommentItem({ comment, postId, onReplyAdded, depth = 0 }) {
+    const [showReplyBox, setShowReplyBox] = useState(false);
+    const [showReplies, setShowReplies]   = useState(true);
+    const [replyText, setReplyText]       = useState('');
+    const [submitting, setSubmitting]     = useState(false);
+
+    const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    const submitReply = (e) => {
+        e.preventDefault();
+        const text = replyText.trim();
+        if (!text || submitting) return;
+        setSubmitting(true);
+        fetch(`/user/posts/${postId}/comments`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf(), 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: text, parent_id: comment.id }),
+        })
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(newReply => {
+            onReplyAdded(comment.id, newReply);
+            setReplyText('');
+            setShowReplyBox(false);
+            setShowReplies(true);
+        })
+        .catch(() => {})
+        .finally(() => setSubmitting(false));
+    };
+
+    return (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <Link href={comment.user?.id ? `/user/users/${comment.user.id}` : '#'} style={{ flexShrink: 0, textDecoration: 'none' }}>
+                <CommentAvatar user={comment.user} size={depth ? 24 : 28} />
+            </Link>
+            <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ background: '#F8FAFC', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: '#0F172A' }}>
+                    <Link href={comment.user?.id ? `/user/users/${comment.user.id}` : '#'} style={{ fontWeight: 700, color: '#0D9488', textDecoration: 'none', marginLeft: 4 }}
+                        onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                        onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+                    >
+                        {comment.user?.first_name} {comment.user?.last_name}
+                    </Link>
+                    {comment.content}
+                </div>
+
+                <div style={{ display: 'flex', gap: 12, marginTop: 3, paddingInlineStart: 4 }}>
+                    {depth === 0 && (
+                        <button onClick={() => setShowReplyBox(v => !v)} style={{ background: 'none', border: 'none', padding: 0, fontSize: 11, color: '#94A3B8', cursor: 'pointer', fontWeight: 600 }}>
+                            رد
+                        </button>
+                    )}
+                    {comment.replies?.length > 0 && (
+                        <button onClick={() => setShowReplies(v => !v)} style={{ background: 'none', border: 'none', padding: 0, fontSize: 11, color: '#94A3B8', cursor: 'pointer', fontWeight: 600 }}>
+                            {showReplies ? 'إخفاء الردود' : `عرض الردود (${comment.replies.length})`}
+                        </button>
+                    )}
+                </div>
+
+                {showReplyBox && (
+                    <form onSubmit={submitReply} style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                        <input
+                            value={replyText}
+                            onChange={e => setReplyText(e.target.value)}
+                            placeholder={`الرد على ${comment.user?.first_name ?? ''}...`}
+                            disabled={submitting}
+                            autoFocus
+                            style={{ flex: 1, padding: '6px 10px', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 8, fontSize: 11.5, outline: 'none', opacity: submitting ? 0.6 : 1 }}
+                        />
+                        <button type="submit" disabled={submitting || !replyText.trim()} style={{ padding: '6px 12px', background: '#0D9488', color: '#fff', border: 'none', borderRadius: 8, fontSize: 11, cursor: 'pointer', opacity: (!replyText.trim() || submitting) ? 0.5 : 1 }}>
+                            {submitting ? '...' : 'رد'}
+                        </button>
+                    </form>
+                )}
+
+                {comment.replies?.length > 0 && showReplies && (
+                    <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8, borderInlineStart: '2px solid #E2E8F0', paddingInlineStart: 12, marginInlineStart: 4 }}>
+                        {comment.replies.map(r => (
+                            <CommentItem key={r.id} comment={r} postId={postId} onReplyAdded={onReplyAdded} depth={depth + 1} />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 function PostCard({ post, authId }) {
     const author  = post.user;
     const initial = (author?.first_name ?? 'U')[0].toUpperCase();
@@ -65,6 +151,11 @@ function PostCard({ post, authId }) {
         })
         .catch(() => setCommentText(text))
         .finally(() => setSubmitting(false));
+    };
+
+    const onReplyAdded = (parentId, newReply) => {
+        setComments(prev => prev.map(c => c.id === parentId ? { ...c, replies: [...(c.replies || []), newReply] } : c));
+        setCommentCount(v => v + 1);
     };
 
     return (
@@ -136,20 +227,7 @@ function PostCard({ post, authId }) {
                         <div style={{ fontSize: 12, color: '#94A3B8', textAlign: 'center', padding: '8px 0' }}>لا توجد تعليقات بعد. كن أول من يعلّق!</div>
                     )}
                     {comments.map(c => (
-                        <div key={c.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                            <Link href={c.user?.id ? `/user/users/${c.user.id}` : '#'} style={{ flexShrink: 0, textDecoration: 'none' }}>
-                                <CommentAvatar user={c.user} />
-                            </Link>
-                            <div style={{ background: '#F8FAFC', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: '#0F172A', flex: 1 }}>
-                                <Link href={c.user?.id ? `/user/users/${c.user.id}` : '#'} style={{ fontWeight: 700, color: '#0D9488', textDecoration: 'none', marginLeft: 4 }}
-                                    onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
-                                    onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-                                >
-                                    {c.user?.first_name} {c.user?.last_name}
-                                </Link>
-                                {c.content}
-                            </div>
-                        </div>
+                        <CommentItem key={c.id} comment={c} postId={post.id} onReplyAdded={onReplyAdded} depth={0} />
                     ))}
                     <form onSubmit={addComment} style={{ display: 'flex', gap: 8 }}>
                         <input
