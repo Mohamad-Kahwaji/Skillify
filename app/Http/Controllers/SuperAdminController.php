@@ -72,6 +72,35 @@ class SuperAdminController extends Controller
         return Inertia::render('SuperAdmin/Dashboard', $data);
     }
 
+    public function profile()
+    {
+        return Inertia::render('SuperAdmin/Profile', [
+            'admin' => auth('super_admins')->user()->only(['id', 'first_name', 'last_name', 'email']),
+        ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $superAdmin = auth('super_admins')->user();
+
+        $request->validate([
+            'first_name'   => 'required|string|max:60',
+            'last_name'    => 'required|string|max:60',
+            'email'        => 'required|email|max:190|unique:super_admins,email,' . $superAdmin->id,
+            'new_password' => 'nullable|min:8|confirmed',
+        ]);
+
+        $data = $request->only('first_name', 'last_name', 'email');
+
+        if ($request->filled('new_password')) {
+            $data['password'] = $request->new_password;
+        }
+
+        $superAdmin->update($data);
+
+        return back()->with('success', 'Profile updated successfully.');
+    }
+
     public function admins()
     {
         $admins = Admin::with('roles.permissions')->latest()->get();

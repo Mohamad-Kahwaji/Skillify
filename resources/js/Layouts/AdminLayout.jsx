@@ -349,7 +349,7 @@ export default function AdminLayout({ children, title }) {
 
                 {/* Footer */}
                 <div style={{ padding: '12px 14px', borderTop: `1px solid ${C.sidebarBorder}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 8 }}>
+                    <Link href="/admin/profile" style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 8, textDecoration: 'none' }}>
                         <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,#0EA5E9,#0D9488)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
                             {(admin?.first_name ?? 'A')[0].toUpperCase()}
                         </div>
@@ -357,7 +357,7 @@ export default function AdminLayout({ children, title }) {
                             <div style={{ fontSize: 12, fontWeight: 600, color: '#CBD5E1' }}>{admin?.first_name ?? 'المشرف'}</div>
                             <div style={{ fontSize: 10, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{admin?.email ?? ''}</div>
                         </div>
-                    </div>
+                    </Link>
                     <form method="POST" action="/admin/logout" style={{ margin: 0 }}>
                         <input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]')?.content ?? ''} />
                         <button type="submit" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', fontSize: 11, padding: '5px 10px', borderRadius: 6, width: '100%', fontWeight: 500 }}>
@@ -421,12 +421,12 @@ export default function AdminLayout({ children, title }) {
                             )}
                         </Link>
 
-                        <div style={{ fontSize: 12, color: C.textMuted, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Link href="/admin/profile" style={{ fontSize: 12, color: C.textMuted, display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
                             <div style={{ width: 26, height: 26, borderRadius: 8, background: 'linear-gradient(135deg,#0EA5E9,#0D9488)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
                                 {(admin?.first_name ?? 'A')[0].toUpperCase()}
                             </div>
                             <span className="hidden md:inline">{admin?.first_name ?? 'المشرف'}</span>
-                        </div>
+                        </Link>
                     </div>
                 </header>
 

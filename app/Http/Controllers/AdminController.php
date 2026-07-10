@@ -56,6 +56,44 @@ class AdminController extends Controller
         return Inertia::render('Admin/Dashboard', $data);
     }
 
+    public function profile()
+    {
+        return Inertia::render('Admin/Profile', [
+            'admin' => auth('admins')->user()->only(['id', 'id_number', 'first_name', 'last_name', 'email', 'phone', 'role']),
+        ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $admin = auth('admins')->user();
+
+        $request->validate([
+            'first_name'   => 'required|string|max:60',
+            'last_name'    => 'required|string|max:60',
+            'phone'        => 'required|string|max:20',
+            'email'        => 'required|email|max:190|unique:admins,email,' . $admin->id,
+            'new_password' => 'nullable|min:8|confirmed',
+        ], [
+            'first_name.required'   => 'الاسم الأول مطلوب.',
+            'last_name.required'    => 'الاسم الأخير مطلوب.',
+            'phone.required'        => 'رقم الهاتف مطلوب.',
+            'email.required'        => 'البريد الإلكتروني مطلوب.',
+            'email.unique'          => 'هذا البريد الإلكتروني مستخدم من قبل حساب آخر.',
+            'new_password.min'      => 'كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل.',
+            'new_password.confirmed'=> 'كلمتا المرور الجديدتان غير متطابقتين.',
+        ]);
+
+        $data = $request->only('first_name', 'last_name', 'phone', 'email');
+
+        if ($request->filled('new_password')) {
+            $data['password'] = $request->new_password;
+        }
+
+        $admin->update($data);
+
+        return back()->with('success', 'تم تحديث الملف الشخصي بنجاح.');
+    }
+
     public function verifications()
     {
         $pending = Business::where('status', 'pending')->with('user')->latest()->get();

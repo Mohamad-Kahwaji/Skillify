@@ -194,7 +194,7 @@
       <div class="form-header">
         <div class="form-eyebrow"><i class="ti ti-crown" style="font-size:9px;"></i> Super Admin Portal</div>
         <div class="form-title">Create new password</div>
-        <div class="form-sub">Your new password must be at least 8 characters.</div>
+        <div class="form-sub">Your identity has been verified. Your new password must be at least 8 characters.</div>
       </div>
 
       @if($errors->any())
@@ -206,19 +206,6 @@
 
       <form method="POST" action="{{ route('super_admin.reset-password.update') }}" id="resetForm">
         @csrf
-        <input type="hidden" name="token" value="{{ $token }}">
-
-        <div class="form-group">
-          <label class="form-label">Email Address</label>
-          <div class="input-wrap">
-            <i class="ti ti-mail input-icon"></i>
-            <input type="email" name="email" value="{{ old('email', request('email')) }}"
-                   required autofocus autocomplete="email">
-          </div>
-          @error('email')
-            <div class="field-error">{{ $message }}</div>
-          @enderror
-        </div>
 
         <div class="form-group">
           <label class="form-label">New Password</label>
@@ -226,7 +213,7 @@
             <i class="ti ti-lock input-icon"></i>
             <input type="password" id="password" name="password"
                    placeholder="••••••••" required minlength="8"
-                   oninput="checkStrength(this.value)" autocomplete="new-password">
+                   oninput="checkStrength(this.value)" autocomplete="new-password" autofocus>
             <button type="button" class="pw-toggle" onclick="togglePassword('password', this)">
               <i class="ti ti-eye"></i>
             </button>

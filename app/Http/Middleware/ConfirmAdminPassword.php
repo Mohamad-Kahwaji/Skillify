@@ -15,15 +15,24 @@ class ConfirmAdminPassword
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, string $guard = 'admins'): Response
     {
-        $password = $request->admin_password;
-        if(!$password){
-            return redirect()->back()->withErrors(['admin_password' => 'Password is required.']);
+        $password = $request->input('current_password');
+
+        if (!$password) {
+            return redirect()->back()->withErrors([
+                'current_password' => 'كلمة المرور مطلوبة لتأكيد العملية.',
+            ]);
         }
-        if (!Hash::check($password,Auth::guard('admins')->password)) {
-            return redirect()->back()->withErrors(['admin_password' => 'Incorrect password.']);
+
+        $account = Auth::guard($guard)->user();
+
+        if (!$account || !Hash::check($password, $account->password)) {
+            return redirect()->back()->withErrors([
+                'current_password' => 'كلمة المرور غير صحيحة.',
+            ]);
         }
+
         return $next($request);
     }
 }

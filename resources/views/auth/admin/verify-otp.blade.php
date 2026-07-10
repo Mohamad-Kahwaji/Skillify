@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Forgot Password — Hirfa Admin</title>
+  <title>Verify Code — Hirfa Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
@@ -87,6 +87,7 @@
     }
     .form-title { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; color: var(--text-primary); margin-bottom: 6px; }
     .form-sub   { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .form-sub b { color: var(--text-primary); font-weight: 600; }
 
     .alert {
       display: flex; align-items: flex-start; gap: 10px;
@@ -97,50 +98,23 @@
     .alert.error   { background: var(--red-50);   color: var(--red-800);   border: 0.5px solid #fbb; }
     .alert.success { background: var(--green-50); color: var(--green-800); border: 0.5px solid #9FE1CB; }
 
-    /* Success state */
-    .success-state {
-      text-align: center; padding: 24px 0;
-    }
-    .success-icon {
-      width: 64px; height: 64px; border-radius: 50%;
-      background: var(--accent-light);
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 30px; color: var(--accent);
-      margin-bottom: 20px;
-    }
-    .success-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
-    .success-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
-
-    .form-group  { margin-bottom: 18px; }
-    .form-label  { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 7px; letter-spacing: 0.2px; }
-    .input-wrap {
-      display: flex; align-items: center;
-      background: var(--bg-sunken);
-      border: 1px solid var(--border-md);
-      border-radius: 10px; overflow: hidden;
+    .otp-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 8px; direction: ltr; }
+    .otp-box {
+      width: 48px; height: 56px; text-align: center;
+      font-size: 20px; font-weight: 700; font-family: var(--font);
+      background: var(--bg-sunken); border: 1px solid var(--border-md);
+      border-radius: 10px; color: var(--text-primary);
       transition: border-color 0.15s, box-shadow 0.15s;
     }
-    .input-wrap:focus-within {
-      border-color: var(--accent);
+    .otp-box:focus {
+      outline: none; border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(29,158,117,.10);
     }
-    .input-wrap .input-icon { padding: 0 12px; font-size: 16px; color: var(--text-muted); flex-shrink: 0; }
-    .input-wrap input {
-      flex: 1; border: none; outline: none;
-      background: transparent; padding: 11px 12px 11px 0;
-      font-size: 13px; color: var(--text-primary); font-family: var(--font);
-    }
-    .input-wrap input::placeholder { color: var(--text-muted); }
-    .toggle-eye {
-      background: none; border: none; cursor: pointer;
-      padding: 0 12px; color: var(--text-muted); font-size: 16px;
-      display: flex; align-items: center; flex-shrink: 0;
-      transition: color 0.15s;
-    }
-    .toggle-eye:hover { color: var(--accent); }
+    .otp-box.error { border-color: var(--red-400); }
+
     .field-error {
-      display: flex; align-items: center; gap: 5px;
-      font-size: 11px; color: var(--red-400); margin-top: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      font-size: 11px; color: var(--red-400); margin-top: 4px; margin-bottom: 16px;
     }
     .field-error::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--red-400); flex-shrink: 0; }
 
@@ -152,6 +126,7 @@
       cursor: pointer; transition: background 0.15s, box-shadow 0.15s;
       display: flex; align-items: center; justify-content: center; gap: 8px;
       box-shadow: 0 2px 8px rgba(29,158,117,.3);
+      margin-top: 8px;
     }
     .btn-submit:hover { background: var(--accent-hover); box-shadow: 0 4px 14px rgba(29,158,117,.35); }
     .btn-submit.loading { pointer-events: none; opacity: 0.75; }
@@ -164,6 +139,11 @@
     .btn-submit.loading .spinner { display: block; }
     .btn-submit.loading .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .resend-row { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-secondary); }
+    .resend-row button { background: none; border: none; color: var(--accent); font-weight: 500; font-size: 13px; }
+    .resend-row button:hover { color: var(--accent-hover); }
+    .resend-row button:disabled { color: var(--text-muted); cursor: default; }
 
     .back-link {
       text-align: center; margin-top: 20px;
@@ -188,8 +168,8 @@
         <div class="panel-icon"><i class="ti ti-tool"></i></div>
         <div class="panel-brand-name">Hirfa</div>
       </div>
-      <div class="panel-headline">إعادة تعيين<br>كلمة المرور</div>
-      <div class="panel-desc">أدخل بريدك الإلكتروني المسجّل، وسنرسل لك رمز تحقق لإعادة تعيين كلمة المرور.</div>
+      <div class="panel-headline">تحقق من<br>هويتك</div>
+      <div class="panel-desc">أرسلنا رمز تحقق من 6 أرقام إلى بريدك الإلكتروني للتأكد من هويتك قبل تغيير كلمة المرور.</div>
     </div>
     <div class="panel-bottom">
       <div class="panel-footer-text">© {{ date('Y') }} Hirfa Platform. All rights reserved.</div>
@@ -201,8 +181,8 @@
 
       <div class="form-header">
         <div class="form-eyebrow"><i class="ti ti-lock" style="font-size:10px;"></i> Admin Access</div>
-        <div class="form-title">نسيت كلمة المرور؟</div>
-        <div class="form-sub">أدخل بريدك الإلكتروني وسنرسل لك رمز تحقق لإعادة تعيين كلمة المرور.</div>
+        <div class="form-title">أدخل رمز التحقق</div>
+        <div class="form-sub">أرسلنا رمزاً من 6 أرقام إلى <b dir="ltr">{{ $email }}</b></div>
       </div>
 
       @if($errors->any())
@@ -212,26 +192,33 @@
         </div>
       @endif
 
-      <form method="POST" action="{{ route('admin.forgot-password.send') }}" id="forgotForm">
+      <form method="POST" action="{{ route('admin.verify-otp.post') }}" id="otpForm">
         @csrf
+        <input type="hidden" name="code" id="codeField">
 
-        <div class="form-group">
-          <label class="form-label">البريد الإلكتروني</label>
-          <div class="input-wrap">
-            <i class="ti ti-mail input-icon"></i>
-            <input type="email" name="email" value="{{ old('email') }}"
-                   placeholder="admin@hirfa.com" autofocus required dir="ltr">
-          </div>
-          @error('email')
-            <div class="field-error">{{ $message }}</div>
-          @enderror
+        <div class="otp-row" id="otpRow">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" autofocus>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
         </div>
 
         <button type="submit" class="btn-submit" id="submitBtn">
           <div class="spinner"></div>
-          <span class="btn-text"><i class="ti ti-send" style="font-size:15px;"></i> إرسال رمز التحقق</span>
+          <span class="btn-text"><i class="ti ti-shield-check" style="font-size:15px;"></i> تحقق من الرمز</span>
         </button>
       </form>
+
+      <div class="resend-row">
+        <span id="countdownWrap">يمكنك طلب رمز جديد بعد <b id="countdown">60</b> ثانية</span>
+        <form method="POST" action="{{ route('admin.forgot-password.send') }}" id="resendForm" style="display:none;">
+          @csrf
+          <input type="hidden" name="email" value="{{ $email }}">
+          <button type="submit" id="resendBtn">إعادة إرسال الرمز</button>
+        </form>
+      </div>
 
       <div class="back-link">
         <a href="{{ route('admin.login') }}">← العودة لتسجيل الدخول</a>
@@ -243,12 +230,64 @@
 </div>
 
 <script>
-  const form = document.getElementById('forgotForm');
-  if (form) {
-    form.addEventListener('submit', function () {
-      document.getElementById('submitBtn').classList.add('loading');
-    });
+  const boxes = Array.from(document.querySelectorAll('.otp-box'));
+  const codeField = document.getElementById('codeField');
+  const form = document.getElementById('otpForm');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function currentCode() {
+    return boxes.map(b => b.value).join('');
   }
+
+  function trySubmit() {
+    const code = currentCode();
+    if (code.length === 6) {
+      codeField.value = code;
+      submitBtn.classList.add('loading');
+      form.submit();
+    }
+  }
+
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g, '').slice(-1);
+      if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+      trySubmit();
+    });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !box.value && i > 0) {
+        boxes[i - 1].focus();
+      }
+    });
+    box.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+      if (!pasted) return;
+      pasted.split('').forEach((d, idx) => { if (boxes[idx]) boxes[idx].value = d; });
+      boxes[Math.min(pasted.length, boxes.length) - 1]?.focus();
+      trySubmit();
+    });
+  });
+
+  @if($errors->has('code'))
+    boxes.forEach(b => b.classList.add('error'));
+  @endif
+
+  // Resend countdown
+  let seconds = 60;
+  const countdownEl = document.getElementById('countdown');
+  const countdownWrap = document.getElementById('countdownWrap');
+  const resendForm = document.getElementById('resendForm');
+
+  const timer = setInterval(() => {
+    seconds--;
+    countdownEl.textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(timer);
+      countdownWrap.style.display = 'none';
+      resendForm.style.display = 'block';
+    }
+  }, 1000);
 </script>
 
 </body>

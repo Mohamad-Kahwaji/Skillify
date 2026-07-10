@@ -1,63 +1,92 @@
 <?php
+
 namespace App\Http\Controllers\Auth_SuperAdmin;
+
 use App\Http\Controllers\Controller;
-use App\Models\Admin;
+use App\Models\SuperAdmin;
+use App\Services\EmailOtpService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Hash;
 
 class ForgotPasswordController extends Controller
 {
-    public function showForgotPassword(){
-        return view('');
+    // ── المرحلة 1: إدخال الإيميل ─────────────────────────────
+    public function showForgotPassword()
+    {
+        return view('auth.super_admin.forgot-password');
     }
 
-    public function sendResetLinkEmail(Request $request){
+    public function sendOtp(Request $request, EmailOtpService $otp)
+    {
         $request->validate([
-            'email' => 'required|email|exists:users,email',
+            'email' => 'required|email|exists:super_admins,email',
         ]);
-        $token = Str::random(64);
-        DB::table('password_resets_tokens')->UpdateOrInsert(
-            ['email' => $request->email],
-            [
-                'token' => hash('sha256', $token),
-                'created_at' => now(),
-            ]
-        );
-        Mail::send('emails_reset_password', ['token' => $token], function ($mail) use ($request) {
-            $mail->to($request->email);
-            $mail->subject('Reset Password');
-        });
-        return route('');
-    }
-    public function showresetform(String $token){
-        return Route('');
+
+        $otp->sendOtp($request->email, 'super_admins');
+
+        $request->session()->put('sa_reset_email', $request->email);
+        $request->session()->forget('sa_reset_verified');
+
+        return redirect()->route('super_admin.verify-otp')
+            ->with('status', 'تم إرسال رمز التحقق إلى بريدك الإلكتروني.');
     }
 
-    public function resetpassword(Request $request){
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'password' => 'required|min:8|confirmed',
-            'token' => 'required'
-        ]);
-        $record = DB::table('password_resets_tokens')
-            ->where('email', $request->email)
-            ->first();
-
-            if (!$record || $record->token !== hash('sha256', $request->token)) {
-            return back()->withErrors(['token' => 'link is invalid or expired']);
+    // ── المرحلة 2: التحقق من الكود ───────────────────────────
+    public function showVerifyOtp(Request $request)
+    {
+        if (!$request->session()->has('sa_reset_email')) {
+            return redirect()->route('super_admin.forgot-password');
         }
-            if (now()->diffInMinutes($record->created_at) > 60) {
-            return back()->withErrors(['token' => 'link has expired']);
+        return view('auth.super_admin.verify-otp', [
+            'email' => $request->session()->get('sa_reset_email'),
+        ]);
+    }
+
+    public function verifyOtp(Request $request, EmailOtpService $otp)
+    {
+        $email = $request->session()->get('sa_reset_email');
+        if (!$email) {
+            return redirect()->route('super_admin.forgot-password');
         }
 
-        Admin::where('email', $request->email)->update([
-            'password' => $request->password
-        ]);
+        $request->validate(['code' => 'required|digits:6']);
 
-        DB::table('password_resets_tokens')->where('email', $request->email)->delete();
+        $result = $otp->verifyOtp($email, 'super_admins', $request->code);
 
-        return redirect()->route('');
+        if (!$result['success']) {
+            return back()->withErrors(['code' => $result['message']]);
+        }
+
+        $request->session()->put('sa_reset_verified', true);
+
+        return redirect()->route('super_admin.reset-password');
+    }
+
+    // ── المرحلة 3: كلمة المرور الجديدة ───────────────────────
+    public function showResetPassword(Request $request)
+    {
+        if (!$request->session()->get('sa_reset_verified')) {
+            return redirect()->route('super_admin.forgot-password');
+        }
+        return view('auth.super_admin.reset-password');
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $email = $request->session()->get('sa_reset_email');
+
+        if (!$email || !$request->session()->get('sa_reset_verified')) {
+            return redirect()->route('super_admin.forgot-password');
+        }
+
+        $request->validate(['password' => 'required|min:8|confirmed']);
+
+        SuperAdmin::where('email', $email)
+            ->update(['password' => Hash::make($request->password)]);
+
+        $request->session()->forget(['sa_reset_email', 'sa_reset_verified']);
+
+        return redirect()->route('super_admin.login')
+            ->with('status', 'تم تغيير كلمة المرور بنجاح، سجّل الدخول الآن.');
     }
 }

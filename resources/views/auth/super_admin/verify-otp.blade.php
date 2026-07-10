@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Forgot Password — Hirfa Super Admin</title>
+  <title>Verify Code — Hirfa Super Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
@@ -92,45 +92,33 @@
     }
     .form-title { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; color: var(--text-primary); margin-bottom: 6px; }
     .form-sub   { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .form-sub b { color: var(--text-primary); font-weight: 600; }
 
     .alert {
       display: flex; align-items: flex-start; gap: 10px;
       padding: 12px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 20px;
     }
     .alert i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-    .alert.error   { background: rgba(226,75,74,.12);  color: #f09595; border: 0.5px solid rgba(226,75,74,.25); }
+    .alert.error { background: rgba(226,75,74,.12); color: #f09595; border: 0.5px solid rgba(226,75,74,.25); }
 
-    .success-state { text-align: center; padding: 20px 0; }
-    .success-icon {
-      width: 68px; height: 68px; border-radius: 50%;
-      background: var(--accent-dim); border: 0.5px solid var(--accent-border);
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 32px; color: var(--accent); margin-bottom: 20px;
-    }
-    .success-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
-    .success-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
-
-    .form-group  { margin-bottom: 18px; }
-    .form-label  { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 7px; }
-    .input-wrap {
-      display: flex; align-items: center;
-      background: var(--bg-sunken);
-      border: 1px solid var(--border-md);
-      border-radius: 10px; overflow: hidden;
+    .otp-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 8px; direction: ltr; }
+    .otp-box {
+      width: 48px; height: 56px; text-align: center;
+      font-size: 20px; font-weight: 700; font-family: var(--font);
+      background: var(--bg-sunken); border: 1px solid var(--border-md);
+      border-radius: 10px; color: var(--text-primary);
       transition: border-color 0.15s, box-shadow 0.15s;
     }
-    .input-wrap:focus-within {
-      border-color: var(--border-focus);
+    .otp-box:focus {
+      outline: none; border-color: var(--border-focus);
       box-shadow: 0 0 0 3px rgba(29,158,117,.08);
     }
-    .input-wrap .input-icon { padding: 0 12px; font-size: 16px; color: var(--text-muted); flex-shrink: 0; }
-    .input-wrap input {
-      flex: 1; border: none; outline: none;
-      background: transparent; padding: 11px 12px 11px 0;
-      font-size: 13px; color: var(--text-primary); font-family: var(--font);
+    .otp-box.error { border-color: var(--red-400); }
+
+    .field-error {
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      font-size: 11px; color: #f09595; margin-top: 4px; margin-bottom: 16px;
     }
-    .input-wrap input::placeholder { color: var(--text-muted); }
-    .field-error { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #f09595; margin-top: 6px; }
     .field-error::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #f09595; flex-shrink: 0; }
 
     .btn-submit {
@@ -141,6 +129,7 @@
       cursor: pointer; transition: background 0.15s, box-shadow 0.15s;
       display: flex; align-items: center; justify-content: center; gap: 8px;
       box-shadow: 0 2px 12px rgba(29,158,117,.20);
+      margin-top: 8px;
     }
     .btn-submit:hover { background: #18875f; }
     .btn-submit.loading { pointer-events: none; opacity: 0.75; }
@@ -153,6 +142,11 @@
     .btn-submit.loading .spinner { display: block; }
     .btn-submit.loading .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .resend-row { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-secondary); }
+    .resend-row button { background: none; border: none; color: var(--accent); font-weight: 500; font-size: 13px; }
+    .resend-row button:hover { color: var(--accent-hover); }
+    .resend-row button:disabled { color: var(--text-muted); cursor: default; }
 
     .back-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted); }
     .back-link a { color: var(--accent); font-weight: 500; }
@@ -174,11 +168,11 @@
           <div class="panel-crown"><i class="ti ti-crown" style="font-size:9px;"></i> Super Admin</div>
         </div>
       </div>
-      <div class="panel-headline">Password<br>recovery</div>
-      <div class="panel-desc">We'll send a 6-digit verification code to your registered super admin email address.</div>
+      <div class="panel-headline">Verify your<br>identity</div>
+      <div class="panel-desc">We sent a 6-digit verification code to your email to confirm it's really you before resetting your password.</div>
       <div class="panel-note">
         <i class="ti ti-shield-lock"></i>
-        <span>For security, verification codes expire shortly after being sent. Only accounts registered as super admins can request one.</span>
+        <span>Codes expire shortly and can only be used once. Never share this code with anyone.</span>
       </div>
     </div>
     <div class="panel-bottom">
@@ -191,8 +185,8 @@
 
       <div class="form-header">
         <div class="form-eyebrow"><i class="ti ti-crown" style="font-size:9px;"></i> Super Admin Portal</div>
-        <div class="form-title">Forgot your password?</div>
-        <div class="form-sub">Enter your super admin email and we'll send a reset link.</div>
+        <div class="form-title">Enter verification code</div>
+        <div class="form-sub">We sent a 6-digit code to <b dir="ltr">{{ $email }}</b></div>
       </div>
 
       @if($errors->any())
@@ -202,25 +196,33 @@
         </div>
       @endif
 
-      <form method="POST" action="{{ route('super_admin.forgot-password.send') }}" id="forgotForm">
+      <form method="POST" action="{{ route('super_admin.verify-otp.post') }}" id="otpForm">
         @csrf
-        <div class="form-group">
-          <label class="form-label">Email Address</label>
-          <div class="input-wrap">
-            <i class="ti ti-mail input-icon"></i>
-            <input type="email" name="email" value="{{ old('email') }}"
-                   placeholder="super@hirfa.com" autofocus required>
-          </div>
-          @error('email')
-            <div class="field-error">{{ $message }}</div>
-          @enderror
+        <input type="hidden" name="code" id="codeField">
+
+        <div class="otp-row" id="otpRow">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1" autofocus>
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+          <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
         </div>
 
         <button type="submit" class="btn-submit" id="submitBtn">
           <div class="spinner"></div>
-          <span class="btn-text"><i class="ti ti-send" style="font-size:15px;"></i> Send Verification Code</span>
+          <span class="btn-text"><i class="ti ti-shield-check" style="font-size:15px;"></i> Verify Code</span>
         </button>
       </form>
+
+      <div class="resend-row">
+        <span id="countdownWrap">Request a new code in <b id="countdown">60</b>s</span>
+        <form method="POST" action="{{ route('super_admin.forgot-password.send') }}" id="resendForm" style="display:none;">
+          @csrf
+          <input type="hidden" name="email" value="{{ $email }}">
+          <button type="submit" id="resendBtn">Resend code</button>
+        </form>
+      </div>
 
       <div class="back-link">
         <a href="{{ route('super_admin.login') }}">← Back to Sign In</a>
@@ -232,12 +234,64 @@
 </div>
 
 <script>
-  const form = document.getElementById('forgotForm');
-  if (form) {
-    form.addEventListener('submit', function () {
-      document.getElementById('submitBtn').classList.add('loading');
-    });
+  const boxes = Array.from(document.querySelectorAll('.otp-box'));
+  const codeField = document.getElementById('codeField');
+  const form = document.getElementById('otpForm');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function currentCode() {
+    return boxes.map(b => b.value).join('');
   }
+
+  function trySubmit() {
+    const code = currentCode();
+    if (code.length === 6) {
+      codeField.value = code;
+      submitBtn.classList.add('loading');
+      form.submit();
+    }
+  }
+
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g, '').slice(-1);
+      if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+      trySubmit();
+    });
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !box.value && i > 0) {
+        boxes[i - 1].focus();
+      }
+    });
+    box.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+      if (!pasted) return;
+      pasted.split('').forEach((d, idx) => { if (boxes[idx]) boxes[idx].value = d; });
+      boxes[Math.min(pasted.length, boxes.length) - 1]?.focus();
+      trySubmit();
+    });
+  });
+
+  @if($errors->has('code'))
+    boxes.forEach(b => b.classList.add('error'));
+  @endif
+
+  // Resend countdown
+  let seconds = 60;
+  const countdownEl = document.getElementById('countdown');
+  const countdownWrap = document.getElementById('countdownWrap');
+  const resendForm = document.getElementById('resendForm');
+
+  const timer = setInterval(() => {
+    seconds--;
+    countdownEl.textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(timer);
+      countdownWrap.style.display = 'none';
+      resendForm.style.display = 'block';
+    }
+  }, 1000);
 </script>
 
 </body>

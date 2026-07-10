@@ -316,7 +316,7 @@ export default function SuperAdminLayout({ children, title }) {
 
                 {/* User profile */}
                 <div style={{ padding: '14px 16px', borderTop: '0.5px solid rgba(167,139,250,0.12)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <Link href="/super-admin/profile" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, textDecoration: 'none' }}>
                         <div style={{
                             width: 34, height: 34, borderRadius: '50%',
                             background: 'linear-gradient(135deg,#7C3AED,#A78BFA)',
@@ -333,7 +333,7 @@ export default function SuperAdminLayout({ children, title }) {
                                 {admin?.email ?? ''}
                             </div>
                         </div>
-                    </div>
+                    </Link>
                     <form method="POST" action="/super-admin/logout" style={{ margin: 0 }}>
                         <input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]')?.content ?? ''} />
                         <button type="submit" style={{

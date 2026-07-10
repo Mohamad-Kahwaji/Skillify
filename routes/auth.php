@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth_SuperAdmin\ForgotPasswordController as SuperAdminForgotPasswordController;
 use App\Http\Controllers\Auth_SuperAdmin\LoginController as SuperAdminLoginController;
 use App\Http\Controllers\Auth_User\ForgotPasswordController as UserForgotPasswordController;
 use App\Http\Controllers\Auth_User\LoginController    as UserLoginController;
@@ -17,9 +18,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/login',                       [LoginController::class,          'login'])->name('login.post');
 
     Route::get('/forgot-password',              [ForgotPasswordController::class, 'showForgotPassword'])->name('forgot-password');
-    Route::post('/forgot-password',             [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('forgot-password.send');
+    Route::post('/forgot-password',             [ForgotPasswordController::class, 'sendOtp'])
+                                                ->middleware('throttle:3,1')->name('forgot-password.send');
 
-    Route::get('/reset-password/{token}',       [ForgotPasswordController::class, 'showResetForm'])->name('reset-password');
+    Route::get('/verify-otp',                   [ForgotPasswordController::class, 'showVerifyOtp'])->name('verify-otp');
+    Route::post('/verify-otp',                  [ForgotPasswordController::class, 'verifyOtp'])
+                                                ->middleware('throttle:10,1')->name('verify-otp.post');
+
+    Route::get('/reset-password',               [ForgotPasswordController::class, 'showResetPassword'])->name('reset-password');
     Route::post('/reset-password',              [ForgotPasswordController::class, 'resetPassword'])->name('reset-password.update');
 });
 
@@ -31,11 +37,16 @@ Route::prefix('super-admin')->name('super_admin.')->group(function () {
     Route::get('/login',                        [SuperAdminLoginController::class, 'showLogin'])->name('login');
     Route::post('/login',                       [SuperAdminLoginController::class, 'login'])->name('login.post');
 
-    Route::get('/forgot-password',              fn() => view('auth.super_admin.forgot-password'))->name('forgot-password');
-    Route::post('/forgot-password',             fn() => back()->with('status', 'If an account with that email exists, a reset link has been sent.'))->name('forgot-password.send');
+    Route::get('/forgot-password',              [SuperAdminForgotPasswordController::class, 'showForgotPassword'])->name('forgot-password');
+    Route::post('/forgot-password',             [SuperAdminForgotPasswordController::class, 'sendOtp'])
+                                                ->middleware('throttle:3,1')->name('forgot-password.send');
 
-    Route::get('/reset-password/{token}',       fn($token) => view('auth.super_admin.reset-password', compact('token')))->name('reset-password');
-    Route::post('/reset-password',              fn() => redirect()->route('super_admin.login')->with('status', 'Your password has been reset successfully.'))->name('reset-password.update');
+    Route::get('/verify-otp',                   [SuperAdminForgotPasswordController::class, 'showVerifyOtp'])->name('verify-otp');
+    Route::post('/verify-otp',                  [SuperAdminForgotPasswordController::class, 'verifyOtp'])
+                                                ->middleware('throttle:10,1')->name('verify-otp.post');
+
+    Route::get('/reset-password',               [SuperAdminForgotPasswordController::class, 'showResetPassword'])->name('reset-password');
+    Route::post('/reset-password',              [SuperAdminForgotPasswordController::class, 'resetPassword'])->name('reset-password.update');
 });
 
 // ════════════════════════════════════════════════════════════

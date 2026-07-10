@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Support\Facades\Mail;
 
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ActiveTypebusinessController;
@@ -44,6 +45,11 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+    // Profile
+    Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
+    Route::put('/profile', [AdminController::class, 'updateProfile'])->name('profile.update')
+        ->middleware('confirm_admin_password');
 
     // Users
     Route::get('/users',                    [UserController::class,  'allusers'])->name('users.index')
@@ -219,6 +225,11 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::post('/logout', [SuperAdminLoginController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
+
+    // My Profile
+    Route::get('/profile', [SuperAdminController::class, 'profile'])->name('profile');
+    Route::put('/profile', [SuperAdminController::class, 'updateProfile'])->name('profile.update')
+        ->middleware('confirm_admin_password:super_admins');
 
     // Admins management — no permission middleware: super admin has unrestricted access
     Route::get('/admins',                      [SuperAdminController::class, 'admins'])->name('admins.index');
@@ -470,3 +481,16 @@ Route::get('/test-broadcast/{guard?}', function (string $guard = 'admins') {
 
 // ── Root ─────────────────────────────────────────────────────────────────────
 Route::get('/', [LandingController::class, 'index'])->name('home');
+
+
+
+
+
+Route::get('/test-mail', function () {
+    Mail::raw('Testing Gmail SMTP', function ($message) {
+        $message->to('mohamad.17.kawaji@gmail.com')
+                ->subject('SMTP Test');
+    });
+
+    return 'sent';
+});

@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('email_otp_codes', function (Blueprint $table) {
             $table->id();
+            $table->string('email')->index();
+            $table->string('guard', 20);                          // 'admins' أو 'super_admins'
+            $table->string('code');                               // مخزّن مشفّر sha256 مو نص صريح
+            $table->unsignedTinyInteger('attempts')->default(0);
+            $table->timestamp('expires_at');
+            $table->unique(['email', 'guard']);
             $table->timestamps();
         });
     }
