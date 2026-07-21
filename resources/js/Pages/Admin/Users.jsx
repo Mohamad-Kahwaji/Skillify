@@ -24,6 +24,19 @@ const DEFAULT_SC = STATUS_CFG.active;
 
 const GENDER_LABEL = { male: 'ذكر', female: 'أنثى', other: 'آخر' };
 
+const SERVICE_STATUS_CFG = {
+    approved: { bg: '#ECFDF5', color: '#065F46', label: 'مقبول' },
+    pending:  { bg: '#FEF3C7', color: '#92400E', label: 'قيد المراجعة' },
+    rejected: { bg: '#FEF2F2', color: '#991B1B', label: 'مرفوض' },
+};
+const DEFAULT_SERVICE_STATUS = SERVICE_STATUS_CFG.pending;
+
+function priceLabel(s) {
+    if (s.price == null) return null;
+    const amount = Number(s.price).toLocaleString();
+    return s.price_type === 'usd' ? `$${amount}` : `${amount} ل.س`;
+}
+
 /* ── User Detail Drawer ─────────────────────────────────────── */
 function UserDrawer({ user, index, onClose, onToggle, onDelete }) {
     if (!user) return null;
@@ -133,18 +146,95 @@ function UserDrawer({ user, index, onClose, onToggle, onDelete }) {
                     {/* Business */}
                     {biz && (
                         <div style={{ background: '#F0FDFA', border: `1px solid ${C.successBorder}`, borderRadius: 14, padding: 16, marginBottom: 14 }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: C.teal, letterSpacing: 0.8, marginBottom: 10 }}>حساب الأعمال</div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <i className="ti ti-briefcase" style={{ fontSize: 16, color: C.teal }} />
-                                    <span style={{ fontSize: 13, fontWeight: 600, color: C.textDark }}>{biz.name ?? 'حساب أعمال'}</span>
-                                </div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: C.teal, letterSpacing: 0.8 }}>حساب الأعمال</div>
                                 {bizSc && (
                                     <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, background: bizSc.bg, color: bizSc.color }}>
                                         {bizSc.label}
                                     </span>
                                 )}
                             </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                                {biz.image ? (
+                                    <img src={`/storage/${biz.image}`} alt={biz.name} style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+                                ) : (
+                                    <div style={{ width: 44, height: 44, borderRadius: 10, background: '#CCFBF1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: C.teal, flexShrink: 0 }}>
+                                        <i className="ti ti-briefcase" />
+                                    </div>
+                                )}
+                                <div style={{ minWidth: 0 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: C.textDark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{biz.name ?? 'حساب أعمال'}</div>
+                                    {biz.name_job && <div style={{ fontSize: 11, color: C.teal, marginTop: 1 }}>{biz.name_job}</div>}
+                                </div>
+                            </div>
+
+                            {[
+                                { icon: 'ti-phone',         label: 'رقم التواصل',   value: biz.number },
+                                { icon: 'ti-category',      label: 'النشاط',        value: biz.activity },
+                                { icon: 'ti-map-pin',       label: 'الموقع',        value: [biz.city, biz.area, biz.street].filter(Boolean).join('، ') || null },
+                                { icon: 'ti-calendar-plus', label: 'تاريخ الإنشاء', value: fmtDate(biz.created_at) },
+                            ].filter(r => r.value).map(r => (
+                                <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                                    <div style={{ width: 26, height: 26, borderRadius: 7, background: '#CCFBF1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: C.teal, flexShrink: 0 }}>
+                                        <i className={`ti ${r.icon}`} />
+                                    </div>
+                                    <div style={{ minWidth: 0 }}>
+                                        <div style={{ fontSize: 10, color: C.textFaint }}>{r.label}</div>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: C.textDark }}>{r.value}</div>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {biz.description && (
+                                <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.successBorder}` }}>
+                                    <div style={{ fontSize: 10, color: C.textFaint, marginBottom: 3 }}>الوصف</div>
+                                    <div style={{ fontSize: 12, color: C.textMed, lineHeight: 1.6 }}>{biz.description}</div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Services */}
+                    {(user.services ?? []).length > 0 && (
+                        <div style={{ background: '#F8FAFC', borderRadius: 14, padding: 16, marginBottom: 14 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, letterSpacing: 0.8, marginBottom: 12 }}>
+                                الخدمات ({user.services.length})
+                            </div>
+                            {user.services.map((s, i) => {
+                                const ssc = SERVICE_STATUS_CFG[s.status] ?? DEFAULT_SERVICE_STATUS;
+                                const price = priceLabel(s);
+                                return (
+                                    <div key={s.id} style={{
+                                        display: 'flex', gap: 10,
+                                        padding: i === 0 ? '0 0 12px' : '12px 0',
+                                        borderTop: i > 0 ? '1px solid rgba(15,23,42,0.06)' : 'none',
+                                    }}>
+                                        {s.image ? (
+                                            <img src={`/storage/${s.image}`} alt={s.name} style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} />
+                                        ) : (
+                                            <div style={{ width: 38, height: 38, borderRadius: 9, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: C.primary, flexShrink: 0 }}>
+                                                <i className="ti ti-tool" />
+                                            </div>
+                                        )}
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                                                <span style={{ fontSize: 12.5, fontWeight: 700, color: C.textDark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
+                                                <span style={{ fontSize: 9.5, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: ssc.bg, color: ssc.color, flexShrink: 0 }}>{ssc.label}</span>
+                                            </div>
+                                            <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {[s.category?.name, s.subcategory?.name, s.city?.name].filter(Boolean).join(' · ') || '—'}
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
+                                                {price && <span style={{ fontSize: 11.5, color: C.teal, fontWeight: 700 }}>{price}</span>}
+                                                {!s.is_active && (
+                                                    <span style={{ fontSize: 9.5, color: C.textFaint, fontWeight: 600 }}>غير مفعّلة</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
                 </div>

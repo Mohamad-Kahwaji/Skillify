@@ -55,11 +55,7 @@ class UserDashboardController extends Controller
             ->take(6)
             ->get();
 
-        $recentAds = Advertisement::where('status', 'active')
-            ->whereDate('end_date', '>=', now())
-            ->latest()
-            ->take(3)
-            ->get();
+        $recentAds = Advertisement::active()->latest()->take(3)->get();
 
         return Inertia::render('User/Dashboard', [
             'postsCount'         => $postsCount,
@@ -124,6 +120,60 @@ class UserDashboardController extends Controller
         $user->update($data);
 
         return back()->with('success', 'تم تحديث المعلومات الشخصية بنجاح.');
+    }
+
+    public function verifyPassword()
+    {
+        return back()->with('success', 'تم التحقق من كلمة المرور.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $this->user()->update([
+            'password'            => $request->new_password,
+            'password_changed_at' => now(),
+        ]);
+
+        return back()->with('success', 'تم تغيير كلمة المرور بنجاح.');
+    }
+
+    /**
+     * A user permanently deleting their own account. Gated by the
+     * confirm_admin_password:users middleware on the route.
+     * Deletes any business account + services (and their stored images)
+     * before removing the user row itself.
+     */
+    public function destroyAccount(Request $request)
+    {
+        $user = $this->user();
+
+        foreach ($user->services as $service) {
+            if ($service->image) {
+                Storage::disk('public')->delete($service->image);
+            }
+        }
+
+        if ($business = $user->businesses) {
+            if ($business->image) {
+                Storage::disk('public')->delete($business->image);
+            }
+        }
+
+        if ($user->profile_photo) {
+            Storage::disk('public')->delete($user->profile_photo);
+        }
+
+        Auth::guard('users')->logout();
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('success', 'تم حذف حسابك نهائياً.');
     }
 
     // ── Services ──────────────────────────────────────────────────────────────

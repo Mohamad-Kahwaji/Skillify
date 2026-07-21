@@ -485,12 +485,9 @@
 
   {{-- SIDEBAR --}}
   <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-icon"><i class="ti ti-school"></i></div>
-      <div>
-        <div class="brand-name">Skillify</div>
-        <div class="brand-sub">Admin Panel</div>
-      </div>
+    <div class="sidebar-brand" style="flex-direction:column; align-items:flex-start; gap:6px;">
+      <img src="/images/logo.png" alt="Skillify" style="height:30px;width:auto;" />
+      <div class="brand-sub">Admin Panel</div>
     </div>
 
     <nav class="sidebar-nav">

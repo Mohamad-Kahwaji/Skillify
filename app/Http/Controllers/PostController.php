@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActiveType;
+use App\Models\Advertisement;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,7 +43,9 @@ class PostController extends Controller
             ->where('user_id', '!=', $authId)
             ->latest()
             ->get();
-        return Inertia::render('User/CommunityPosts', ['posts' => $posts, 'authId' => $authId]);
+        $ads = Advertisement::active()->inRandomOrder()->get(['id', 'title', 'description', 'image', 'company_name']);
+
+        return Inertia::render('User/CommunityPosts', ['posts' => $posts, 'authId' => $authId, 'ads' => $ads]);
     }
 
     public function storeUserPost(Request $request)

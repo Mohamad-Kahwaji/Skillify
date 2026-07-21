@@ -62,6 +62,7 @@ export default function Services({ services }) {
     }, {});
 
     const patch   = (id, action) => router.patch(`/super-admin/services/${id}/${action}`, {}, { preserveScroll: true });
+    const toggle  = (id) => router.patch(`/super-admin/services/${id}/toggle`, {}, { preserveScroll: true });
     const destroy = (id) => { if (!confirm('حذف هذه الخدمة نهائياً؟')) return; router.delete(`/super-admin/services/${id}`, { preserveScroll: true }); };
 
     return (
@@ -120,11 +121,12 @@ export default function Services({ services }) {
                     <thead>
                         <tr style={{ background: 'linear-gradient(to left,#F8FAFC,#EEF2FF)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                             {[
-                                { label: 'الخدمة',    w: '26%' },
-                                { label: 'التصنيف',   w: '15%' },
-                                { label: 'المزود',    w: '15%' },
-                                { label: 'السعر',     w: '11%' },
-                                { label: 'الحالة',   w: '12%' },
+                                { label: 'الخدمة',    w: '24%' },
+                                { label: 'التصنيف',   w: '13%' },
+                                { label: 'المزود',    w: '13%' },
+                                { label: 'السعر',     w: '10%' },
+                                { label: 'الحالة',   w: '11%' },
+                                { label: 'نشط',       w: '8%'  },
                                 { label: 'إجراءات',  w: '21%' },
                             ].map(h => (
                                 <th key={h.label} style={{ padding: '13px 16px', textAlign: 'right', fontWeight: 700, color: '#4C1D95', whiteSpace: 'nowrap', width: h.w, fontSize: 11.5 }}>
@@ -136,7 +138,7 @@ export default function Services({ services }) {
                     <tbody>
                         {!filtered.length ? (
                             <tr>
-                                <td colSpan={6} style={{ padding: '72px 24px', textAlign: 'center' }}>
+                                <td colSpan={7} style={{ padding: '72px 24px', textAlign: 'center' }}>
                                     <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                                         <i className="ti ti-tool" style={{ fontSize: 28, color: '#C4B5FD' }} />
                                     </div>
@@ -215,6 +217,21 @@ export default function Services({ services }) {
                                             <span style={{ width: 5, height: 5, borderRadius: '50%', background: st.dot, display: 'inline-block' }} />
                                             {st.label}
                                         </span>
+                                    </td>
+
+                                    {/* Active */}
+                                    <td style={{ padding: '12px 16px' }}>
+                                        <button onClick={() => toggle(s.id)} style={{
+                                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                                            fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 20, cursor: 'pointer',
+                                            background: s.is_active ? '#ECFDF5' : '#F1F5F9',
+                                            color: s.is_active ? '#065F46' : '#6B7280',
+                                            border: `1px solid ${s.is_active ? '#6EE7B7' : '#CBD5E1'}`,
+                                            transition: 'all .13s',
+                                        }}>
+                                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: s.is_active ? '#10B981' : '#9CA3AF', display: 'inline-block' }} />
+                                            {s.is_active ? 'نشط' : 'معطل'}
+                                        </button>
                                     </td>
 
                                     {/* Actions */}

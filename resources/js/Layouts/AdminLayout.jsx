@@ -135,17 +135,9 @@ const NAV_GROUPS = [
         label: 'إدارة المستخدمين',
         items: [
             { href: '/admin/users',                  icon: 'ti-users',        label: 'المستخدمون' },
-            { href: '/admin/workers',                icon: 'ti-briefcase',    label: 'المزودون' },
-            { href: '/admin/verifications',          icon: 'ti-shield-check', label: 'تحقق الأعمال' },
+            { href: '/admin/workers',                icon: 'ti-briefcase',    label: 'المزودون / الأعمال', pendingBadge: true },
             { href: '/admin/identity-verifications', icon: 'ti-id-badge',     label: 'توثيق الهوية' },
             { href: '/admin/blocked',                icon: 'ti-ban',          label: 'المحظورون' },
-        ],
-    },
-    {
-        label: 'الطلبات',
-        items: [
-            { href: '/admin/business-requests', icon: 'ti-briefcase',    label: 'طلبات الأعمال',  pendingBadge: true },
-            { href: '/admin/service-requests',  icon: 'ti-tool',         label: 'طلبات الخدمات' },
         ],
     },
     {
@@ -184,7 +176,6 @@ export default function AdminLayout({ children, title }) {
     const [pendingBiz,  setPendingBiz]  = useState(badges?.pending_businesses   ?? 0);
     const [unreadNotif, setUnreadNotif] = useState(badges?.unread_notifications  ?? 0);
     const [liveToast,   setLiveToast]   = useState(null);
-    const [wsStatus,    setWsStatus]    = useState('connecting'); // connecting | connected | disconnected
     const [notifPerm,   setNotifPerm]   = useState(() =>
         typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
     );
@@ -202,21 +193,7 @@ export default function AdminLayout({ children, title }) {
     // WebSocket connection + real-time notifications
     useEffect(() => {
         if (!admin?.id || typeof window.Echo === 'undefined') {
-            setWsStatus('disconnected');
             return;
-        }
-
-        // Track Pusher connection state
-        const pusher = window.Echo.connector?.pusher;
-        const onConnected    = () => setWsStatus('connected');
-        const onDisconnected = () => setWsStatus('disconnected');
-        if (pusher) {
-            pusher.connection.bind('connected',     onConnected);
-            pusher.connection.bind('disconnected',  onDisconnected);
-            pusher.connection.bind('failed',        onDisconnected);
-            pusher.connection.bind('unavailable',   onDisconnected);
-            // Already connected by the time this runs
-            if (pusher.connection.state === 'connected') setWsStatus('connected');
         }
 
         const channel = window.Echo.private(`admins.${admin.id}.notifications`);
@@ -241,12 +218,6 @@ export default function AdminLayout({ children, title }) {
         // would tear down the channel a newly-mounted page just (re)subscribed to.
         return () => {
             channel.stopListeningForNotification(handleNotification);
-            if (pusher) {
-                pusher.connection.unbind('connected',    onConnected);
-                pusher.connection.unbind('disconnected', onDisconnected);
-                pusher.connection.unbind('failed',       onDisconnected);
-                pusher.connection.unbind('unavailable',  onDisconnected);
-            }
         };
     }, [admin?.id]);
 
@@ -285,18 +256,9 @@ export default function AdminLayout({ children, title }) {
                 boxShadow: '-2px 0 20px rgba(0,0,0,0.15)',
             }}>
                 {/* Logo */}
-                <div style={{ padding: '20px 18px 16px', borderBottom: `1px solid ${C.sidebarBorder}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg,#0EA5E9,#0D9488)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#fff', fontWeight: 800, flexShrink: 0 }}>
-                            S
-                        </div>
-                        <div>
-                            <div style={{ fontSize: 15, fontWeight: 800, color: '#F1F5F9', letterSpacing: -0.3 }}>
-                                <span style={{ color: C.sidebarActive }}>Skill</span>ify
-                            </div>
-                            <div style={{ fontSize: 9, color: '#475569', fontWeight: 500, letterSpacing: 0.5 }}>لوحة الإدارة</div>
-                        </div>
-                    </div>
+                <div style={{ padding: '18px 18px 14px', borderBottom: `1px solid ${C.sidebarBorder}` }}>
+                    <img src="/images/logo.png" alt="Skillify" style={{ height: 34, width: 'auto', display: 'block' }} />
+                    <div style={{ fontSize: 9, color: '#475569', fontWeight: 500, letterSpacing: 0.5, marginTop: 6 }}>لوحة الإدارة</div>
                 </div>
 
                 {/* Nav */}
@@ -308,7 +270,7 @@ export default function AdminLayout({ children, title }) {
                             </div>
                             {group.items.map(({ href, icon, label, notifBadge, pendingBadge }) => {
                                 const active  = current === href || current.startsWith(href + '/');
-                                const hasDot  = (href === '/admin/verifications' || (pendingBadge && pendingBiz > 0)) && pendingBiz > 0;
+                                const hasDot  = pendingBadge && pendingBiz > 0;
                                 const hasNotif = notifBadge && unreadNotif > 0;
                                 return (
                                     <Link key={href} href={href} style={{
@@ -385,18 +347,6 @@ export default function AdminLayout({ children, title }) {
                         <div style={{ fontSize: 15, fontWeight: 700, color: C.textDark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title ?? 'لوحة الإدارة'}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-
-                        {/* WebSocket status dot */}
-                        <div title={wsStatus === 'connected' ? 'متصل بالإشعارات الفورية' : 'غير متصل — تشغيل: php artisan reverb:start'}
-                            className="hidden sm:flex"
-                            style={{ alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 20, background: wsStatus === 'connected' ? '#ECFDF5' : '#FEF2F2', border: `1px solid ${wsStatus === 'connected' ? '#6EE7B7' : '#FCA5A5'}`, cursor: 'default' }}>
-                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: wsStatus === 'connected' ? '#10B981' : '#EF4444', boxShadow: wsStatus === 'connected' ? '0 0 0 2px rgba(16,185,129,0.3)' : 'none', display: 'block',
-                                animation: wsStatus === 'connected' ? 'wsPulse 2s infinite' : 'none' }} />
-                            <span style={{ fontSize: 10, fontWeight: 600, color: wsStatus === 'connected' ? '#065F46' : '#991B1B' }}>
-                                {wsStatus === 'connected' ? 'Live' : 'Offline'}
-                            </span>
-                        </div>
-                        <style>{`@keyframes wsPulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
 
                         {/* Notification permission button */}
                         {notifPerm !== 'granted' && (

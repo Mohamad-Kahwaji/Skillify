@@ -30,6 +30,14 @@ const TYPE_CONFIG = {
 
 const DEFAULT_TYPE = { icon: 'ti-bell', color: '#64748B', bg: '#F8FAFC', border: '#E2E8F0', label: 'إشعار' };
 
+// Maps a notification's data payload to the admin page it relates to, if any.
+function resolveLink(type, data) {
+    if (data.verification_id) return '/admin/identity-verifications';
+    if (data.request_id)      return '/admin/workers';
+    if (type === 'App\\Notifications\\NewServiceRequestNotification') return '/admin/services';
+    return null;
+}
+
 function timeAgo(dateStr) {
     if (!dateStr) return '';
     const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
@@ -110,16 +118,27 @@ export default function Notifications({ notifications, unread_count }) {
                     const cfg    = TYPE_CONFIG[n.type] ?? DEFAULT_TYPE;
                     const data   = n.data ?? {};
                     const unread = !n.read_at;
+                    const link   = resolveLink(n.type, data);
+
+                    const openNotification = () => {
+                        if (!link) return;
+                        if (unread) markRead(n.id);
+                        router.get(link);
+                    };
 
                     return (
-                        <div key={n.id} style={{
+                        <div key={n.id} onClick={openNotification} style={{
                             display: 'flex', alignItems: 'flex-start', gap: 14,
                             padding: '16px 20px',
                             borderBottom: i < items.length - 1 ? `1px solid ${C.cardBorder.replace('1px solid ', '')}` : 'none',
                             background: unread ? '#F0F9FF' : '#fff',
+                            cursor: link ? 'pointer' : 'default',
                             transition: 'background .15s',
                             borderRight: unread ? `3px solid ${C.primary}` : '3px solid transparent',
-                        }}>
+                        }}
+                            onMouseEnter={e => { if (link) e.currentTarget.style.background = C.primaryMuted ?? '#EFF6FF'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = unread ? '#F0F9FF' : '#fff'; }}
+                        >
 
                             {/* Icon */}
                             <div style={{
@@ -162,7 +181,7 @@ export default function Notifications({ notifications, unread_count }) {
 
                             {/* Action */}
                             {unread && (
-                                <button onClick={() => markRead(n.id)} title="تعيين كمقروء" style={{
+                                <button onClick={e => { e.stopPropagation(); markRead(n.id); }} title="تعيين كمقروء" style={{
                                     width: 32, height: 32, borderRadius: 8, flexShrink: 0,
                                     border: `1px solid ${C.cardBorder.replace('1px solid ', '')}`,
                                     background: '#F0F9FF', color: C.primary,
@@ -174,6 +193,9 @@ export default function Notifications({ notifications, unread_count }) {
                                 >
                                     <i className="ti ti-check" />
                                 </button>
+                            )}
+                            {link && (
+                                <i className="ti ti-chevron-left" style={{ color: '#CBD5E1', fontSize: 16, flexShrink: 0, alignSelf: 'center' }} />
                             )}
                         </div>
                     );

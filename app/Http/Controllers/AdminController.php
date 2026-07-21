@@ -94,12 +94,6 @@ class AdminController extends Controller
         return back()->with('success', 'تم تحديث الملف الشخصي بنجاح.');
     }
 
-    public function verifications()
-    {
-        $pending = Business::where('status', 'pending')->with('user')->latest()->get();
-        return Inertia::render('Admin/Verifications', ['pending' => $pending]);
-    }
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -173,19 +167,6 @@ class AdminController extends Controller
 
 
 //////////////////////////services/////////////////////////
-    public function serviceRequests()
-    {
-        $services = Service::with(['user','category','subcategory','city'])
-            ->latest()->get();
-        return Inertia::render('Admin/ServiceRequests', ['services' => $services]);
-    }
-
-    public function businessRequests()
-    {
-        $businesses = Business::with('user')->latest()->get();
-        return Inertia::render('Admin/BusinessRequests', ['businesses' => $businesses]);
-    }
-
     public function serviceto_approve(Service $service)
     {
         $service->update(['status' => 'approved']);

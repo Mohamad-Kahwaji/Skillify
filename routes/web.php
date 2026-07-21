@@ -78,20 +78,10 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::delete('/workers/{id}',       [BusinessController::class, 'destroy'])->name('workers.destroy')
         ->middleware('permission:businesses.delete');
 
-    // Requests pages
-    Route::get('/business-requests', [AdminController::class, 'businessRequests'])->name('business-requests.index');
-    Route::get('/service-requests',  [AdminController::class, 'serviceRequests'])->name('service-requests.index');
-    Route::patch('/service-requests/{service}/approve', [AdminController::class, 'serviceto_approve'])->name('service-requests.approve');
-    Route::patch('/service-requests/{service}/reject',  [AdminController::class, 'serviceto_rejected'])->name('service-requests.reject');
-    Route::patch('/service-requests/{service}/pending', [AdminController::class, 'serviceto_pending'])->name('service-requests.pending');
-
-    // Business Verifications
-    Route::get('/verifications',                 [AdminController::class, 'verifications'])->name('verifications.index')
-        ->middleware('permission:verifications.view');
-    Route::patch('/verifications/{business}/approve',  [AdminController::class, 'businessto_approve'])->name('verifications.approve')
-        ->middleware('permission:verifications.approve');
-    Route::patch('/verifications/{business}/reject',   [AdminController::class, 'businessto_rejected'])->name('verifications.reject')
-        ->middleware('permission:verifications.reject');
+    // Service moderation (merged into /services)
+    Route::patch('/services/{service}/approve', [AdminController::class, 'serviceto_approve'])->name('services.approve');
+    Route::patch('/services/{service}/reject',  [AdminController::class, 'serviceto_rejected'])->name('services.reject');
+    Route::patch('/services/{service}/pending', [AdminController::class, 'serviceto_pending'])->name('services.pending');
 
     // Identity Verifications
     Route::get('/identity-verifications',                            [IdentityVerificationController::class, 'adminIndex'])->name('identity.index')
@@ -125,8 +115,6 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
         ->middleware('permission:ads.create');
     Route::post('/ads',          [AdvertisementController::class, 'store'])->name('ads.store')
         ->middleware('permission:ads.create');
-    Route::get('/ads/{id}/edit', [AdvertisementController::class, 'edit'])->name('ads.edit')
-        ->middleware('permission:ads.edit');
     Route::put('/ads/{id}',      [AdvertisementController::class, 'update'])->name('ads.update')
         ->middleware('permission:ads.edit');
     Route::delete('/ads/{id}',   [AdvertisementController::class, 'destroy'])->name('ads.delete')
@@ -262,10 +250,13 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     // Users
     Route::get('/users',              [SuperAdminController::class, 'users'])->name('users.index');
     Route::get('/users/{user}/profile', [UserController::class,     'superAdminProfile'])->name('users.profile');
+    Route::patch('/users/{user}/block',   [SuperAdminController::class, 'blockUser'])->name('users.block');
+    Route::patch('/users/{user}/unblock', [SuperAdminController::class, 'unblockUser'])->name('users.unblock');
     Route::delete('/users/{user}',    [SuperAdminController::class, 'destroyUser'])->name('users.destroy');
 
     // Businesses
     Route::get('/businesses',                         [SuperAdminController::class, 'businesses'])->name('businesses.index');
+    Route::get('/businesses/{business}',              [SuperAdminController::class, 'showBusiness'])->name('businesses.show');
     Route::patch('/businesses/{business}/approve',    [SuperAdminController::class, 'businessto_approve'])->name('businesses.approve');
     Route::patch('/businesses/{business}/reject',     [SuperAdminController::class, 'businessto_rejected'])->name('businesses.reject');
     Route::patch('/businesses/{business}/pending',    [SuperAdminController::class, 'businessto_pending'])->name('businesses.pending');
@@ -276,20 +267,13 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::patch('/services/{service}/approve',    [SuperAdminController::class, 'serviceto_approve'])->name('services.approve');
     Route::patch('/services/{service}/reject',     [SuperAdminController::class, 'serviceto_rejected'])->name('services.reject');
     Route::patch('/services/{service}/pending',    [SuperAdminController::class, 'serviceto_pending'])->name('services.pending');
+    Route::patch('/services/{service}/toggle',     [SuperAdminController::class, 'toggleService'])->name('services.toggle');
     Route::delete('/services/{service}',           [SuperAdminController::class, 'destroyService'])->name('services.destroy');
-
-    // Requests pages
-    Route::get('/business-requests',                          [SuperAdminController::class, 'businessRequests'])->name('business-requests.index');
-    Route::get('/service-requests',                           [SuperAdminController::class, 'serviceRequests'])->name('service-requests.index');
-    Route::patch('/service-requests/{service}/approve',       [SuperAdminController::class, 'serviceto_approve'])->name('service-requests.approve');
-    Route::patch('/service-requests/{service}/reject',        [SuperAdminController::class, 'serviceto_rejected'])->name('service-requests.reject');
-    Route::patch('/service-requests/{service}/pending',       [SuperAdminController::class, 'serviceto_pending'])->name('service-requests.pending');
-    Route::patch('/business-requests/{business}/approve',     [SuperAdminController::class, 'businessto_approve'])->name('business-requests.approve');
-    Route::patch('/business-requests/{business}/reject',      [SuperAdminController::class, 'businessto_rejected'])->name('business-requests.reject');
-    Route::patch('/business-requests/{business}/pending',     [SuperAdminController::class, 'businessto_pending'])->name('business-requests.pending');
 
     // Ads
     Route::get('/ads',               [SuperAdminController::class, 'ads'])->name('ads.index');
+    Route::post('/ads',              [SuperAdminController::class, 'storeAd'])->name('ads.store');
+    Route::put('/ads/{ad}',          [SuperAdminController::class, 'updateAd'])->name('ads.update');
     Route::patch('/ads/{ad}/toggle', [SuperAdminController::class, 'toggleAd'])->name('ads.toggle');
     Route::delete('/ads/{ad}',       [SuperAdminController::class, 'destroyAd'])->name('ads.destroy');
 
@@ -309,10 +293,8 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     // Reports
     Route::get('/reports', [SuperAdminController::class, 'reports'])->name('reports.index');
 
-    // Blocked
-    Route::get('/blocked',          [SuperAdminController::class,  'blocked'])->name('blocked.index');
-    Route::post('/blocked',         [AdminBlockedController::class, 'store'])->name('blocked.store');
-    Route::delete('/blocked/{id}',  [AdminBlockedController::class, 'destroy'])->name('blocked.destroy');
+    // Blocked (users with status = inactive)
+    Route::get('/blocked', [SuperAdminController::class, 'blocked'])->name('blocked.index');
 
     // Categories
     Route::get('/categories',           [SuperAdminController::class, 'categories'])->name('categories.index');
@@ -356,11 +338,19 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     // Profile
     Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
     Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/password/verify', [UserDashboardController::class, 'verifyPassword'])->name('password.verify')
+        ->middleware('confirm_admin_password:users');
+    Route::put('/password', [UserDashboardController::class, 'updatePassword'])->name('password.update')
+        ->middleware('confirm_admin_password:users');
+    Route::delete('/profile', [UserDashboardController::class, 'destroyAccount'])->name('profile.destroy')
+        ->middleware('confirm_admin_password:users');
 
     // Business
     Route::post('/business', [BusinessController::class, 'store'])->name('business.store')
         ->middleware('permission:business.create');
     Route::put('/business',    [BusinessController::class, 'edit'])->name('business.update')
+        ->middleware('permission:business.update');
+    Route::delete('/business', [BusinessController::class, 'destroySelf'])->name('business.destroy')
         ->middleware('permission:business.update');
     Route::patch('/business/resubmit', [BusinessController::class, 'resubmit'])->name('business.resubmit')
         ->middleware('permission:business.update');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Advertisement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class AdvertisementController extends Controller
@@ -27,52 +28,57 @@ class AdvertisementController extends Controller
             'admin_id'     => 'required|exists:admins,id',
             'title'        => 'required|string',
             'description'  => 'nullable|string',
-            'image'        => 'nullable|string',
+            'image'        => 'nullable|image|max:2048',
             'company_name' => 'nullable|string',
             'start_date'   => 'nullable|date',
             'end_date'     => 'nullable|date',
             'status'       => 'nullable|string',
         ]);
 
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('ads', 'public');
+        }
+
         Advertisement::create($validated);
         return redirect()->route('admin.ads.index')->with('success', 'Advertisement created.');
-    }
-
-    public function edit(int $id)
-    {
-        $advertisement = Advertisement::findOrFail($id);
-        return view('admin.ads.edit', compact('advertisement'));
     }
 
     public function update(Request $request, int $id)
     {
         $advertisement = Advertisement::findOrFail($id);
-        $advertisement->update($request->all());
+
+        $validated = $request->validate([
+            'title'        => 'required|string',
+            'description'  => 'nullable|string',
+            'image'        => 'nullable|image|max:2048',
+            'company_name' => 'nullable|string',
+            'start_date'   => 'nullable|date',
+            'end_date'     => 'nullable|date',
+            'status'       => 'nullable|string',
+        ]);
+
+        if ($request->hasFile('image')) {
+            if ($advertisement->image) Storage::disk('public')->delete($advertisement->image);
+            $validated['image'] = $request->file('image')->store('ads', 'public');
+        } else {
+            unset($validated['image']);
+        }
+
+        $advertisement->update($validated);
         return redirect()->route('admin.ads.index')->with('success', 'Advertisement updated.');
     }
 
     public function destroy(int $id)
     {
-        Advertisement::findOrFail($id)->delete();
+        $advertisement = Advertisement::findOrFail($id);
+        if ($advertisement->image) Storage::disk('public')->delete($advertisement->image);
+        $advertisement->delete();
         return redirect()->route('admin.ads.index')->with('success', 'Advertisement deleted.');
     }
 
     public function userAds()
     {
-        $advertisements = Advertisement::where('status', 'approved')
-            ->where(function ($q) {
-                $today = now()->toDateString();
-                $q->whereNull('start_date')
-                  ->orWhere(function ($q2) use ($today) {
-                      $q2->where('start_date', '<=', $today)
-                         ->where(function ($q3) use ($today) {
-                             $q3->whereNull('end_date')
-                                ->orWhere('end_date', '>=', $today);
-                         });
-                  });
-            })
-            ->latest()
-            ->get();
+        $advertisements = Advertisement::active()->latest()->get();
 
         return Inertia::render('User/Ads', ['advertisements' => $advertisements]);
     }

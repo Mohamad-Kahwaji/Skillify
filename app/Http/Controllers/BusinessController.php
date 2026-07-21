@@ -21,6 +21,49 @@ class BusinessController extends Controller
         return Inertia::render('Admin/Workers', ['businesses' => $businesses]);
     }
 
+    public function show(int $id)
+    {
+        $business = Business::withTrashed()->with('user')->findOrFail($id);
+        return Inertia::render('Admin/WorkerDetails', ['business' => $business]);
+    }
+
+    public function destroy(int $id)
+    {
+        $business = Business::withTrashed()->with('user')->findOrFail($id);
+
+        $business->user?->deleteServicesWithFiles();
+
+        if ($business->image) {
+            Storage::disk('public')->delete($business->image);
+        }
+        $business->delete();
+
+        return back()->with('success', 'تم حذف حساب الأعمال وكل خدماته.');
+    }
+
+    /**
+     * A user deleting their own business account (keeps the user account itself).
+     */
+    public function destroySelf()
+    {
+        $user = Auth::guard('users')->user();
+        $business = $user->businesses;
+
+        if (!$business) {
+            return back()->with('error', 'لا يوجد حساب أعمال لحذفه.');
+        }
+
+        $user->deleteServicesWithFiles();
+
+        if ($business->image) {
+            Storage::disk('public')->delete($business->image);
+        }
+        $business->delete();
+        $user->syncBusinessRole();
+
+        return redirect()->route('user.profile')->with('success', 'تم حذف حساب الأعمال وكل خدماته.');
+    }
+
     public function store(Request $request, GeminiIdentityService $gemini)
     {
         $user = Auth::guard('users')->user();
@@ -114,4 +157,5 @@ class BusinessController extends Controller
             return null;
         }
     }
+   
 }

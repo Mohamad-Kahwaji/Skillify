@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['first_name', 'last_name', 'middle_name', 'phone', 'email', 'password', 'birthdate', 'gender', 'city', 'profile_photo', 'status', 'latitude', 'longitude', 'fcm_token'])]
+#[Fillable(['first_name', 'last_name', 'middle_name', 'phone', 'email', 'password', 'password_changed_at', 'birthdate', 'gender', 'city', 'profile_photo', 'status', 'latitude', 'longitude', 'fcm_token'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,8 +28,9 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'   => 'datetime',
+            'password'            => 'hashed',
+            'password_changed_at' => 'datetime',
         ];
     }
 
@@ -84,6 +86,20 @@ class User extends Authenticatable
     public function services()
     {
         return $this->hasMany(Service::class);
+    }
+
+    /**
+     * Deletes all of this user's services (and their stored images) without
+     * touching the user or business rows themselves.
+     */
+    public function deleteServicesWithFiles(): void
+    {
+        $this->services()->get()->each(function (Service $service) {
+            if ($service->image) {
+                Storage::disk('public')->delete($service->image);
+            }
+            $service->delete();
+        });
     }
 
     public function identityVerification()

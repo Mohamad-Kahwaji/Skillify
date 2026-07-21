@@ -5,13 +5,25 @@ import SuperAdminLayout from '../../Layouts/SuperAdminLayout';
 const AV_COLORS = ['#6D28D9','#0D9488','#2563EB','#D97706','#DC2626','#0891B2','#7C3AED','#059669'];
 
 const STATUS_CFG = {
-    active:   { label: 'نشط',     color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7', dot: '#10B981' },
-    inactive: { label: 'موقوف',   color: '#991B1B', bg: '#FEE2E2', border: '#FCA5A5', dot: '#EF4444' },
-    banned:   { label: 'محظور',   color: '#7C2D12', bg: '#FFEDD5', border: '#FED7AA', dot: '#F97316' },
+    active:   { label: 'نشط',   color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7', dot: '#10B981' },
+    inactive: { label: 'محظور', color: '#991B1B', bg: '#FEE2E2', border: '#FCA5A5', dot: '#EF4444' },
 };
 const DEFAULT_STATUS = { label: 'نشط', color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7', dot: '#10B981' };
 
 const GENDER_LABEL = { male: 'ذكر', female: 'أنثى', other: 'آخر' };
+
+const SERVICE_STATUS_CFG = {
+    approved: { bg: '#ECFDF5', color: '#065F46', label: 'مقبول' },
+    pending:  { bg: '#FEF3C7', color: '#92400E', label: 'قيد المراجعة' },
+    rejected: { bg: '#FEF2F2', color: '#991B1B', label: 'مرفوض' },
+};
+const DEFAULT_SERVICE_STATUS = SERVICE_STATUS_CFG.pending;
+
+function priceLabel(s) {
+    if (s.price == null) return null;
+    const amount = Number(s.price).toLocaleString();
+    return s.price_type === 'usd' ? `$${amount}` : `${amount} ل.س`;
+}
 
 function avColor(i) { return AV_COLORS[i % AV_COLORS.length]; }
 function avColor2(i) { return AV_COLORS[(i + 3) % AV_COLORS.length]; }
@@ -26,9 +38,10 @@ function formatDate(d, opts = { day: 'numeric', month: 'short', year: 'numeric' 
 }
 
 /* ════════════════ User Detail Drawer ════════════════ */
-function UserDrawer({ user, index, onClose, onDelete }) {
+function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock }) {
     if (!user) return null;
     const sc  = STATUS_CFG[user.status] ?? DEFAULT_STATUS;
+    const isBlocked = user.status === 'inactive';
     const biz = user.businesses;
     const bizStatus = biz ? (biz.status === 'active' ? { label: 'نشط', color: '#065F46', bg: '#D1FAE5' } : biz.status === 'pending' ? { label: 'قيد المراجعة', color: '#92400E', bg: '#FEF3C7' } : { label: 'مرفوض', color: '#991B1B', bg: '#FEE2E2' }) : null;
 
@@ -137,18 +150,95 @@ function UserDrawer({ user, index, onClose, onDelete }) {
                     {/* Business account */}
                     {biz && (
                         <div style={{ background: '#F5F3FF', border: '1px solid #DDD6FE', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 }}>حساب الأعمال</div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <i className="ti ti-briefcase" style={{ fontSize: 16, color: '#7C3AED' }} />
-                                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1E1B4B' }}>{biz.name ?? 'حساب أعمال'}</span>
-                                </div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: 0.8 }}>حساب الأعمال</div>
                                 {bizStatus && (
                                     <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, background: bizStatus.bg, color: bizStatus.color }}>
                                         {bizStatus.label}
                                     </span>
                                 )}
                             </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                                {biz.image ? (
+                                    <img src={`/storage/${biz.image}`} alt={biz.name} style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+                                ) : (
+                                    <div style={{ width: 44, height: 44, borderRadius: 10, background: '#EDE9FE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#7C3AED', flexShrink: 0 }}>
+                                        <i className="ti ti-briefcase" />
+                                    </div>
+                                )}
+                                <div style={{ minWidth: 0 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1E1B4B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{biz.name ?? 'حساب أعمال'}</div>
+                                    {biz.name_job && <div style={{ fontSize: 11, color: '#6D28D9', marginTop: 1 }}>{biz.name_job}</div>}
+                                </div>
+                            </div>
+
+                            {[
+                                { icon: 'ti-phone',       label: 'رقم التواصل', value: biz.number },
+                                { icon: 'ti-category',    label: 'النشاط',       value: biz.activity },
+                                { icon: 'ti-map-pin',     label: 'الموقع',       value: [biz.city, biz.area, biz.street].filter(Boolean).join('، ') || null },
+                                { icon: 'ti-calendar-plus', label: 'تاريخ الإنشاء', value: formatDate(biz.created_at) },
+                            ].filter(r => r.value).map(r => (
+                                <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                                    <div style={{ width: 26, height: 26, borderRadius: 7, background: '#EDE9FE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#7C3AED', flexShrink: 0 }}>
+                                        <i className={`ti ${r.icon}`} />
+                                    </div>
+                                    <div style={{ minWidth: 0 }}>
+                                        <div style={{ fontSize: 10, color: '#94A3B8' }}>{r.label}</div>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: '#1E1B4B' }}>{r.value}</div>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {biz.description && (
+                                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #DDD6FE' }}>
+                                    <div style={{ fontSize: 10, color: '#94A3B8', marginBottom: 3 }}>الوصف</div>
+                                    <div style={{ fontSize: 12, color: '#374151', lineHeight: 1.6 }}>{biz.description}</div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Services */}
+                    {(user.services ?? []).length > 0 && (
+                        <div style={{ background: '#F8FAFC', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>
+                                الخدمات ({user.services.length})
+                            </div>
+                            {user.services.map((s, i) => {
+                                const ssc = SERVICE_STATUS_CFG[s.status] ?? DEFAULT_SERVICE_STATUS;
+                                const price = priceLabel(s);
+                                return (
+                                    <div key={s.id} style={{
+                                        display: 'flex', gap: 10,
+                                        padding: i === 0 ? '0 0 12px' : '12px 0',
+                                        borderTop: i > 0 ? '1px solid rgba(0,0,0,0.06)' : 'none',
+                                    }}>
+                                        {s.image ? (
+                                            <img src={`/storage/${s.image}`} alt={s.name} style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} />
+                                        ) : (
+                                            <div style={{ width: 38, height: 38, borderRadius: 9, background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: '#0D9488', flexShrink: 0 }}>
+                                                <i className="ti ti-tool" />
+                                            </div>
+                                        )}
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                                                <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
+                                                <span style={{ fontSize: 9.5, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: ssc.bg, color: ssc.color, flexShrink: 0 }}>{ssc.label}</span>
+                                            </div>
+                                            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {[s.category?.name, s.subcategory?.name, s.city?.name].filter(Boolean).join(' · ') || '—'}
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
+                                                {price && <span style={{ fontSize: 11.5, color: '#0D9488', fontWeight: 700 }}>{price}</span>}
+                                                {!s.is_active && (
+                                                    <span style={{ fontSize: 9.5, color: '#94A3B8', fontWeight: 600 }}>غير مفعّلة</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -158,6 +248,15 @@ function UserDrawer({ user, index, onClose, onDelete }) {
                     <button onClick={onClose} style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1px solid rgba(0,0,0,0.12)', background: '#F8FAFC', color: '#374151', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Cairo','Inter',sans-serif" }}>
                         إغلاق
                     </button>
+                    {isBlocked ? (
+                        <button onClick={() => onUnblock(user.id)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1px solid #6EE7B7', background: '#D1FAE5', color: '#065F46', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Cairo','Inter',sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                            <i className="ti ti-lock-open" /> إلغاء الحظر
+                        </button>
+                    ) : (
+                        <button onClick={() => onBlock(user.id)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1px solid #FED7AA', background: '#FFEDD5', color: '#9A3412', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Cairo','Inter',sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                            <i className="ti ti-ban" /> حظر المستخدم
+                        </button>
+                    )}
                     <button onClick={() => onDelete(user.id)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1px solid #FCA5A5', background: '#FEE2E2', color: '#991B1B', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Cairo','Inter',sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                         <i className="ti ti-trash" /> حذف المستخدم
                     </button>
@@ -186,7 +285,6 @@ export default function Users({ users }) {
         all:      allUsers.length,
         active:   allUsers.filter(u => !u.status || u.status === 'active').length,
         inactive: allUsers.filter(u => u.status === 'inactive').length,
-        banned:   allUsers.filter(u => u.status === 'banned').length,
     };
 
     const destroy = (id) => {
@@ -195,13 +293,22 @@ export default function Users({ users }) {
         router.delete(`/super-admin/users/${id}`, { preserveScroll: true });
     };
 
+    const block = (id) => {
+        if (!confirm('حظر هذا المستخدم؟')) return;
+        router.patch(`/super-admin/users/${id}/block`, {}, { preserveScroll: true });
+    };
+
+    const unblock = (id) => {
+        if (!confirm('إلغاء حظر هذا المستخدم؟')) return;
+        router.patch(`/super-admin/users/${id}/unblock`, {}, { preserveScroll: true });
+    };
+
     const openUser = (u, idx) => { setSelected(u); setSelectedIdx(idx); };
 
     const TABS = [
-        { key: 'all',      label: 'الكل',    color: '#1E1B4B', bg: '#EEF2FF', border: '#C7D2FE', icon: 'ti-users' },
-        { key: 'active',   label: 'نشط',     color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7', icon: 'ti-circle-check' },
-        { key: 'inactive', label: 'موقوف',   color: '#991B1B', bg: '#FEE2E2', border: '#FCA5A5', icon: 'ti-circle-x' },
-        { key: 'banned',   label: 'محظور',   color: '#7C2D12', bg: '#FFEDD5', border: '#FED7AA', icon: 'ti-ban' },
+        { key: 'all',      label: 'الكل',  color: '#1E1B4B', bg: '#EEF2FF', border: '#C7D2FE', icon: 'ti-users' },
+        { key: 'active',   label: 'نشط',   color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7', icon: 'ti-circle-check' },
+        { key: 'inactive', label: 'محظور', color: '#991B1B', bg: '#FEE2E2', border: '#FCA5A5', icon: 'ti-ban' },
     ];
 
     return (
@@ -214,6 +321,8 @@ export default function Users({ users }) {
                     index={selectedIdx}
                     onClose={() => setSelected(null)}
                     onDelete={destroy}
+                    onBlock={block}
+                    onUnblock={unblock}
                 />
             )}
 
@@ -348,6 +457,25 @@ export default function Users({ users }) {
                                                 style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, border: '1px solid #DDD6FE', background: '#F5F3FF', color: '#7C3AED', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: "'Cairo','Inter',sans-serif", whiteSpace: 'nowrap' }}>
                                                 <i className="ti ti-eye" style={{ fontSize: 12 }} /> عرض
                                             </button>
+                                            {u.status === 'inactive' ? (
+                                                <button
+                                                    title="إلغاء الحظر"
+                                                    onClick={e => { e.stopPropagation(); unblock(u.id); }}
+                                                    style={{ width: 28, height: 28, borderRadius: 7, border: '1px solid #6EE7B7', background: '#ECFDF5', color: '#059669', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.13s' }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = '#D1FAE5'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = '#ECFDF5'; e.currentTarget.style.transform = 'scale(1)'; }}>
+                                                    <i className="ti ti-lock-open" />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    title="حظر"
+                                                    onClick={e => { e.stopPropagation(); block(u.id); }}
+                                                    style={{ width: 28, height: 28, borderRadius: 7, border: '1px solid #FED7AA', background: '#FFF7ED', color: '#C2410C', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.13s' }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = '#FFEDD5'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = '#FFF7ED'; e.currentTarget.style.transform = 'scale(1)'; }}>
+                                                    <i className="ti ti-ban" />
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={e => { e.stopPropagation(); destroy(u.id); }}
                                                 style={{ width: 28, height: 28, borderRadius: 7, border: '1px solid #FCA5A5', background: '#FEF2F2', color: '#DC2626', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.13s' }}

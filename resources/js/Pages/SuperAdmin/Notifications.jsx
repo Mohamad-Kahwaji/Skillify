@@ -29,6 +29,14 @@ const DEFAULT_TYPE = {
     icon: 'ti-bell', color: '#64748B', bg: '#F8FAFC', border: '#E2E8F0', label: 'إشعار',
 };
 
+// Maps a notification's data payload to the super-admin page it relates to, if any.
+function resolveLink(type, data) {
+    if (data.verification_id) return '/super-admin/identity-verifications';
+    if (data.request_id)      return '/super-admin/businesses';
+    if (type === 'App\\Notifications\\NewServiceRequestNotification') return '/super-admin/services';
+    return null;
+}
+
 function timeAgo(dateStr) {
     if (!dateStr) return '';
     const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
@@ -88,15 +96,26 @@ export default function Notifications({ notifications, unread_count }) {
                     const cfg  = TYPE_CONFIG[n.type] ?? DEFAULT_TYPE;
                     const data = n.data ?? {};
                     const isUnread = !n.read_at;
+                    const link = resolveLink(n.type, data);
+
+                    const openNotification = () => {
+                        if (!link) return;
+                        if (isUnread) markRead(n.id);
+                        router.get(link);
+                    };
 
                     return (
-                        <div key={n.id} style={{
+                        <div key={n.id} onClick={openNotification} style={{
                             display: 'flex', alignItems: 'flex-start', gap: 14,
                             padding: '16px 20px',
                             borderBottom: i < items.length - 1 ? '0.5px solid rgba(0,0,0,0.05)' : 'none',
                             background: isUnread ? '#FAFAFF' : '#fff',
+                            cursor: link ? 'pointer' : 'default',
                             transition: 'background 0.15s',
-                        }}>
+                        }}
+                            onMouseEnter={e => { if (link) e.currentTarget.style.background = '#F5F3FF'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = isUnread ? '#FAFAFF' : '#fff'; }}
+                        >
                             {/* Icon */}
                             <div style={{
                                 width: 42, height: 42, borderRadius: 11, flexShrink: 0,
@@ -142,13 +161,16 @@ export default function Notifications({ notifications, unread_count }) {
 
                             {/* Mark read */}
                             {isUnread && (
-                                <button onClick={() => markRead(n.id)} title="تعيين كمقروء" style={{
+                                <button onClick={e => { e.stopPropagation(); markRead(n.id); }} title="تعيين كمقروء" style={{
                                     padding: '6px', borderRadius: 8, border: '0.5px solid #DDD6FE',
                                     background: '#F5F3FF', color: '#7C3AED',
                                     fontSize: 14, cursor: 'pointer', flexShrink: 0, lineHeight: 1,
                                 }}>
                                     <i className="ti ti-check" />
                                 </button>
+                            )}
+                            {link && (
+                                <i className="ti ti-chevron-left" style={{ color: '#CBD5E1', fontSize: 16, flexShrink: 0, alignSelf: 'center' }} />
                             )}
                         </div>
                     );

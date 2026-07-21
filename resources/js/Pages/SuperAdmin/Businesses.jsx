@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import SuperAdminLayout from '../../Layouts/SuperAdminLayout';
 
@@ -243,6 +243,14 @@ export default function Businesses({ businesses }) {
                                             <i className="ti ti-clock" style={{ fontSize: 13 }} /> مراجعة
                                         </button>
                                     )}
+                                    <Link href={`/super-admin/businesses/${b.id}`} className="act-btn" style={{
+                                        width: 36, height: 36, borderRadius: 10, border: '1.5px solid #E2E8F0',
+                                        background: '#F8FAFC', color: '#475569',
+                                        fontSize: 15, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                        flexShrink: 0, textDecoration: 'none',
+                                    }}>
+                                        <i className="ti ti-eye" />
+                                    </Link>
                                     <button className="act-btn" onClick={() => destroy(b.id)} style={{
                                         width: 36, height: 36, borderRadius: 10, border: '1.5px solid #FECACA',
                                         background: '#FEF2F2', color: '#EF4444',

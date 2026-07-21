@@ -247,7 +247,48 @@ function PostCard({ post, authId }) {
     );
 }
 
-export default function CommunityPosts({ posts, authId }) {
+function AdCard({ ad }) {
+    const img = ad.image ? (ad.image.startsWith('http') ? ad.image : `/storage/${ad.image}`) : null;
+    return (
+        <div style={{ background: '#fff', border: '1px solid #99F6E4', borderRadius: 14, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: '#F0FDFA', borderBottom: '0.5px solid #99F6E4' }}>
+                <i className="ti ti-speakerphone" style={{ color: '#0D9488', fontSize: 14 }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#0D9488' }}>إعلان</span>
+                {ad.company_name && <span style={{ fontSize: 11, color: '#64748B' }}>· {ad.company_name}</span>}
+            </div>
+            {img ? (
+                <img src={img} alt={ad.title} style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }} />
+            ) : (
+                <div style={{ width: '100%', height: 140, background: 'linear-gradient(135deg,#0D9488,#0F766E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>📢</div>
+            )}
+            <div style={{ padding: '14px 20px' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>{ad.title}</div>
+                {ad.description && (
+                    <div style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {ad.description}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+// Weaves one ad in after every 3rd post (cycling through the available ads), skipped entirely if there are none.
+function buildFeed(posts, ads, authId) {
+    const items = [];
+    (posts ?? []).forEach((post, i) => {
+        items.push({ key: `post-${post.id}`, node: <PostCard post={post} authId={authId} /> });
+        if (ads?.length && (i + 1) % 3 === 0) {
+            const ad = ads[Math.floor(i / 3) % ads.length];
+            items.push({ key: `ad-${ad.id}-${i}`, node: <AdCard ad={ad} /> });
+        }
+    });
+    return items;
+}
+
+export default function CommunityPosts({ posts, authId, ads }) {
+    const feed = buildFeed(posts, ads, authId);
+
     return (
         <UserLayout title="المجتمع">
             <Head title="منشورات المجتمع — Skillify" />
@@ -262,7 +303,7 @@ export default function CommunityPosts({ posts, authId }) {
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {posts.map(p => <PostCard key={p.id} post={p} authId={authId} />)}
+                    {feed.map(item => <div key={item.key}>{item.node}</div>)}
                 </div>
             )}
         </UserLayout>

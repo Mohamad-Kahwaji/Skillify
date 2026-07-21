@@ -3,23 +3,30 @@ import AdminLayout, { C } from '../../Layouts/AdminLayout';
 
 const AV = ['#0EA5E9','#8B5CF6','#F59E0B','#10B981','#EF4444','#EC4899'];
 
-function Stat({ icon, label, value, sub, gradient }) {
+function Stat({ icon, label, value, sub, color, tint }) {
     return (
-        <div style={{
-            background: '#fff', borderRadius: 16,
-            boxShadow: C.cardShadow, border: C.cardBorder,
-            padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 16,
-            position: 'relative', overflow: 'hidden',
-        }}>
-            <div style={{ position: 'absolute', top: 0, right: 0, width: 4, height: '100%', background: gradient, borderRadius: '0 16px 16px 0' }} />
-            <div style={{ width: 48, height: 48, borderRadius: 14, background: gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: '#fff', flexShrink: 0, boxShadow: `0 4px 12px ${gradient.split(',')[0].replace('linear-gradient(135deg,','').trim()}40` }}>
-                <i className={`ti ${icon}`} />
+        <div
+            style={{
+                background: '#fff', borderRadius: 16,
+                boxShadow: C.cardShadow, border: C.cardBorder,
+                padding: '18px 20px',
+                transition: 'transform .15s ease, box-shadow .15s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 14px 28px rgba(15,23,42,0.10)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = C.cardShadow; }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: tint, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, color }}>
+                    <i className={`ti ${icon}`} />
+                </div>
+                {sub && (
+                    <span style={{ fontSize: 10.5, fontWeight: 700, color, background: tint, padding: '3px 9px', borderRadius: 20 }}>
+                        {sub}
+                    </span>
+                )}
             </div>
-            <div>
-                <div style={{ fontSize: 26, fontWeight: 800, color: C.textDark, lineHeight: 1.1 }}>{value ?? 0}</div>
-                <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{label}</div>
-                {sub && <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>{sub}</div>}
-            </div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: C.textDark, lineHeight: 1 }}>{Number(value ?? 0).toLocaleString()}</div>
+            <div style={{ fontSize: 12, color: C.textMuted, marginTop: 5, fontWeight: 500 }}>{label}</div>
         </div>
     );
 }
@@ -41,18 +48,18 @@ export default function Dashboard({
             </div>
 
             {/* Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: 16 }}>
-                <Stat icon="ti-users"        label="إجمالي المستخدمين"  value={totalUsers}     sub={`+${newUsersThisWeek ?? 0} هذا الأسبوع`} gradient="linear-gradient(135deg,#0EA5E9,#0284C7)" />
-                <Stat icon="ti-briefcase"    label="الحرفيون النشطون"   value={activeWorkers}  sub={`${pendingWorkers ?? 0} قيد المراجعة`}   gradient="linear-gradient(135deg,#8B5CF6,#6D28D9)" />
-                <Stat icon="ti-file-text"    label="منشورات هذا الشهر" value={postsThisMonth} sub={`${totalPosts ?? 0} إجمالاً`}            gradient="linear-gradient(135deg,#10B981,#059669)" />
-                <Stat icon="ti-flag"         label="بلاغات مفتوحة"     value={pendingReports} gradient="linear-gradient(135deg,#EF4444,#DC2626)" />
-                <Stat icon="ti-speakerphone" label="إعلانات نشطة"      value={activeAds}      gradient="linear-gradient(135deg,#F59E0B,#D97706)" />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 14 }}>
+                <Stat icon="ti-users"        label="إجمالي المستخدمين"  value={totalUsers}     sub={`+${newUsersThisWeek ?? 0} هذا الأسبوع`}                         color="#0EA5E9" tint="#EFF6FF" />
+                <Stat icon="ti-briefcase"    label="الحرفيون النشطون"   value={activeWorkers}  sub={`${pendingWorkers ?? 0} قيد المراجعة`}                           color="#0D9488" tint="#F0FDFA" />
+                <Stat icon="ti-file-text"    label="منشورات هذا الشهر" value={postsThisMonth} sub={`${totalPosts ?? 0} إجمالاً`}                                     color="#8B5CF6" tint="#F5F3FF" />
+                <Stat icon="ti-flag"         label="بلاغات مفتوحة"     value={pendingReports} sub={pendingReports > 0 ? 'بحاجة لإجراء' : 'لا يوجد بلاغات'}          color="#EF4444" tint="#FEF2F2" />
+                <Stat icon="ti-speakerphone" label="إعلانات نشطة"      value={activeAds}      sub="إعلان معتمد"                                                      color="#F59E0B" tint="#FFFBEB" />
             </div>
 
             {/* Quick Links */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {[
-                    { href: '/admin/verifications', label: 'التحقق',      icon: 'ti-shield-check', badge: pendingWorkers,  color: '#8B5CF6' },
+                    { href: '/admin/workers', label: 'التحقق',      icon: 'ti-shield-check', badge: pendingWorkers,  color: '#8B5CF6' },
                     { href: '/admin/reports',        label: 'البلاغات',   icon: 'ti-flag',          badge: pendingReports, color: '#EF4444' },
                     { href: '/admin/users',          label: 'المستخدمون', icon: 'ti-users',          color: '#0EA5E9' },
                     { href: '/admin/services',       label: 'الخدمات',    icon: 'ti-tool',           color: '#10B981' },
@@ -90,7 +97,7 @@ export default function Dashboard({
                 </Panel>
 
                 {/* Pending Verifications */}
-                <Panel title="طلبات التحقق المعلقة" href="/admin/verifications" linkColor={C.primary}>
+                <Panel title="طلبات التحقق المعلقة" href="/admin/workers" linkColor={C.primary}>
                     {!(pendingVerifications ?? []).length
                         ? <Empty icon="ti-shield-check" text="لا توجد طلبات معلقة" />
                         : (pendingVerifications ?? []).map((b, i) => (
@@ -102,7 +109,7 @@ export default function Dashboard({
                                     <div style={{ fontSize: 13, fontWeight: 600, color: C.textDark }}>{b.name}</div>
                                     <div style={{ fontSize: 11, color: C.textFaint }}>{b.user?.first_name} {b.user?.last_name}</div>
                                 </div>
-                                <Link href="/admin/verifications" style={{ fontSize: 11, color: C.primary, textDecoration: 'none', fontWeight: 600, background: C.infoBg, padding: '3px 9px', borderRadius: 6 }}>مراجعة</Link>
+                                <Link href="/admin/workers" style={{ fontSize: 11, color: C.primary, textDecoration: 'none', fontWeight: 600, background: C.infoBg, padding: '3px 9px', borderRadius: 6 }}>مراجعة</Link>
                             </Row>
                         ))}
                 </Panel>

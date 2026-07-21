@@ -2,21 +2,89 @@ import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import SuperAdminLayout from '../../Layouts/SuperAdminLayout';
 
-const inputStyle = {
-    width: '100%', padding: '10px 12px', fontSize: 13,
-    borderRadius: 10, border: '1px solid rgba(0,0,0,0.12)',
-    background: '#F8FAFC', color: '#1E1B4B', outline: 'none',
-    fontFamily: "'Cairo','Inter',sans-serif",
+const FONT = "'Cairo','Inter',sans-serif";
+const P  = '#7C3AED';
+const P2 = '#6D28D9';
+
+const INPUT_BASE = {
+    width: '100%', padding: '11px 14px',
+    background: '#F8FAFC', border: '1.5px solid #E2E8F0',
+    borderRadius: 10, color: '#1E1B4B',
+    fontSize: 13.5, fontFamily: FONT,
+    outline: 'none', boxSizing: 'border-box',
+    transition: 'border-color .15s, box-shadow .15s',
 };
 
-const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 6 };
+const LABEL_S = {
+    fontSize: 12, fontWeight: 700, color: '#64748B',
+    marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5,
+};
 
-function Field({ label, error, children }) {
+function Field({ label, icon, error, children }) {
     return (
         <div>
-            <label style={labelStyle}>{label}</label>
+            <label style={LABEL_S}>
+                {icon && <i className={`ti ${icon}`} style={{ color: P, fontSize: 12 }} />}
+                {label}
+            </label>
             {children}
-            {error && <div style={{ fontSize: 11, color: '#DC2626', marginTop: 5 }}>{error}</div>}
+            {error && (
+                <p style={{ fontSize: 11, color: '#EF4444', marginTop: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <i className="ti ti-alert-circle" style={{ fontSize: 11 }} />{error}
+                </p>
+            )}
+        </div>
+    );
+}
+
+function TextInput({ style: extraStyle, ...props }) {
+    const [focused, setFocused] = useState(false);
+    return (
+        <input
+            {...props}
+            style={{
+                ...INPUT_BASE,
+                borderColor: focused ? P : '#E2E8F0',
+                boxShadow: focused ? `0 0 0 3px ${P}18` : 'none',
+                ...extraStyle,
+            }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+        />
+    );
+}
+
+function PasswordField({ label, icon = 'ti-lock', error, value, onChange, placeholder, autoComplete }) {
+    const [visible, setVisible] = useState(false);
+    return (
+        <Field label={label} icon={icon} error={error}>
+            <div style={{ position: 'relative' }}>
+                <TextInput
+                    type={visible ? 'text' : 'password'}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={placeholder}
+                    autoComplete={autoComplete}
+                    style={{ paddingLeft: 38 }}
+                />
+                <button type="button" onClick={() => setVisible(v => !v)} tabIndex={-1} style={{
+                    position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: 15,
+                    padding: 4, display: 'flex', alignItems: 'center',
+                }}>
+                    <i className={`ti ${visible ? 'ti-eye-off' : 'ti-eye'}`} />
+                </button>
+            </div>
+        </Field>
+    );
+}
+
+function SectionTitle({ icon, children, sub }) {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: sub ? 3 : 16 }}>
+            <div style={{ width: 3, height: 16, borderRadius: 2, background: `linear-gradient(180deg,${P},${P2})` }} />
+            <i className={`ti ${icon}`} style={{ color: P, fontSize: 13 }} />
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#1E1B4B' }}>{children}</span>
         </div>
     );
 }
@@ -31,110 +99,120 @@ export default function Profile({ admin }) {
         new_password_confirmation: '',
     });
 
-    const [showNewPw, setShowNewPw] = useState(false);
-
     const submit = (e) => {
         e.preventDefault();
-        put(route('super_admin.profile.update'), {
+        put('/super-admin/profile', {
             preserveScroll: true,
             onSuccess: () => reset('current_password', 'new_password', 'new_password_confirmation'),
         });
     };
 
+    const initials = `${(admin.first_name ?? 'S')[0]}${(admin.last_name ?? 'A')[0]}`.toUpperCase();
+
     return (
-        <SuperAdminLayout title="My Profile">
-            <Head title="My Profile" />
+        <SuperAdminLayout title="ملفي الشخصي">
+            <Head title="ملفي الشخصي — Skillify" />
 
-            <div style={{ maxWidth: 560 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+                {/* Identity header */}
                 <div style={{
-                    background: '#fff', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)',
-                    boxShadow: '0 1px 3px rgba(15,23,42,0.07), 0 4px 20px rgba(15,23,42,0.04)',
-                    padding: 24, display: 'flex', flexDirection: 'column', gap: 20,
+                    background: '#fff', borderRadius: 18, border: '1px solid rgba(0,0,0,0.07)',
+                    boxShadow: '0 2px 12px rgba(15,23,42,0.05)',
+                    padding: '24px 26px', display: 'flex', alignItems: 'center', gap: 16,
                 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{
-                            width: 48, height: 48, borderRadius: 12,
-                            background: 'linear-gradient(135deg,#7C3AED,#A78BFA)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#fff', fontSize: 18, fontWeight: 700, flexShrink: 0,
-                        }}>
-                            {(admin.first_name ?? 'S')[0].toUpperCase()}
-                        </div>
-                        <div>
-                            <div style={{ fontSize: 15, fontWeight: 700, color: '#1E1B4B' }}>{admin.first_name} {admin.last_name}</div>
-                            <div style={{ fontSize: 12, color: '#7C3AED', fontWeight: 600 }}>Super Admin</div>
-                        </div>
+                    <div style={{
+                        width: 60, height: 60, borderRadius: 16, flexShrink: 0,
+                        background: `linear-gradient(135deg,${P},${P2})`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontSize: 22, fontWeight: 800,
+                        boxShadow: `0 6px 18px ${P}44`,
+                    }}>
+                        {initials}
                     </div>
-
-                    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                            <Field label="First Name" error={errors.first_name}>
-                                <input style={inputStyle} value={data.first_name} onChange={e => setData('first_name', e.target.value)} />
-                            </Field>
-                            <Field label="Last Name" error={errors.last_name}>
-                                <input style={inputStyle} value={data.last_name} onChange={e => setData('last_name', e.target.value)} />
-                            </Field>
+                    <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 17, fontWeight: 800, color: '#1E1B4B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {admin.first_name} {admin.last_name}
                         </div>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: P, background: '#F5F3FF', border: '1px solid #DDD6FE', borderRadius: 20, padding: '3px 11px', marginTop: 6 }}>
+                            <i className="ti ti-shield-star" style={{ fontSize: 12 }} /> المدير العام
+                        </span>
+                    </div>
+                </div>
 
-                        <Field label="Email Address" error={errors.email}>
-                            <input type="email" style={inputStyle} value={data.email} onChange={e => setData('email', e.target.value)} dir="ltr" />
-                        </Field>
+                {/* Edit form */}
+                <div style={{
+                    background: '#fff', borderRadius: 18, border: '1px solid rgba(0,0,0,0.07)',
+                    boxShadow: '0 2px 12px rgba(15,23,42,0.05)',
+                    padding: 26,
+                }}>
+                    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-                        <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: '#1E1B4B' }}>Change Password (optional)</div>
-
-                            <div style={{ position: 'relative' }}>
-                                <Field label="New Password" error={errors.new_password}>
-                                    <input
-                                        type={showNewPw ? 'text' : 'password'}
-                                        style={inputStyle}
-                                        value={data.new_password}
-                                        onChange={e => setData('new_password', e.target.value)}
-                                        placeholder="Leave blank to keep your current password"
-                                        autoComplete="new-password"
-                                    />
+                        {/* Personal info */}
+                        <div>
+                            <SectionTitle icon="ti-user-edit">المعلومات الشخصية</SectionTitle>
+                            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 14, marginBottom: 14 }}>
+                                <Field label="الاسم الأول" icon="ti-user" error={errors.first_name}>
+                                    <TextInput value={data.first_name} onChange={e => setData('first_name', e.target.value)} required />
                                 </Field>
-                                <button type="button" onClick={() => setShowNewPw(v => !v)} style={{
-                                    position: 'absolute', left: 10, top: 32, background: 'none', border: 'none',
-                                    color: '#94A3B8', cursor: 'pointer', fontSize: 14,
-                                }}>
-                                    <i className={`ti ${showNewPw ? 'ti-eye-off' : 'ti-eye'}`} />
-                                </button>
+                                <Field label="الاسم الأخير" icon="ti-user" error={errors.last_name}>
+                                    <TextInput value={data.last_name} onChange={e => setData('last_name', e.target.value)} required />
+                                </Field>
                             </div>
-
-                            <Field label="Confirm New Password" error={errors.new_password_confirmation}>
-                                <input
-                                    type={showNewPw ? 'text' : 'password'}
-                                    style={inputStyle}
-                                    value={data.new_password_confirmation}
-                                    onChange={e => setData('new_password_confirmation', e.target.value)}
-                                    autoComplete="new-password"
-                                />
+                            <Field label="البريد الإلكتروني" icon="ti-mail" error={errors.email}>
+                                <TextInput type="email" value={data.email} onChange={e => setData('email', e.target.value)} dir="ltr" required />
                             </Field>
                         </div>
 
-                        <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: 16 }}>
-                            <Field label="Current Password" error={errors.current_password}>
-                                <input
-                                    type="password"
-                                    style={inputStyle}
-                                    value={data.current_password}
-                                    onChange={e => setData('current_password', e.target.value)}
-                                    placeholder="Enter your current password to confirm changes"
-                                    autoComplete="current-password"
+                        <div style={{ height: 1, background: '#F1F5F9' }} />
+
+                        {/* Password change */}
+                        <div>
+                            <SectionTitle icon="ti-lock" sub>كلمة المرور</SectionTitle>
+                            <p style={{ fontSize: 11.5, color: '#94A3B8', margin: '0 0 14px' }}>اتركها فارغة إذا ما بدك تغيّر كلمة المرور الحالية</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 14 }}>
+                                <PasswordField
+                                    label="كلمة المرور الجديدة" error={errors.new_password}
+                                    value={data.new_password} onChange={e => setData('new_password', e.target.value)}
+                                    placeholder="8 أحرف على الأقل" autoComplete="new-password"
                                 />
-                            </Field>
+                                <PasswordField
+                                    label="تأكيد كلمة المرور الجديدة" icon="ti-lock-check" error={errors.new_password_confirmation}
+                                    value={data.new_password_confirmation} onChange={e => setData('new_password_confirmation', e.target.value)}
+                                    placeholder="أعد كتابتها" autoComplete="new-password"
+                                />
+                            </div>
                         </div>
 
-                        <button type="submit" disabled={processing} style={{
-                            alignSelf: 'flex-start', padding: '10px 22px', borderRadius: 10,
-                            background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer',
-                            fontSize: 13, fontWeight: 700, opacity: processing ? 0.7 : 1,
-                            display: 'flex', alignItems: 'center', gap: 8,
-                        }}>
-                            <i className="ti ti-device-floppy" style={{ fontSize: 15 }} />
-                            Save Changes
-                        </button>
+                        <div style={{ height: 1, background: '#F1F5F9' }} />
+
+                        {/* Confirm identity */}
+                        <div style={{ background: '#FFFBEB', border: '1.5px solid #FDE68A', borderRadius: 14, padding: '16px 18px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                <i className="ti ti-shield-lock" style={{ color: '#B45309', fontSize: 15 }} />
+                                <span style={{ fontSize: 12.5, fontWeight: 700, color: '#92400E' }}>تأكيد الهوية</span>
+                            </div>
+                            <PasswordField
+                                label="كلمة المرور الحالية" error={errors.current_password}
+                                value={data.current_password} onChange={e => setData('current_password', e.target.value)}
+                                placeholder="أدخل كلمة مرورك الحالية لتأكيد أي تعديل" autoComplete="current-password"
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button type="submit" disabled={processing} style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 8,
+                                padding: '11px 26px', borderRadius: 11, border: 'none',
+                                background: `linear-gradient(135deg,${P},${P2})`, color: '#fff',
+                                fontSize: 13.5, fontWeight: 700, fontFamily: FONT,
+                                cursor: processing ? 'not-allowed' : 'pointer',
+                                opacity: processing ? 0.7 : 1,
+                                boxShadow: `0 4px 14px ${P}44`,
+                            }}>
+                                <i className="ti ti-device-floppy" style={{ fontSize: 15 }} />
+                                {processing ? 'جارٍ الحفظ...' : 'حفظ التغييرات'}
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>

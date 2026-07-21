@@ -27,3 +27,11 @@
     --skillify-primary-text:  #134E4A;
     --skillify-sidebar:       #134E4A;
 }
+
+/* Edge/IE inject their own native "reveal password" and "clear field" icons
+   inside password/text inputs. We already render our own custom eye-toggle
+   button, so without this they show up doubled — hide the native ones. */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}

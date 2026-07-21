@@ -6,7 +6,6 @@ use App\Models\ActiveType;
 use App\Models\ActiveTypebusiness;
 use App\Models\Admin;
 use App\Models\Advertisement;
-use App\Models\Blocked;
 use App\Models\Business;
 use App\Models\Category;
 use App\Models\City;
@@ -22,6 +21,7 @@ use App\Notifications\ServiceStatusNotification;
 use App\Services\GeminiIdentityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -190,10 +190,25 @@ class SuperAdminController extends Controller
     public function users()
     {
         $users = User::withCount(['posts', 'services', 'comments'])
-            ->with('businesses:id,user_id,status,name')
+            ->with([
+                'businesses',
+                'services' => fn ($q) => $q->with(['category:id,name', 'subcategory:id,name', 'city:id,name'])->latest(),
+            ])
             ->latest()
             ->get();
         return Inertia::render('SuperAdmin/Users', ['users' => $users]);
+    }
+
+    public function blockUser(User $user)
+    {
+        $user->update(['status' => 'inactive']);
+        return back()->with('success', 'تم حظر المستخدم.');
+    }
+
+    public function unblockUser(User $user)
+    {
+        $user->update(['status' => 'active']);
+        return back()->with('success', 'تم إلغاء حظر المستخدم.');
     }
 
     public function destroyUser(User $user)
@@ -207,6 +222,12 @@ class SuperAdminController extends Controller
     {
         $businesses = Business::with('user')->latest()->get();
         return Inertia::render('SuperAdmin/Businesses', ['businesses' => $businesses]);
+    }
+
+    public function showBusiness(Business $business)
+    {
+        $business->load('user');
+        return Inertia::render('SuperAdmin/BusinessDetails', ['business' => $business]);
     }
 
     public function businessto_approve(Business $business)
@@ -234,8 +255,14 @@ class SuperAdminController extends Controller
 
     public function destroyBusiness(Business $business)
     {
+        $business->load('user')->user?->deleteServicesWithFiles();
+
+        if ($business->image) {
+            Storage::disk('public')->delete($business->image);
+        }
         $business->delete();
-        return back()->with('success', 'Business deleted.');
+
+        return back()->with('success', 'تم حذف حساب الأعمال وكل خدماته.');
     }
 
     // ── Services ────────────────────────────────────────────────────────────────
@@ -272,11 +299,62 @@ class SuperAdminController extends Controller
         return back()->with('success', 'Service deleted.');
     }
 
+    public function toggleService(Service $service)
+    {
+        $service->update(['is_active' => !$service->is_active]);
+        return back()->with('success', $service->is_active ? 'تم تفعيل الخدمة.' : 'تم تعطيل الخدمة.');
+    }
+
     // ── Ads ─────────────────────────────────────────────────────────────────────
     public function ads()
     {
-        $ads = Advertisement::with('user')->latest()->get();
+        $ads = Advertisement::with(['admin', 'superAdmin'])->latest()->get();
         return Inertia::render('SuperAdmin/Ads', ['ads' => $ads]);
+    }
+
+    public function storeAd(Request $request)
+    {
+        $validated = $request->validate([
+            'title'        => 'required|string',
+            'description'  => 'nullable|string',
+            'image'        => 'nullable|image|max:2048',
+            'company_name' => 'nullable|string',
+            'start_date'   => 'nullable|date',
+            'end_date'     => 'nullable|date',
+            'status'       => 'nullable|string',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('ads', 'public');
+        }
+
+        $validated['super_admin_id'] = auth('super_admins')->id();
+
+        Advertisement::create($validated);
+        return back()->with('success', 'تم إنشاء الإعلان.');
+    }
+
+    public function updateAd(Request $request, Advertisement $ad)
+    {
+        $validated = $request->validate([
+            'title'        => 'required|string',
+            'description'  => 'nullable|string',
+            'image'        => 'nullable|image|max:2048',
+            'company_name' => 'nullable|string',
+            'start_date'   => 'nullable|date',
+            'end_date'     => 'nullable|date',
+            'status'       => 'nullable|string',
+        ]);
+
+        if ($request->hasFile('image')) {
+            if ($ad->image) Storage::disk('public')->delete($ad->image);
+            $validated['image'] = $request->file('image')->store('ads', 'public');
+        } else {
+            unset($validated['image']);
+        }
+
+        $ad->update($validated);
+        return back()->with('success', 'تم تحديث الإعلان.');
     }
 
     public function toggleAd(Advertisement $ad)
@@ -287,6 +365,7 @@ class SuperAdminController extends Controller
 
     public function destroyAd(Advertisement $ad)
     {
+        if ($ad->image) Storage::disk('public')->delete($ad->image);
         $ad->delete();
         return back()->with('success', 'Ad deleted.');
     }
@@ -442,9 +521,8 @@ class SuperAdminController extends Controller
     // ── Blocked ──────────────────────────────────────────────────────────────────
     public function blocked()
     {
-        $blocked = Blocked::with(['user'])->latest()->get();
-        $users   = User::where('status', 'active')->orderBy('first_name')->get();
-        return Inertia::render('SuperAdmin/Blocked', ['blocked' => $blocked, 'users' => $users]);
+        $users = User::where('status', 'inactive')->latest()->get();
+        return Inertia::render('SuperAdmin/Blocked', ['users' => $users]);
     }
 
     // ── Categories ───────────────────────────────────────────────────────────────
@@ -492,16 +570,4 @@ class SuperAdminController extends Controller
         return Inertia::render('SuperAdmin/Cities', ['cities' => $cities]);
     }
 
-    // ── Requests ─────────────────────────────────────────────────────────────────
-    public function serviceRequests()
-    {
-        $services = Service::with(['user','category','subcategory','city'])->latest()->get();
-        return Inertia::render('SuperAdmin/ServiceRequests', ['services' => $services]);
-    }
-
-    public function businessRequests()
-    {
-        $businesses = Business::with('user')->latest()->get();
-        return Inertia::render('SuperAdmin/BusinessRequests', ['businesses' => $businesses]);
-    }
 }

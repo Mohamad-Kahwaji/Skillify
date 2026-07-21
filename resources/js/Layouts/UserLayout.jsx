@@ -168,14 +168,7 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
                     <button onClick={() => setNavOpen(v => !v)} className="flex lg:hidden items-center justify-center" style={{ width: 32, height: 32, borderRadius: 8, border: 'none', background: '#F8FAFC', color: '#475569', fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>
                         <i className={`ti ${navOpen ? 'ti-x' : 'ti-menu-2'}`} />
                     </button>
-                    <div style={{
-                        width: 34, height: 34, borderRadius: 10,
-                        background: '#0D9488', display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', color: '#fff', fontSize: 18, flexShrink: 0,
-                    }}>
-                        <i className="ti ti-sparkles" />
-                    </div>
-                    <span className="hidden sm:inline" style={{ fontSize: 16, fontWeight: 700, letterSpacing: '0px' }}>Skillify</span>
+                    <img src="/images/logo-dark-text.jpg" alt="Skillify" style={{ height: 34, width: 'auto', flexShrink: 0 }} />
                 </div>
 
                 {/* Nav — desktop */}

@@ -48,7 +48,10 @@ class UserController extends Controller
     public function allusers()
     {
         $users = User::withCount(['posts', 'services', 'comments'])
-            ->with('businesses:id,user_id,status,name')
+            ->with([
+                'businesses',
+                'services' => fn ($q) => $q->with(['category:id,name', 'subcategory:id,name', 'city:id,name'])->latest(),
+            ])
             ->latest()
             ->get();
         return Inertia::render('Admin/Users', ['users' => $users]);

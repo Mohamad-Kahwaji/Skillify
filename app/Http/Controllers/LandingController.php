@@ -13,8 +13,7 @@ class LandingController extends Controller
 {
     public function index()
     {
-        $ads = Advertisement::where('status', 'active')
-            ->whereDate('end_date', '>=', now())
+        $ads = Advertisement::active()
             ->latest()
             ->take(6)
             ->get(['id', 'title', 'description', 'image', 'company_name']);

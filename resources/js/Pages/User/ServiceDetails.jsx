@@ -62,6 +62,14 @@ export default function ServiceDetails({ service, authId }) {
     const providerName   = owner
         ? `${owner.first_name ?? ''} ${owner.last_name ?? ''}`.trim()
         : (business?.name ?? null);
+    const lat = business?.latitude  != null ? Number(business.latitude)  : null;
+    const lng = business?.longitude != null ? Number(business.longitude) : null;
+    const hasLocation = lat != null && lng != null && !Number.isNaN(lat) && !Number.isNaN(lng);
+    const mapDelta = 0.01;
+    const mapEmbedSrc = hasLocation
+        ? `https://www.openstreetmap.org/export/embed.html?bbox=${lng - mapDelta}%2C${lat - mapDelta}%2C${lng + mapDelta}%2C${lat + mapDelta}&layer=mapnik&marker=${lat}%2C${lng}`
+        : null;
+    const mapLink = hasLocation ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}` : null;
 
     const startChat = () => {
         if (!hasOwner || chatLoading) return;
@@ -156,6 +164,31 @@ export default function ServiceDetails({ service, authId }) {
                             <InfoRow icon="refresh"     label="آخر تحديث"     value={new Date(service.updated_at).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' })} />
                         </div>
                     </div>
+
+                    {/* Location map */}
+                    {hasLocation && (
+                        <div style={{ background: '#fff', border: '1px solid #F1F5F9', borderRadius: 16, padding: '20px 24px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg,${T},#0F766E)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <i className="ti ti-map-pin" style={{ color: '#fff', fontSize: 13 }} />
+                                    </div>
+                                    موقع مقدم الخدمة
+                                </div>
+                                <a href={mapLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, fontWeight: 600, color: T, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                    <i className="ti ti-external-link" style={{ fontSize: 12 }} /> فتح بخريطة أكبر
+                                </a>
+                            </div>
+                            <div style={{ width: '100%', aspectRatio: '16/8', borderRadius: 12, overflow: 'hidden', border: '1px solid #F1F5F9' }}>
+                                <iframe
+                                    title="موقع مقدم الخدمة"
+                                    src={mapEmbedSrc}
+                                    style={{ width: '100%', height: '100%', border: 'none' }}
+                                    loading="lazy"
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* ── Right column ── */}

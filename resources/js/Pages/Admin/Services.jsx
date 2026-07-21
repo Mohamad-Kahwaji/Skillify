@@ -62,6 +62,7 @@ export default function Services({ services }) {
     }, {});
 
     const toggle  = (id) => router.patch(`/admin/services/${id}/toggle`, {}, { preserveScroll: true });
+    const patch   = (id, action) => router.patch(`/admin/services/${id}/${action}`, {}, { preserveScroll: true });
     const destroy = (id) => { if (!confirm('حذف هذه الخدمة نهائياً؟')) return; router.delete(`/admin/services/${id}`, { preserveScroll: true }); };
 
     return (
@@ -72,7 +73,10 @@ export default function Services({ services }) {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: C.textDark, margin: 0, letterSpacing: -0.5 }}>جميع الخدمات</h1>
-                    <p style={{ fontSize: 12, color: C.textFaint, marginTop: 4 }}>{all.length} خدمة مدرجة</p>
+                    <p style={{ fontSize: 12, color: C.textFaint, marginTop: 4 }}>
+                        {counts.pending > 0 && <span style={{ background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', borderRadius: 20, padding: '1px 8px', fontSize: 11, fontWeight: 700, marginLeft: 8 }}>{counts.pending} بانتظار المراجعة</span>}
+                        {all.length} خدمة مدرجة
+                    </p>
                 </div>
                 <div style={{ position: 'relative' }}>
                     <i className="ti ti-search" style={{ position: 'absolute', top: '50%', right: 12, transform: 'translateY(-50%)', color: C.textFaint, fontSize: 14, pointerEvents: 'none' }} />
@@ -240,6 +244,30 @@ export default function Services({ services }) {
                                     {/* Actions */}
                                     <td style={{ padding: '12px 16px' }}>
                                         <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                                            {s.status !== 'approved' && (
+                                                <button onClick={() => patch(s.id, 'approve')} title="قبول" style={{
+                                                    width: 32, height: 32, borderRadius: 8, cursor: 'pointer',
+                                                    border: '1px solid #6EE7B7', background: '#ECFDF5', color: '#059669',
+                                                    fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.13s',
+                                                }}
+                                                    onMouseEnter={e => e.currentTarget.style.background = '#D1FAE5'}
+                                                    onMouseLeave={e => e.currentTarget.style.background = '#ECFDF5'}
+                                                >
+                                                    <i className="ti ti-check" />
+                                                </button>
+                                            )}
+                                            {s.status !== 'rejected' && (
+                                                <button onClick={() => patch(s.id, 'reject')} title="رفض" style={{
+                                                    width: 32, height: 32, borderRadius: 8, cursor: 'pointer',
+                                                    border: '1px solid #FCA5A5', background: '#FEF2F2', color: '#DC2626',
+                                                    fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.13s',
+                                                }}
+                                                    onMouseEnter={e => e.currentTarget.style.background = '#FEE2E2'}
+                                                    onMouseLeave={e => e.currentTarget.style.background = '#FEF2F2'}
+                                                >
+                                                    <i className="ti ti-x" />
+                                                </button>
+                                            )}
                                             <Link href={`/admin/services/${s.id}`} title="عرض التفاصيل" style={{
                                                 width: 32, height: 32, borderRadius: 8,
                                                 border: '1px solid rgba(0,0,0,0.1)', background: '#F8FAFC', color: '#64748B',

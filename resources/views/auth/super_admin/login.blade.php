@@ -325,11 +325,8 @@
     <div class="panel-top">
 
       <div class="panel-brand">
-        <div class="panel-icon"><i class="ti ti-shield-lock"></i></div>
-        <div>
-          <div class="panel-brand-name">Skillify</div>
-          <div class="panel-badge"><i class="ti ti-crown" style="font-size:9px;"></i> المدير العام</div>
-        </div>
+        <img src="/images/logo.png" alt="Skillify" style="height:40px;width:auto;" />
+        <div class="panel-badge"><i class="ti ti-crown" style="font-size:9px;"></i> المدير العام</div>
       </div>
 
       <div class="panel-headline">

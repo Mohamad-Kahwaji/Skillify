@@ -86,16 +86,9 @@ const NAV_GROUPS = [
         ],
     },
     {
-        group: 'الطلبات',
-        items: [
-            { href: '/super-admin/business-requests', icon: 'ti-briefcase',  label: 'طلبات الأعمال',  pendingBadge: true },
-            { href: '/super-admin/service-requests',  icon: 'ti-tool',       label: 'طلبات الخدمات' },
-        ],
-    },
-    {
         group: 'الأعمال',
         items: [
-            { href: '/super-admin/businesses',            icon: 'ti-building', label: 'حسابات الأعمال' },
+            { href: '/super-admin/businesses',            icon: 'ti-building', label: 'حسابات الأعمال', pendingBadge: true },
             { href: '/super-admin/services',              icon: 'ti-layout-grid', label: 'الخدمات' },
             { href: '/super-admin/identity-verifications',icon: 'ti-id-badge',  label: 'توثيق الهوية' },
         ],
@@ -137,7 +130,6 @@ export default function SuperAdminLayout({ children, title }) {
     const [pendingBiz,   setPendingBiz]   = useState(badges?.pending_businesses   ?? 0);
     const [unreadNotif,  setUnreadNotif]  = useState(badges?.unread_notifications  ?? 0);
     const [liveToast,    setLiveToast]    = useState(null);
-    const [wsStatus,     setWsStatus]     = useState('connecting');
     const [notifPerm,    setNotifPerm]    = useState(() =>
         typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
     );
@@ -155,19 +147,7 @@ export default function SuperAdminLayout({ children, title }) {
     // WebSocket connection + real-time notifications
     useEffect(() => {
         if (!admin?.id || typeof window.Echo === 'undefined') {
-            setWsStatus('disconnected');
             return;
-        }
-
-        const pusher = window.Echo.connector?.pusher;
-        const onConnected    = () => setWsStatus('connected');
-        const onDisconnected = () => setWsStatus('disconnected');
-        if (pusher) {
-            pusher.connection.bind('connected',    onConnected);
-            pusher.connection.bind('disconnected', onDisconnected);
-            pusher.connection.bind('failed',       onDisconnected);
-            pusher.connection.bind('unavailable',  onDisconnected);
-            if (pusher.connection.state === 'connected') setWsStatus('connected');
         }
 
         const channel = window.Echo.private(`superadmins.${admin.id}.notifications`);
@@ -192,12 +172,6 @@ export default function SuperAdminLayout({ children, title }) {
         // would tear down the channel a newly-mounted page just (re)subscribed to.
         return () => {
             channel.stopListeningForNotification(handleNotification);
-            if (pusher) {
-                pusher.connection.unbind('connected',    onConnected);
-                pusher.connection.unbind('disconnected', onDisconnected);
-                pusher.connection.unbind('failed',       onDisconnected);
-                pusher.connection.unbind('unavailable',  onDisconnected);
-            }
         };
     }, [admin?.id]);
 
@@ -235,25 +209,10 @@ export default function SuperAdminLayout({ children, title }) {
                 boxShadow: '-4px 0 24px rgba(0,0,0,0.18)',
             }}>
                 {/* Brand */}
-                <div style={{ padding: '22px 20px 18px', borderBottom: '0.5px solid rgba(167,139,250,0.15)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                        <div style={{
-                            width: 36, height: 36, borderRadius: 10,
-                            background: 'linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 17, color: '#fff',
-                            boxShadow: '0 4px 12px rgba(124,58,237,0.4)',
-                        }}>
-                            <i className="ti ti-shield-lock" />
-                        </div>
-                        <div>
-                            <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', letterSpacing: -0.4, lineHeight: 1.1 }}>
-                                <span style={{ color: '#A78BFA' }}>Skill</span>ify
-                            </div>
-                            <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(167,139,250,0.55)', letterSpacing: 1.2, textTransform: 'uppercase' }}>
-                                Super Admin
-                            </div>
-                        </div>
+                <div style={{ padding: '20px 20px 16px', borderBottom: '0.5px solid rgba(167,139,250,0.15)' }}>
+                    <img src="/images/logo.png" alt="Skillify" style={{ height: 36, width: 'auto', display: 'block' }} />
+                    <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(167,139,250,0.55)', letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 7 }}>
+                        Super Admin
                     </div>
                 </div>
 
@@ -268,7 +227,7 @@ export default function SuperAdminLayout({ children, title }) {
                             )}
                             {grp.items.map(({ href, icon, label, pendingBadge }) => {
                                 const active  = current === href || current.startsWith(href + '/');
-                                const hasDot  = (href === '/super-admin/businesses' || (pendingBadge && pendingBiz > 0)) && pendingBiz > 0;
+                                const hasDot  = pendingBadge && pendingBiz > 0;
                                 return (
                                     <Link key={href} href={href} style={{
                                         display: 'flex', alignItems: 'center', gap: 10,
@@ -377,17 +336,6 @@ export default function SuperAdminLayout({ children, title }) {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
 
-                        {/* WebSocket status */}
-                        <div title={wsStatus === 'connected' ? 'متصل بالإشعارات الفورية' : 'غير متصل — php artisan reverb:start'}
-                            className="hidden sm:flex"
-                            style={{ alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 20, background: wsStatus === 'connected' ? '#ECFDF5' : '#FEF2F2', border: `1px solid ${wsStatus === 'connected' ? '#6EE7B7' : '#FCA5A5'}` }}>
-                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: wsStatus === 'connected' ? '#10B981' : '#EF4444', display: 'block', animation: wsStatus === 'connected' ? 'wsPulse2 2s infinite' : 'none' }} />
-                            <span style={{ fontSize: 10, fontWeight: 600, color: wsStatus === 'connected' ? '#065F46' : '#991B1B' }}>
-                                {wsStatus === 'connected' ? 'Live' : 'Offline'}
-                            </span>
-                        </div>
-                        <style>{`@keyframes wsPulse2{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
-
                         {/* Notification permission */}
                         {notifPerm !== 'granted' && (
                             <button onClick={requestNotifPermission}
@@ -397,14 +345,14 @@ export default function SuperAdminLayout({ children, title }) {
                             </button>
                         )}
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 12px', borderRadius: 10, background: '#F5F3FF', border: '0.5px solid rgba(167,139,250,0.25)' }}>
+                        <Link href="/super-admin/profile" style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 12px', borderRadius: 10, background: '#F5F3FF', border: '0.5px solid rgba(167,139,250,0.25)', textDecoration: 'none' }}>
                             <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#A78BFA)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
                                 {initials}
                             </div>
                             <span className="hidden md:inline" style={{ fontSize: 12, fontWeight: 600, color: '#4C1D95' }}>
                                 {admin?.first_name ?? 'المدير'} {admin?.last_name ?? 'العام'}
                             </span>
-                        </div>
+                        </Link>
                     </div>
                 </header>
 

@@ -1,6 +1,62 @@
 import { Head, useForm, router, usePage } from '@inertiajs/react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import UserLayout from '../../Layouts/UserLayout';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
+
+const DAMASCUS_CENTER = [33.5138, 36.2765];
+
+/* ─── Draggable location picker map (Leaflet, no API key) ──── */
+const LocationPickerMap = forwardRef(function LocationPickerMap({ lat, lng, onChange }, ref) {
+    const containerRef = useRef(null);
+    const mapRef       = useRef(null);
+    const markerRef    = useRef(null);
+
+    useEffect(() => {
+        if (!containerRef.current || mapRef.current) return;
+        const initial = (lat && lng) ? [lat, lng] : DAMASCUS_CENTER;
+
+        const map = L.map(containerRef.current, { attributionControl: false }).setView(initial, (lat && lng) ? 15 : 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(map);
+        L.control.attribution({ prefix: false }).addTo(map);
+
+        const marker = L.marker(initial, { draggable: true }).addTo(map);
+        marker.on('dragend', () => {
+            const pos = marker.getLatLng();
+            onChange(pos.lat, pos.lng);
+        });
+        map.on('click', (e) => {
+            marker.setLatLng(e.latlng);
+            onChange(e.latlng.lat, e.latlng.lng);
+        });
+
+        mapRef.current = map;
+        markerRef.current = marker;
+        setTimeout(() => map.invalidateSize(), 150);
+
+        return () => { map.remove(); mapRef.current = null; markerRef.current = null; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useImperativeHandle(ref, () => ({
+        flyTo: (newLat, newLng) => {
+            if (!mapRef.current || !markerRef.current) return;
+            mapRef.current.setView([newLat, newLng], 15);
+            markerRef.current.setLatLng([newLat, newLng]);
+        },
+    }));
+
+    return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
+});
 
 const T  = '#0D9488';
 const T2 = '#0F766E';
@@ -35,6 +91,32 @@ function Field({ label, icon, error, children }) {
     );
 }
 
+function PasswordField({ label, icon = 'ti-lock', error, value, onChange, autoFocus, minLength, required = true }) {
+    const [visible, setVisible] = useState(false);
+    return (
+        <Field label={label} icon={icon} error={error}>
+            <div style={{ position: 'relative' }}>
+                <FInput
+                    type={visible ? 'text' : 'password'}
+                    value={value}
+                    onChange={onChange}
+                    required={required}
+                    autoFocus={autoFocus}
+                    minLength={minLength}
+                    style={{ paddingLeft: 38 }}
+                />
+                <button type="button" onClick={() => setVisible(v => !v)} tabIndex={-1} style={{
+                    position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: 15,
+                    padding: 4, display: 'flex', alignItems: 'center',
+                }}>
+                    <i className={`ti ${visible ? 'ti-eye-off' : 'ti-eye'}`} />
+                </button>
+            </div>
+        </Field>
+    );
+}
+
 function StatBox({ val, label, icon }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 64 }}>
@@ -56,6 +138,52 @@ function InfoCard({ icon, label, val }) {
                 <div style={{ fontSize: 10, color: '#94A3B8', fontWeight: 600, marginBottom: 1 }}>{label}</div>
                 <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{val}</div>
             </div>
+        </div>
+    );
+}
+
+function PersonalInfoTile({ icon, label, val, copyable = false }) {
+    const [copied, setCopied] = useState(false);
+    const hasValue = val && val !== '—';
+
+    const handleCopy = () => {
+        if (!copyable || !hasValue) return;
+        navigator.clipboard?.writeText(val);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    };
+
+    return (
+        <div
+            onClick={handleCopy}
+            style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                padding: '15px 17px', background: '#fff', borderRadius: 14,
+                border: '1.5px solid #F1F5F9', boxShadow: '0 1px 3px rgba(15,23,42,0.04)',
+                cursor: copyable && hasValue ? 'pointer' : 'default',
+                transition: 'transform .15s, box-shadow .15s, border-color .15s',
+            }}
+            onMouseEnter={e => {
+                e.currentTarget.style.transform  = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow  = '0 8px 20px rgba(15,23,42,0.08)';
+                e.currentTarget.style.borderColor = `${T}33`;
+            }}
+            onMouseLeave={e => {
+                e.currentTarget.style.transform  = 'translateY(0)';
+                e.currentTarget.style.boxShadow  = '0 1px 3px rgba(15,23,42,0.04)';
+                e.currentTarget.style.borderColor = '#F1F5F9';
+            }}
+        >
+            <div style={{ width: 40, height: 40, borderRadius: 11, background: `linear-gradient(135deg,${T}15,${T}28)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <i className={`ti ${icon}`} style={{ color: T, fontSize: 16 }} />
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: 10.5, color: '#94A3B8', fontWeight: 700, marginBottom: 3, textTransform: 'uppercase', letterSpacing: 0.4 }}>{label}</div>
+                <div style={{ fontSize: 13.5, color: '#0F172A', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{val}</div>
+            </div>
+            {copyable && hasValue && (
+                <i className={`ti ${copied ? 'ti-check' : 'ti-copy'}`} style={{ color: copied ? '#16A34A' : '#CBD5E1', fontSize: 14, flexShrink: 0 }} />
+            )}
         </div>
     );
 }
@@ -402,8 +530,37 @@ export default function Profile({ user, business, gallery, userServices, activeT
         active_typebusiness_id: '',
         description: '',
         city: user.city ?? '', area: '', street: '',
+        latitude: '', longitude: '',
         image: null,
     });
+
+    const [geoStatus, setGeoStatus] = useState('idle'); // idle | loading | success | error
+    const [geoErrorMsg, setGeoErrorMsg] = useState('');
+    const mapPickerRef = useRef(null);
+
+    const requestLocation = () => {
+        if (!navigator.geolocation) {
+            setGeoStatus('error');
+            setGeoErrorMsg('المتصفح لا يدعم تحديد الموقع.');
+            return;
+        }
+        setGeoStatus('loading');
+        setGeoErrorMsg('');
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                bizForm.setData(data => ({ ...data, latitude: pos.coords.latitude, longitude: pos.coords.longitude }));
+                mapPickerRef.current?.flyTo(pos.coords.latitude, pos.coords.longitude);
+                setGeoStatus('success');
+            },
+            (err) => {
+                setGeoStatus('error');
+                setGeoErrorMsg(err.code === err.PERMISSION_DENIED
+                    ? 'تم رفض إذن الوصول للموقع. فعّله من إعدادات المتصفح.'
+                    : 'تعذّر تحديد موقعك، حاول مرة أخرى.');
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    };
 
     const editBizForm = useForm({
         name_job:    business?.name_job    ?? '',
@@ -426,12 +583,52 @@ export default function Profile({ user, business, gallery, userServices, activeT
     }, [profileForm.processing, bizForm.processing, editBizForm.processing]);
 
     const submitProfile = e => { e.preventDefault(); profileForm.put('/user/profile', { forceFormData: true, preserveScroll: true, onSuccess: () => profileForm.setData('profile_photo', null) }); };
+
+    const [pwStep, setPwStep] = useState('closed'); // closed | verify | change
+    const pwVerifyForm = useForm({ current_password: '' });
+    const pwChangeForm = useForm({ current_password: '', new_password: '', new_password_confirmation: '' });
+
+    const openPasswordCard = () => {
+        pwVerifyForm.reset(); pwVerifyForm.clearErrors();
+        pwChangeForm.reset(); pwChangeForm.clearErrors();
+        setPwStep('verify');
+    };
+    const closePasswordCard = () => {
+        pwVerifyForm.reset(); pwVerifyForm.clearErrors();
+        pwChangeForm.reset(); pwChangeForm.clearErrors();
+        setPwStep('closed');
+    };
+    const submitVerifyPassword = e => {
+        e.preventDefault();
+        pwVerifyForm.post('/user/password/verify', {
+            preserveScroll: true,
+            onSuccess: () => {
+                pwChangeForm.setData('current_password', pwVerifyForm.data.current_password);
+                setPwStep('change');
+            },
+        });
+    };
+    const submitChangePassword = e => {
+        e.preventDefault();
+        pwChangeForm.put('/user/password', { preserveScroll: true, onSuccess: closePasswordCard });
+    };
+
+    const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+    const deleteAccountForm = useForm({ current_password: '' });
+    const submitDeleteAccount = e => {
+        e.preventDefault();
+        deleteAccountForm.delete('/user/profile', { preserveScroll: true });
+    };
     const submitBiz = e => {
         e.preventDefault();
         bizForm.transform(data => ({ ...data, gallery_images: createGalleryFiles.map(f => f.file) }));
         bizForm.post('/user/business', { forceFormData: true, preserveScroll: true, onSuccess: () => setCreateGalleryFiles([]) });
     };
     const submitEditBiz  = e => { e.preventDefault(); editBizForm.put('/user/business', { forceFormData: true, preserveScroll: true }); };
+    const deleteBusiness = () => {
+        if (!confirm('حذف حساب الأعمال نهائياً؟ سيتم حذف كل خدماتك المرتبطة به ولا يمكن التراجع عن هذا الإجراء.')) return;
+        router.delete('/user/business', { preserveScroll: true });
+    };
 
     const addCreateGalleryFiles = (files) => {
         if (!files?.length) return;
@@ -644,14 +841,17 @@ export default function Profile({ user, business, gallery, userServices, activeT
                         <PanelHead icon="ti-user-edit" title="المعلومات الشخصية" sub="بياناتك الأساسية المسجّلة على المنصة" />
                         <div style={{ padding: 28 }}>
 
-                            {/* Info chips */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(170px,1fr))', gap: 10, marginBottom: 30 }}>
-                                <InfoCard icon="ti-phone"           label="الهاتف"         val={user.phone || '—'} />
-                                <InfoCard icon="ti-mail"            label="البريد"         val={user.email || '—'} />
-                                <InfoCard icon="ti-map-pin"         label="المدينة"        val={user.city  || '—'} />
-                                <InfoCard icon="ti-gender-bigender" label="الجنس"          val={genderMap[user.gender] || '—'} />
-                                <InfoCard icon="ti-cake"            label="تاريخ الميلاد"  val={user.birthdate ? new Date(user.birthdate).toLocaleDateString('ar-SY') : '—'} />
-                                <InfoCard icon="ti-calendar"        label="تاريخ الانضمام" val={joinDate} />
+                            {/* Personal info overview */}
+                            <div style={{ background: '#FAFBFC', border: '1.5px solid #F1F5F9', borderRadius: 18, padding: 22, marginBottom: 30 }}>
+                                <SectionTitle icon="ti-address-book">نظرة عامة</SectionTitle>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 12 }}>
+                                    <PersonalInfoTile icon="ti-phone"           label="الهاتف"         val={user.phone || '—'} copyable />
+                                    <PersonalInfoTile icon="ti-mail"            label="البريد"         val={user.email || '—'} copyable />
+                                    <PersonalInfoTile icon="ti-map-pin"         label="المدينة"        val={user.city  || '—'} />
+                                    <PersonalInfoTile icon="ti-gender-bigender" label="الجنس"          val={genderMap[user.gender] || '—'} />
+                                    <PersonalInfoTile icon="ti-cake"            label="تاريخ الميلاد"  val={user.birthdate ? new Date(user.birthdate).toLocaleDateString('ar-SY') : '—'} />
+                                    <PersonalInfoTile icon="ti-calendar"        label="تاريخ الانضمام" val={joinDate} />
+                                </div>
                             </div>
 
                             <Divider label="تعديل البيانات" />
@@ -746,6 +946,106 @@ export default function Profile({ user, business, gallery, userServices, activeT
                                     </Btn>
                                 </div>
                             </form>
+
+                            <Divider label="الأمان" />
+
+                            <div style={{ padding: '18px 20px', background: '#F8FAFC', borderRadius: 14, border: '1.5px solid #F1F5F9' }}>
+                                {pwStep === 'closed' && (
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                            <div style={{ width: 36, height: 36, borderRadius: 10, background: `${T}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <i className="ti ti-lock" style={{ color: T, fontSize: 16 }} />
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>كلمة المرور</div>
+                                                <div style={{ fontSize: 11.5, color: '#94A3B8' }}>
+                                                    {user.password_changed_at
+                                                        ? `آخر تغيير: ${new Date(user.password_changed_at).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' })} — ${new Date(user.password_changed_at).toLocaleTimeString('ar', { hour: 'numeric', minute: '2-digit' })}`
+                                                        : 'غيّر كلمة مرور حسابك'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" onClick={openPasswordCard} style={{ padding: '9px 18px', borderRadius: 10, border: `1.5px solid ${T}`, background: '#fff', color: T, fontSize: 12.5, fontWeight: 700, fontFamily: FONT, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                            <i className="ti ti-key" style={{ fontSize: 14 }} /> تغيير كلمة المرور
+                                        </button>
+                                    </div>
+                                )}
+
+                                {pwStep === 'verify' && (
+                                    <form onSubmit={submitVerifyPassword}>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <i className="ti ti-shield-lock" style={{ color: T, fontSize: 15 }} /> أدخل كلمة المرور الحالية للمتابعة
+                                        </div>
+                                        <PasswordField label="كلمة المرور الحالية" error={pwVerifyForm.errors.current_password}
+                                            value={pwVerifyForm.data.current_password} onChange={e => pwVerifyForm.setData('current_password', e.target.value)} autoFocus />
+                                        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 14 }}>
+                                            <button type="button" onClick={closePasswordCard} style={{ padding: '9px 18px', borderRadius: 10, border: '1.5px solid #E2E8F0', background: '#fff', color: '#64748B', fontSize: 12.5, fontWeight: 600, fontFamily: FONT, cursor: 'pointer' }}>
+                                                إلغاء
+                                            </button>
+                                            <Btn type="submit" sm disabled={pwVerifyForm.processing}>
+                                                <i className="ti ti-check" style={{ fontSize: 13 }} />
+                                                {pwVerifyForm.processing ? 'جارٍ التحقق...' : 'تحقق'}
+                                            </Btn>
+                                        </div>
+                                    </form>
+                                )}
+
+                                {pwStep === 'change' && (
+                                    <form onSubmit={submitChangePassword}>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: '#15803D', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <i className="ti ti-circle-check" style={{ fontSize: 15 }} /> تم التحقق — أدخل كلمة المرور الجديدة
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 16 }}>
+                                            <PasswordField label="كلمة المرور الجديدة" icon="ti-lock" error={pwChangeForm.errors.new_password}
+                                                value={pwChangeForm.data.new_password} onChange={e => pwChangeForm.setData('new_password', e.target.value)} autoFocus minLength={8} />
+                                            <PasswordField label="تأكيد كلمة المرور الجديدة" icon="ti-lock-check" error={pwChangeForm.errors.new_password_confirmation}
+                                                value={pwChangeForm.data.new_password_confirmation} onChange={e => pwChangeForm.setData('new_password_confirmation', e.target.value)} minLength={8} />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 14 }}>
+                                            <button type="button" onClick={closePasswordCard} style={{ padding: '9px 18px', borderRadius: 10, border: '1.5px solid #E2E8F0', background: '#fff', color: '#64748B', fontSize: 12.5, fontWeight: 600, fontFamily: FONT, cursor: 'pointer' }}>
+                                                إلغاء
+                                            </button>
+                                            <Btn type="submit" sm disabled={pwChangeForm.processing}>
+                                                <i className="ti ti-device-floppy" style={{ fontSize: 13 }} />
+                                                {pwChangeForm.processing ? 'جارٍ الحفظ...' : 'حفظ كلمة المرور الجديدة'}
+                                            </Btn>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
+
+                            <Divider label="منطقة الخطر" />
+
+                            <div style={{ background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: 14, padding: '18px 20px' }}>
+                                {!showDeleteAccount ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                                        <div>
+                                            <div style={{ fontSize: 13.5, fontWeight: 700, color: '#991B1B', marginBottom: 3 }}>حذف الحساب نهائياً</div>
+                                            <div style={{ fontSize: 12, color: '#B91C1C' }}>سيُحذف حسابك وحساب أعمالك وكل خدماتك نهائياً. لا يمكن التراجع عن هذا الإجراء.</div>
+                                        </div>
+                                        <button type="button" onClick={() => setShowDeleteAccount(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 20px', background: '#DC2626', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, flexShrink: 0 }}>
+                                            <i className="ti ti-trash" style={{ fontSize: 14 }} /> حذف حسابي
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={submitDeleteAccount}>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: '#991B1B', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <i className="ti ti-alert-triangle" style={{ fontSize: 15 }} /> أدخل كلمة مرورك لتأكيد حذف الحساب نهائياً
+                                        </div>
+                                        <PasswordField label="كلمة المرور" error={deleteAccountForm.errors.current_password}
+                                            value={deleteAccountForm.data.current_password} onChange={e => deleteAccountForm.setData('current_password', e.target.value)} autoFocus />
+                                        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 14 }}>
+                                            <button type="button" onClick={() => { setShowDeleteAccount(false); deleteAccountForm.reset(); deleteAccountForm.clearErrors(); }} style={{ padding: '9px 18px', borderRadius: 10, border: '1.5px solid #E2E8F0', background: '#fff', color: '#64748B', fontSize: 12.5, fontWeight: 600, fontFamily: FONT, cursor: 'pointer' }}>
+                                                إلغاء
+                                            </button>
+                                            <button type="submit" disabled={deleteAccountForm.processing} style={{ padding: '9px 20px', borderRadius: 10, background: '#DC2626', color: '#fff', border: 'none', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'inline-flex', alignItems: 'center', gap: 6, opacity: deleteAccountForm.processing ? 0.7 : 1 }}>
+                                                <i className="ti ti-trash" style={{ fontSize: 13 }} />
+                                                {deleteAccountForm.processing ? 'جارٍ الحذف...' : 'تأكيد الحذف النهائي'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
                         </div>
                     </Panel>
                 )}
@@ -970,6 +1270,17 @@ export default function Profile({ user, business, gallery, userServices, activeT
                                     )}
                                     </div>
                                     {/* ══ END GALLERY ══ */}
+
+                                    {/* ── Danger zone ── */}
+                                    <div style={{ background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                                        <div>
+                                            <div style={{ fontSize: 13.5, fontWeight: 700, color: '#991B1B', marginBottom: 3 }}>حذف حساب الأعمال</div>
+                                            <div style={{ fontSize: 12, color: '#B91C1C' }}>سيتم حذف حساب عملك وكل خدماتك المرتبطة به نهائياً. لا يمكن التراجع عن هذا الإجراء.</div>
+                                        </div>
+                                        <button type="button" onClick={deleteBusiness} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 20px', background: '#fff', color: '#DC2626', border: '1.5px solid #FCA5A5', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, flexShrink: 0 }}>
+                                            <i className="ti ti-trash" style={{ fontSize: 14 }} /> حذف حساب الأعمال
+                                        </button>
+                                    </div>
                                 </div>
 
                             ) : (
@@ -1021,6 +1332,59 @@ export default function Profile({ user, business, gallery, userServices, activeT
                                             <Field label="اسم الشارع" icon="ti-road" error={bizForm.errors.street}>
                                                 <FInput value={bizForm.data.street} onChange={e => bizForm.setData('street', e.target.value)} placeholder="مثال: شارع الجلاء..." />
                                             </Field>
+                                        </div>
+
+                                        {/* Geolocation — required by the backend */}
+                                        <div style={{ marginBottom: 18 }}>
+                                            <label style={LABEL_S}>
+                                                <i className="ti ti-map-pin" style={{ color: T, fontSize: 12 }} />
+                                                موقع النشاط على الخريطة
+                                                <span style={{ color: '#EF4444' }}>*</span>
+                                            </label>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                                                <button type="button" onClick={requestLocation} disabled={geoStatus === 'loading'} style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                                                    padding: '10px 18px', borderRadius: 10, border: `1.5px solid ${T}`,
+                                                    background: geoStatus === 'success' ? '#F0FDF4' : '#fff',
+                                                    color: geoStatus === 'success' ? '#15803D' : T,
+                                                    fontSize: 12.5, fontWeight: 700, fontFamily: FONT,
+                                                    cursor: geoStatus === 'loading' ? 'not-allowed' : 'pointer',
+                                                    opacity: geoStatus === 'loading' ? 0.7 : 1,
+                                                }}>
+                                                    <i className={`ti ${geoStatus === 'success' ? 'ti-circle-check' : 'ti-current-location'}`} style={{ fontSize: 14 }} />
+                                                    {geoStatus === 'loading' ? 'جارٍ تحديد الموقع...' : geoStatus === 'success' ? 'تم تحديد الموقع' : 'تحديد موقعي'}
+                                                </button>
+                                                {bizForm.data.latitude !== '' && bizForm.data.longitude !== '' && (
+                                                    <span style={{ fontSize: 11.5, color: '#64748B' }}>
+                                                        {Number(bizForm.data.latitude).toFixed(5)}, {Number(bizForm.data.longitude).toFixed(5)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {geoStatus === 'error' && (
+                                                <p style={{ fontSize: 11, color: '#EF4444', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                    <i className="ti ti-alert-circle" style={{ fontSize: 11 }} />{geoErrorMsg}
+                                                </p>
+                                            )}
+                                            {(bizForm.errors.latitude || bizForm.errors.longitude) && (
+                                                <p style={{ fontSize: 11, color: '#EF4444', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                    <i className="ti ti-alert-circle" style={{ fontSize: 11 }} />{bizForm.errors.latitude ?? bizForm.errors.longitude}
+                                                </p>
+                                            )}
+                                            <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 8, marginBottom: 8 }}>
+                                                <i className="ti ti-info-circle" style={{ fontSize: 11, marginLeft: 4 }} />
+                                                اضغط على الخريطة أو اسحب العلامة لتعديل الموقع يدوياً
+                                            </p>
+                                            <div style={{ width: '100%', height: 280, borderRadius: 12, overflow: 'hidden', border: '1.5px solid #E2E8F0' }}>
+                                                <LocationPickerMap
+                                                    ref={mapPickerRef}
+                                                    lat={bizForm.data.latitude || null}
+                                                    lng={bizForm.data.longitude || null}
+                                                    onChange={(la, lo) => {
+                                                        bizForm.setData(data => ({ ...data, latitude: la, longitude: lo }));
+                                                        setGeoStatus('success');
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
                                         {/* Logo — required */}
                                         <div style={{ marginBottom: 26 }}>

@@ -263,8 +263,7 @@
 
   {{-- Brand --}}
   <a href="{{ route('user.dashboard') }}" class="header-brand" style="text-decoration:none;">
-    <div class="brand-icon"><i class="ti ti-school"></i></div>
-    <div class="brand-name">Skillify</div>
+    <img src="/images/logo.png" alt="Skillify" style="height:28px;width:auto;" />
   </a>
 
   {{-- Nav --}}

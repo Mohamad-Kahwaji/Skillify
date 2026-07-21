@@ -5,14 +5,36 @@ import { PageHeader, PrimaryBtn, INPUT_STYLE } from './Users';
 
 export default function Ads({ advertisements, adminId }) {
     const [showForm, setShowForm] = useState(false);
-    const { data, setData, post, processing, reset } = useForm({
+    const [editingId, setEditingId] = useState(null);
+    const [imgPreview, setImgPreview] = useState(null);
+    const { data, setData, post, put, processing, reset } = useForm({
         admin_id: adminId ?? '', title: '', description: '',
-        company_name: '', start_date: '', end_date: '', status: 'active',
+        company_name: '', start_date: '', end_date: '', status: 'approved', image: null,
     });
+
+    const openCreate = () => { reset(); setEditingId(null); setImgPreview(null); setShowForm(true); };
+
+    const openEdit = (ad) => {
+        setData({
+            admin_id: adminId ?? '', title: ad.title ?? '', description: ad.description ?? '',
+            company_name: ad.company_name ?? '', start_date: ad.start_date ?? '', end_date: ad.end_date ?? '',
+            status: ad.status ?? 'approved', image: null,
+        });
+        setEditingId(ad.id);
+        setImgPreview(ad.image ? (ad.image.startsWith('http') ? ad.image : `/storage/${ad.image}`) : null);
+        setShowForm(true);
+    };
+
+    const closeForm = () => { reset(); setEditingId(null); setImgPreview(null); setShowForm(false); };
 
     const submit = (e) => {
         e.preventDefault();
-        post('/admin/ads', { onSuccess: () => { reset(); setShowForm(false); } });
+        const onSuccess = () => { reset(); setEditingId(null); setImgPreview(null); setShowForm(false); };
+        if (editingId) {
+            put(`/admin/ads/${editingId}`, { forceFormData: true, onSuccess });
+        } else {
+            post('/admin/ads', { forceFormData: true, onSuccess });
+        }
     };
 
     const destroy = (id) => {
@@ -25,11 +47,11 @@ export default function Ads({ advertisements, adminId }) {
             <Head title="الإعلانات — Skillify" />
 
             <PageHeader title="الإعلانات" sub={`${(advertisements ?? []).length} إعلان`}>
-                <PrimaryBtn icon="ti-plus" onClick={() => setShowForm(v => !v)} color={C.teal}>إعلان جديد</PrimaryBtn>
+                <PrimaryBtn icon="ti-plus" onClick={() => (showForm ? closeForm() : openCreate())} color={C.teal}>إعلان جديد</PrimaryBtn>
             </PageHeader>
 
             {showForm && (
-                <FormCard title="إنشاء إعلان جديد">
+                <FormCard title={editingId ? 'تعديل الإعلان' : 'إنشاء إعلان جديد'}>
                     <form onSubmit={submit}>
                         <div className="grid-cols-1 sm:grid-cols-2" style={{ display: 'grid', gap: 14 }}>
                             <Field label="العنوان *"><input style={INPUT_STYLE} value={data.title} onChange={e => setData('title', e.target.value)} required /></Field>
@@ -39,13 +61,23 @@ export default function Ads({ advertisements, adminId }) {
                             <Field label="تاريخ الانتهاء"><input type="date" style={INPUT_STYLE} value={data.end_date} onChange={e => setData('end_date', e.target.value)} /></Field>
                             <Field label="الحالة">
                                 <select style={INPUT_STYLE} value={data.status} onChange={e => setData('status', e.target.value)}>
-                                    <option value="active">نشط</option>
-                                    <option value="inactive">غير نشط</option>
-                                    <option value="approved">مقبول</option>
+                                    <option value="approved">نشط</option>
+                                    <option value="pending">قيد المراجعة</option>
                                 </select>
                             </Field>
+                            <Field label="صورة الإعلان" full>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    {imgPreview && (
+                                        <img src={imgPreview} alt="" style={{ width: 64, height: 64, borderRadius: 9, objectFit: 'cover', border: '1px solid rgba(0,0,0,0.1)' }} />
+                                    )}
+                                    <input type="file" accept="image/*" onChange={e => {
+                                        const f = e.target.files?.[0];
+                                        if (f) { setData('image', f); setImgPreview(URL.createObjectURL(f)); }
+                                    }} style={{ fontSize: 12 }} />
+                                </div>
+                            </Field>
                         </div>
-                        <FormActions onCancel={() => setShowForm(false)} processing={processing} />
+                        <FormActions onCancel={closeForm} processing={processing} submitLabel={editingId ? 'حفظ التعديلات' : 'حفظ'} />
                     </form>
                 </FormCard>
             )}
@@ -58,14 +90,19 @@ export default function Ads({ advertisements, adminId }) {
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: 16 }}>
                     {(advertisements ?? []).map(ad => {
-                        const isActive = ad.status === 'active' || ad.status === 'approved';
+                        const isActive = ad.status === 'approved';
+                        const img = ad.image ? (ad.image.startsWith('http') ? ad.image : `/storage/${ad.image}`) : null;
                         return (
                             <div key={ad.id} style={{ background: C.cardBg, borderRadius: 16, boxShadow: C.cardShadow, border: C.cardBorder, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                                {img
+                                    ? <img src={img} alt={ad.title} style={{ width: '100%', height: 130, objectFit: 'cover' }} />
+                                    : <div style={{ width: '100%', height: 130, background: `linear-gradient(135deg,${C.teal},#0F766E)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 32 }}>📢</div>
+                                }
                                 <div style={{ padding: '16px 18px', flex: 1 }}>
                                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
                                         <div style={{ fontSize: 14, fontWeight: 700, color: C.textDark }}>{ad.title}</div>
                                         <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, background: isActive ? C.successBg : '#F3F4F6', color: isActive ? C.successText : C.textMuted, border: `1px solid ${isActive ? C.successBorder : '#E5E7EB'}`, flexShrink: 0 }}>
-                                            {ad.status}
+                                            {ad.status === 'approved' ? 'نشط' : ad.status === 'pending' ? 'قيد المراجعة' : 'مرفوض'}
                                         </span>
                                     </div>
                                     {ad.company_name && <div style={{ fontSize: 12, color: C.teal, marginBottom: 6, fontWeight: 500 }}>{ad.company_name}</div>}
@@ -78,7 +115,10 @@ export default function Ads({ advertisements, adminId }) {
                                         </div>
                                     )}
                                 </div>
-                                <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(15,23,42,0.06)' }}>
+                                <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(15,23,42,0.06)', display: 'flex', gap: 8 }}>
+                                    <button onClick={() => openEdit(ad)} style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.cardBorder.replace('1px solid ', '')}`, background: '#fff', color: C.teal, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5, fontWeight: 500 }}>
+                                        <i className="ti ti-pencil" /> تعديل
+                                    </button>
                                     <button onClick={() => destroy(ad.id)} style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.dangerBorder}`, background: C.dangerBg, color: C.dangerText, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5, fontWeight: 500 }}>
                                         <i className="ti ti-trash" /> حذف
                                     </button>

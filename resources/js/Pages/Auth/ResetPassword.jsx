@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
 function EyeIcon({ open }) {
@@ -62,68 +62,121 @@ export default function ResetPassword() {
     });
 
     return (
-        <div dir="rtl" className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-            <div className="w-full max-w-md">
+        <>
+            <Head title="كلمة مرور جديدة — Skillify" />
 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <div dir="rtl" className="min-h-screen flex">
 
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#0D9488]/10 flex items-center justify-center">
-                            <svg className="w-7 h-7 text-[#0D9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
+                {/* ── Left: Brand Panel ── */}
+                <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#134E4A] via-[#134E4A] to-[#0D9488] flex-col items-center justify-center p-12 overflow-hidden">
+                    <div className="absolute top-0 left-0 w-80 h-80 bg-white/5 rounded-full -translate-y-1/2 -translate-x-1/2" />
+                    <div className="absolute bottom-0 right-0 w-64 h-64 bg-teal-400/10 rounded-full translate-y-1/2 translate-x-1/2" />
+
+                    <div className="relative text-center text-white max-w-xs">
+                        <div className="flex items-center justify-center mb-10">
+                            <img src="/images/logo.png" alt="Skillify" className="h-14 w-auto" />
                         </div>
-                        <h1 className="text-xl font-bold text-gray-900">كلمة المرور الجديدة</h1>
-                        <p className="text-sm text-gray-500 mt-2">
-                            تم التحقق من هويتك بنجاح، اختر كلمة مرور جديدة لحسابك
+
+                        <h2 className="text-3xl font-extrabold mb-4 leading-tight">
+                            كلمة مرور جديدة وآمنة
+                        </h2>
+                        <p className="text-teal-200 text-base leading-relaxed mb-10">
+                            تم التحقق من هويتك بنجاح، اختر كلمة مرور قوية لحماية حسابك.
                         </p>
+
+                        <div className="space-y-4 text-right">
+                            {[
+                                { icon: '✅', text: '8 أحرف على الأقل' },
+                                { icon: '🔠', text: 'مزيج من الأحرف الكبيرة والصغيرة' },
+                                { icon: '🔢', text: 'أرقام أو رموز خاصة' },
+                            ].map(f => (
+                                <div key={f.text} className="flex items-center gap-3 bg-white/10 rounded-2xl px-4 py-3 backdrop-blur-sm">
+                                    <span className="text-xl">{f.icon}</span>
+                                    <span className="text-sm font-medium text-teal-100">{f.text}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Right: Form Panel ── */}
+                <div className="w-full lg:w-1/2 flex flex-col items-center justify-center bg-[#F0FDFA] px-6 py-12">
+                    {/* Mobile logo */}
+                    <div className="lg:hidden flex items-center mb-10">
+                        <img src="/images/logo-dark-text.jpg" alt="Skillify" className="h-14 w-auto" />
                     </div>
 
-                    <PasswordField
-                        label="كلمة المرور الجديدة"
-                        value={data.password}
-                        error={errors.password}
-                        onChange={e => setData('password', e.target.value)}
-                        onEnter={submit}
-                        show={showPass}
-                        toggle={() => setShowPass(s => !s)}
-                        placeholder="8 أحرف على الأقل"
-                        autoFocus
-                        inputRef={passwordRef}
-                    />
+                    <div className="w-full max-w-sm">
+                        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
 
-                    <PasswordField
-                        label="تأكيد كلمة المرور"
-                        value={data.password_confirmation}
-                        error={errors.password_confirmation}
-                        onChange={e => setData('password_confirmation', e.target.value)}
-                        onEnter={submit}
-                        show={showConfirm}
-                        toggle={() => setShowConfirm(s => !s)}
-                        placeholder="أعد كتابة كلمة المرور"
-                    />
+                            {/* Header */}
+                            <div className="text-center mb-8">
+                                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#0D9488]/10 flex items-center justify-center">
+                                    <svg className="w-7 h-7 text-[#0D9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                </div>
+                                <h1 className="text-xl font-bold text-gray-900">كلمة المرور الجديدة</h1>
+                                <p className="text-sm text-gray-500 mt-2">
+                                    تم التحقق من هويتك بنجاح، اختر كلمة مرور جديدة لحسابك
+                                </p>
+                            </div>
 
-                    {/* Submit */}
-                    <button
-                        onClick={submit}
-                        disabled={processing}
-                        className="w-full mt-1 py-3 bg-[#0D9488] hover:bg-[#0B7C72] text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                        {processing ? (
-                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <PasswordField
+                                label="كلمة المرور الجديدة"
+                                value={data.password}
+                                error={errors.password}
+                                onChange={e => setData('password', e.target.value)}
+                                onEnter={submit}
+                                show={showPass}
+                                toggle={() => setShowPass(s => !s)}
+                                placeholder="8 أحرف على الأقل"
+                                autoFocus
+                                inputRef={passwordRef}
+                            />
+
+                            <PasswordField
+                                label="تأكيد كلمة المرور"
+                                value={data.password_confirmation}
+                                error={errors.password_confirmation}
+                                onChange={e => setData('password_confirmation', e.target.value)}
+                                onEnter={submit}
+                                show={showConfirm}
+                                toggle={() => setShowConfirm(s => !s)}
+                                placeholder="أعد كتابة كلمة المرور"
+                            />
+
+                            {/* Submit */}
+                            <button
+                                onClick={submit}
+                                disabled={processing}
+                                className="w-full mt-1 py-3.5 bg-[#0D9488] hover:bg-[#0F766E] text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-teal-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {processing ? (
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        حفظ كلمة المرور
+                                    </>
+                                )}
+                            </button>
+                        </div>
+
+                        <div className="mt-4 text-center">
+                            <Link href="/login" className="text-xs text-gray-400 hover:text-gray-600 transition-colors inline-flex items-center gap-1">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
-                                حفظ كلمة المرور
-                            </>
-                        )}
-                    </button>
-
+                                العودة لتسجيل الدخول
+                            </Link>
+                        </div>
+                    </div>
                 </div>
+
             </div>
-        </div>
+        </>
     );
 }
