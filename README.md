@@ -1,145 +1,79 @@
-# 🛠️ Skillify
+Skillify
 
-A location-based professional services platform built with Laravel, connecting skilled professionals and businesses with clients — featuring AI-powered identity verification, real-time chat, and portfolio showcasing.
+A location-based marketplace that connects clients with skilled tradespeople, built with Laravel 12 as a server-rendered web application.
 
----
+Clients search for professionals near them, browse their work, and message them directly. Professionals register as regular users and apply for a verified Business Account — an application that is screened by an AI identity check before an admin approves it.
 
-## ✨ Features
+Final-year graduation project — Computer Engineering Technologies (Software), University of Homs.
 
-- 🔐 **Authentication & Authorization** — Token-based auth via Laravel Sanctum with 3-tier role system
-- 🤖 **AI Identity Verification** — Business account applicants verified using Google Gemini AI
-- 📍 **Location-Based Discovery** — Find professionals and businesses by location
-- 💼 **Business Account System** — Users can apply to upgrade to a verified Business Account
-- 🖼️ **Portfolio Showcase** — Each professional has a dedicated work gallery
-- 💬 **Real-Time Chat** — Live messaging between users and professionals
-- 🔔 **Push Notifications** — Real-time in-app notification system
-- 🌐 **REST API** — Full API coverage for mobile/frontend integration
+Core features
 
----
+AI-assisted identity verification Business Account applicants submit identity documents, which are processed through the Google Gemini API before reaching an admin for final review. This filters out obviously invalid submissions and keeps the manual review queue small.
 
-## 👥 Role System
+Location-based discovery Professionals are indexed by geographic coordinates, so clients see the nearest relevant tradespeople first rather than a flat, unordered list.
 
-| Role | Description |
-|------|-------------|
-| **Super Admin** | Full platform control — manages admins and all platform data |
-| **Admin** | Reviews business account applications, manages users and content |
-| **User** | Default role on registration — can apply for a Business Account |
+Real-time messaging Live chat between clients and professionals over Pusher and Laravel Broadcasting — no page refresh, delivered through Laravel's event broadcasting layer.
 
-### Business Account Flow
-```
-Register → User Account → Apply for Business Account → Admin Review → Verified Professional
-```
+In-app notifications Real-time notifications for new messages and for application status changes (approved / rejected).
 
----
+Portfolio galleries Every verified professional has a work gallery for showcasing previous jobs, which is what a client actually judges before making contact.
 
-## 🛠️ Tech Stack
+Account flow
+Register  →  User account  →  Apply for Business Account
+                                       ↓
+                          AI identity check (Gemini API)
+                                       ↓
+                              Admin review queue
+                                       ↓
+                            Verified professional
+Role	Permissions
+Super Admin	Full platform control, manages admin accounts and all data
+Admin	Reviews Business Account applications, manages users and content
+User	Default role on registration; browses professionals, chats, and can apply for a Business Account
+Tech stack
+Layer	Choice
+Framework	Laravel 12 (PHP 8.2)
+Interface	Server-rendered Blade views
+Authentication	Laravel session-based authentication with role authorization
+Real-time	Pusher + Laravel Broadcasting
+AI	Google Gemini API
+Database	MySQL
 
-| Layer | Technology |
-|-------|------------|
-| Backend | Laravel 12, PHP 8.2 |
-| Authentication | Laravel Sanctum |
-| AI Verification | Google Gemini API |
-| Real-Time | Pusher, Laravel Broadcasting |
-| Location | GPS coordinates / Location tracking |
-| Database | MySQL |
+Scope note: Skillify is a web application. Its interface is rendered server-side with Blade — there is no public REST API or mobile client.
 
----
+Screenshots
+<!-- Add 3-4 screenshots here: professional search results, a portfolio page, the chat interface, and the admin review queue. -->
+Running locally
 
-## 🚀 Getting Started
+Requires PHP 8.2+, Composer, MySQL, and Node.js.
 
-### Requirements
-
-- PHP 8.2+
-- Composer
-- MySQL
-- Node.js & npm
-
-### Installation
-
-```bash
-# Clone the repository
+bash
 git clone https://github.com/Mohamad-Kahwaji/Skillify.git
 cd Skillify
 
-# Install PHP dependencies
 composer install
-
-# Install JS dependencies
 npm install
 
-# Copy environment file and configure
 cp .env.example .env
 php artisan key:generate
-
-# Run migrations and seeders
 php artisan migrate --seed
 
-# Build frontend assets
 npm run build
-
-# Start the server
 php artisan serve
-```
 
-### Environment Setup
+Then fill in the following in .env:
 
-Copy `.env.example` to `.env` and fill in:
+env
+DB_DATABASE=
+DB_USERNAME=
+DB_PASSWORD=
 
-```env
-# Database
-DB_DATABASE=your_database
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-
-# Pusher (Real-Time)
 PUSHER_APP_ID=
 PUSHER_APP_KEY=
 PUSHER_APP_SECRET=
 PUSHER_APP_CLUSTER=
 
-# Google Gemini (AI Verification)
 GEMINI_API_KEY=
-```
+Author
 
----
-
-## 📁 Project Structure
-
-```
-app/
-├── Http/Controllers/     # API controllers
-├── Models/               # Eloquent models
-├── Notifications/        # Real-time notifications
-resources/
-├── views/                # Blade templates
-routes/
-├── api.php               # API routes
-├── web.php               # Web routes
-```
-
----
-
-## 📌 API Overview
-
-Key API endpoints:
-
-- Auth (register, login, logout)
-- Business Account (apply, review, approve/reject)
-- Professionals (search by location, view portfolio)
-- Portfolio (add/update work gallery)
-- Chat (conversations, messages)
-- Notifications (list, mark as read)
-- Admin (manage users, applications, platform stats)
-
----
-
-## 👨‍💻 Author
-
-**Mohamad Kahwaji** — Laravel Backend Developer  
-[GitHub](https://github.com/Mohamad-Kahwaji) · [LinkedIn](https://linkedin.com/in/mohamad-kahwaji)
-
----
-
-## 📄 License
-
-This project is open-source under the [MIT License](LICENSE).
+Mohamad Kahwaji — Laravel backend developer GitHub · LinkedIn
