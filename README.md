@@ -161,4 +161,4 @@ php artisan serve
 ## Author
 
 Mohamad Kahwaji — Laravel backend developer
-[GitHub](https://github.com/Mohamad-Kahwaji) · LinkedIn
+[GitHub](https://github.com/Mohamad-Kahwaji) · [LinkedIn](https://www.linkedin.com/in/mohamad-kahwaji-laravel)
