@@ -1,45 +1,59 @@
-Skillify
+# Skillify
 
-A location-based marketplace that connects clients with skilled tradespeople, built with Laravel 12 as a server-rendered web application.
+A location-based marketplace that connects clients with skilled tradespeople and professionals, built with **Laravel 13** on the backend and **Inertia.js + React** on the frontend.
 
-Clients search for professionals near them, browse their work, and message them directly. Professionals register as regular users and apply for a verified Business Account — an application that is screened by an AI identity check before an admin approves it.
+Clients search for professionals near them, browse their work, and message them directly in real time. Professionals register as regular users and apply for a verified **Business Account** — an application screened by an AI identity check before an admin approves it.
 
 Final-year graduation project — Computer Engineering Technologies (Software), University of Homs.
 
-Core features
+## Features
 
-AI-assisted identity verification Business Account applicants submit identity documents, which are processed through the Google Gemini API before reaching an admin for final review. This filters out obviously invalid submissions and keeps the manual review queue small.
+- **AI-assisted identity verification** — Business Account applicants submit identity documents, which are analyzed through the Google Gemini API before reaching an admin for final review. This filters out obviously invalid submissions and keeps the manual review queue small.
+- **Location-based discovery** — professionals set their location on an interactive map (Leaflet), so clients can find the nearest relevant tradespeople instead of a flat, unordered list.
+- **Real-time messaging** — live chat between clients and professionals over a self-hosted **Laravel Reverb** WebSocket server, with instant delivery and no page refresh.
+- **Real-time notifications** — for new messages, application status changes (approved / rejected), and platform announcements.
+- **Portfolio & service galleries** — every verified professional has a gallery of services and past work, with images, pricing, and location.
+- **Community feed** — a public feed where users can post job offers, requests, and general listings, with sponsored ads interleaved into the feed.
+- **Ads management** — Admins and Super Admins can create, schedule, and manage sponsored ads shown on the landing page, dashboard, and community feed.
+- **Self-service account management** — users can update their profile, change their password (with re-authentication), and permanently delete their business account or entire account (cascading to their services, gallery, and files).
+- **Granular admin roles & permissions** — beyond the three top-level roles below, Admin accounts can be assigned fine-grained permissions (e.g. `verifier`, `support`, `content_moderator`) scoped to specific actions.
+- **User moderation** — Admins and Super Admins can block/unblock user accounts.
 
-Location-based discovery Professionals are indexed by geographic coordinates, so clients see the nearest relevant tradespeople first rather than a flat, unordered list.
+## Account & Verification Flow
 
-Real-time messaging Live chat between clients and professionals over Pusher and Laravel Broadcasting — no page refresh, delivered through Laravel's event broadcasting layer.
-
-In-app notifications Real-time notifications for new messages and for application status changes (approved / rejected).
-
-Portfolio galleries Every verified professional has a work gallery for showcasing previous jobs, which is what a client actually judges before making contact.
-
-Account flow
+```
 Register  →  User account  →  Apply for Business Account
-                                       ↓
+                                       │
+                                       ▼
                           AI identity check (Gemini API)
-                                       ↓
+                                       │
+                                       ▼
                               Admin review queue
-                                       ↓
+                                       │
+                                       ▼
                             Verified professional
-Role	Permissions
-Super Admin	Full platform control, manages admin accounts and all data
-Admin	Reviews Business Account applications, manages users and content
-User	Default role on registration; browses professionals, chats, and can apply for a Business Account
-Tech stack
-Layer	Choice
-Framework	Laravel 12 (PHP 8.2)
-Interface	Server-rendered Blade views
-Authentication	Laravel session-based authentication with role authorization
-Real-time	Pusher + Laravel Broadcasting
-AI	Google Gemini API
-Database	MySQL
+```
 
-Scope note: Skillify is a web application. Its interface is rendered server-side with Blade — there is no public REST API or mobile client.
+## Roles & Permissions
+
+| Role | Permissions |
+|---|---|
+| **Super Admin** | Full platform control — manages Admin accounts, roles & permissions, and all platform data |
+| **Admin** | Reviews Business Account applications, manages users, content, and ads (permissions can be scoped further per admin) |
+| **User** | Default role on registration; browses professionals, chats, posts to the community feed, and can apply for a Business Account |
+
+## Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Laravel 13 (PHP 8.3) |
+| Frontend | Inertia.js + React 19, Tailwind CSS v4 |
+| Authentication | Session-based, with three separate guards (`users`, `admins`, `super_admins`) |
+| Authorization | Spatie Laravel Permission (roles & granular permissions) |
+| Real-time | Laravel Reverb (self-hosted WebSocket server, Pusher-protocol compatible) |
+| Maps | Leaflet |
+| AI | Google Gemini API |
+| Database | MySQL |
 
 ## Screenshots
 
@@ -94,11 +108,11 @@ Scope note: Skillify is a web application. Its interface is rendered server-side
 </tr>
 </table>
 
-Running locally
+## Getting Started
 
-Requires PHP 8.2+, Composer, MySQL, and Node.js.
+Requires PHP 8.3+, Composer, MySQL, and Node.js.
 
-bash
+```bash
 git clone https://github.com/Mohamad-Kahwaji/Skillify.git
 cd Skillify
 
@@ -108,23 +122,43 @@ npm install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
+```
 
-npm run build
-php artisan serve
+Fill in the following in `.env`:
 
-Then fill in the following in .env:
-
-env
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
 DB_DATABASE=
 DB_USERNAME=
 DB_PASSWORD=
 
-PUSHER_APP_ID=
-PUSHER_APP_KEY=
-PUSHER_APP_SECRET=
-PUSHER_APP_CLUSTER=
+BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=
+REVERB_APP_KEY=
+REVERB_APP_SECRET=
+REVERB_HOST=localhost
+REVERB_PORT=8080
+REVERB_SCHEME=http
+
+VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
+VITE_REVERB_HOST="${REVERB_HOST}"
+VITE_REVERB_PORT="${REVERB_PORT}"
+VITE_REVERB_SCHEME="${REVERB_SCHEME}"
 
 GEMINI_API_KEY=
-Author
+```
 
-Mohamad Kahwaji — Laravel backend developer GitHub · LinkedIn
+Then, in three separate terminals:
+
+```bash
+php artisan reverb:start   # WebSocket server
+npm run build              # or `npm run dev` while developing
+php artisan serve
+```
+
+## Author
+
+Mohamad Kahwaji — Laravel backend developer
+[GitHub](https://github.com/Mohamad-Kahwaji) · LinkedIn
