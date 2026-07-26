@@ -377,7 +377,7 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                                 <div key={ad.id} className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                                     <div className="h-44 bg-gradient-to-br from-[#F0FDFA] to-[#F0FDFA] overflow-hidden relative">
                                         {ad.image
-                                            ? <img src={`/storage/${ad.image}`} alt={ad.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                            ? <img src={storageUrl(ad.image)} alt={ad.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                             : (
                                                 <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                                                     <div className="w-14 h-14 rounded-2xl bg-[#0D9488]/10 flex items-center justify-center text-3xl">📢</div>
