@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
+import { storageUrl } from '../utils/image';
 
 const DEMO_PROFESSIONALS = [
     {
@@ -334,7 +335,7 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                                 <div key={pro.id} className="group bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
                                     <div className="relative mb-4">
                                         <img
-                                            src={pro.image ? `/storage/${pro.image}` : avatar(pro.name)}
+                                            src={pro.image ? storageUrl(pro.image) : avatar(pro.name)}
                                             alt={pro.name}
                                             className="w-20 h-20 rounded-2xl object-cover ring-4 ring-[#F0FDFA] group-hover:ring-[#0D9488]/30 transition-all"
                                             onError={e => { e.target.src = avatar(pro.name); }}

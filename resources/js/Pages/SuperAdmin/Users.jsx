@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import SuperAdminLayout from '../../Layouts/SuperAdminLayout';
+import { storageUrl } from '../../utils/image';
 
 const AV_COLORS = ['#6D28D9','#0D9488','#2563EB','#D97706','#DC2626','#0891B2','#7C3AED','#059669'];
 
@@ -161,7 +162,7 @@ function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock }) {
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                                 {biz.image ? (
-                                    <img src={`/storage/${biz.image}`} alt={biz.name} style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+                                    <img src={storageUrl(biz.image)} alt={biz.name} style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
                                 ) : (
                                     <div style={{ width: 44, height: 44, borderRadius: 10, background: '#EDE9FE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#7C3AED', flexShrink: 0 }}>
                                         <i className="ti ti-briefcase" />

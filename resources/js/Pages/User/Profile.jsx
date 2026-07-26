@@ -6,6 +6,7 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import UserLayout from '../../Layouts/UserLayout';
+import { storageUrl } from '../../utils/image';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
@@ -230,7 +231,7 @@ function BizLogo({ business, size = 80, radius = 18 }) {
     return (
         <div style={{ width: size, height: size, borderRadius: radius, background: `linear-gradient(135deg,${T},${T2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.35, fontWeight: 800, color: '#fff', flexShrink: 0, overflow: 'hidden', boxShadow: `0 6px 20px ${T}44` }}>
             {(business.image && !err)
-                ? <img src={`/storage/${business.image}`} alt="" onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ? <img src={storageUrl(business.image)} alt="" onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : (business.name?.[0]?.toUpperCase() || <i className="ti ti-building-store" />)
             }
         </div>
@@ -494,8 +495,8 @@ function PanelHead({ icon, title, sub, action }) {
 export default function Profile({ user, business, gallery, userServices, activeTypes, categories, subcategories, cities, flash, verification }) {
 
     const [tab, setTab]               = useState('profile');
-    const [imgPreview, setImgPreview]         = useState(business?.image ? `/storage/${business.image}` : null);
-    const [editImgPreview, setEditImgPreview] = useState(business?.image ? `/storage/${business.image}` : null);
+    const [imgPreview, setImgPreview]         = useState(business?.image ? storageUrl(business.image) : null);
+    const [editImgPreview, setEditImgPreview] = useState(business?.image ? storageUrl(business.image) : null);
     const [galleryUploading, setGalleryUploading]     = useState(false);
     const [pendingFiles, setPendingFiles]             = useState([]);
     const [createGalleryFiles, setCreateGalleryFiles] = useState([]);

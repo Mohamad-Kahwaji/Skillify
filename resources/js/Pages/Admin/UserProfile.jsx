@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import AdminLayout, { C } from '../../Layouts/AdminLayout';
+import { storageUrl } from '../../utils/image';
 
 const T = C.teal ?? '#0D9488';
 
@@ -71,13 +72,13 @@ export default function UserProfile({ profile, verifyStatus }) {
             {/* Hero card */}
             <div style={{ background: '#fff', border: C.cardBorder, borderRadius: 22, overflow: 'hidden', boxShadow: C.cardShadow }}>
                 <div style={{ height: 120, background: `linear-gradient(135deg,${T},#134E4A 60%,#052e16)`, position: 'relative', overflow: 'hidden' }}>
-                    {business?.image && <img src={`/storage/${business.image}`} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.15, filter: 'blur(8px)', transform: 'scale(1.1)' }} />}
+                    {business?.image && <img src={storageUrl(business.image)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.15, filter: 'blur(8px)', transform: 'scale(1.1)' }} />}
                 </div>
                 <div style={{ padding: '0 26px 24px' }}>
                     <div style={{ position: 'relative', display: 'inline-block', marginTop: -42, marginBottom: 14 }}>
                         <div style={{ width: 88, height: 88, borderRadius: '50%', border: '4px solid #fff', boxShadow: '0 6px 20px rgba(0,0,0,0.15)', background: T, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                             {business?.image
-                                ? <img src={`/storage/${business.image}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ? <img src={storageUrl(business.image)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 : <span style={{ fontSize: 30, fontWeight: 800, color: '#fff' }}>{(profile.first_name?.[0] ?? 'U').toUpperCase()}</span>
                             }
                         </div>

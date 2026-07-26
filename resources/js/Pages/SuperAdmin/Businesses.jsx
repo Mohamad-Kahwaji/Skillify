@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import SuperAdminLayout from '../../Layouts/SuperAdminLayout';
+import { storageUrl } from '../../utils/image';
 
 const FONT = "'Cairo','Inter',sans-serif";
 const P = '#7C3AED';
@@ -146,7 +147,7 @@ export default function Businesses({ businesses }) {
                                 <div style={{ position: 'relative', height: 130, overflow: 'hidden', flexShrink: 0 }}>
                                     {hasImg ? (
                                         <img
-                                            src={`/storage/${b.image}`}
+                                            src={storageUrl(b.image)}
                                             alt={b.name}
                                             onError={() => setImgErrors(prev => ({ ...prev, [b.id]: true }))}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}

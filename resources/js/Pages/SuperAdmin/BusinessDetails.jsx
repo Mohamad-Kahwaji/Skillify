@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import SuperAdminLayout from '../../Layouts/SuperAdminLayout';
+import { storageUrl } from '../../utils/image';
 
 const STATUS = {
     active:   { bg: '#F0FDF4', color: '#134E4A', label: 'مقبول' },
@@ -37,7 +38,7 @@ export default function BusinessDetails({ business }) {
                 <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 14, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '18px 20px', borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
                         <div style={{ width: 60, height: 60, borderRadius: 12, background: '#F5F3FF', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, color: '#7C3AED', flexShrink: 0 }}>
-                            {business.image ? <img src={`/storage/${business.image}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={business.name} /> : <i className="ti ti-briefcase" />}
+                            {business.image ? <img src={storageUrl(business.image)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={business.name} /> : <i className="ti ti-briefcase" />}
                         </div>
                         <div>
                             <div style={{ fontSize: 17, fontWeight: 700, color: '#1E1B4B' }}>{business.name}</div>

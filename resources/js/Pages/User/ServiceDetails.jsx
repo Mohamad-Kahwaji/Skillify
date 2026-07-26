@@ -1,14 +1,15 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
+import { storageUrl } from '../../utils/image';
 
 const T = '#0D9488';
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
 
 function ProviderAvatar({ user, business, size = 56 }) {
     const [err, setErr] = useState(false);
-    const src = business?.image ? `/storage/${business.image}`
-        : user?.profile_photo ? `/storage/${user.profile_photo}` : null;
+    const src = business?.image ? storageUrl(business.image)
+        : user?.profile_photo ? storageUrl(user.profile_photo) : null;
     const initial = (user?.first_name ?? business?.name ?? 'U')[0].toUpperCase();
     const color = AV_COLORS[(user?.id ?? 0) % 7];
     return (
