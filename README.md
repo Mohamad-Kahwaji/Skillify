@@ -41,8 +41,47 @@ Database	MySQL
 
 Scope note: Skillify is a web application. Its interface is rendered server-side with Blade — there is no public REST API or mobile client.
 
-Screenshots
-<!-- Add 3-4 screenshots here: professional search results, a portfolio page, the chat interface, and the admin review queue. -->
+## Screenshots
+
+### Public
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/landing-page.png" alt="Landing page" /><p align="center"><sub>Landing page</sub></p></td>
+<td width="50%"><img src="docs/screenshots/login-page.png" alt="Login page" /><p align="center"><sub>Login page</sub></p></td>
+</tr>
+</table>
+
+### User panel
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/user-dashboard.png" alt="User dashboard" /><p align="center"><sub>User dashboard</sub></p></td>
+<td width="50%"><img src="docs/screenshots/user-profile.png" alt="User profile" /><p align="center"><sub>User profile</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/user-community-posts.png" alt="Community posts" /><p align="center"><sub>Community posts (with sponsored ads in feed)</sub></p></td>
+<td width="50%"><img src="docs/screenshots/user-service-details.png" alt="Service details" /><p align="center"><sub>Service details</sub></p></td>
+</tr>
+</table>
+
+### Super Admin panel
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/superadmin-dashboard.png" alt="Super Admin dashboard" /><p align="center"><sub>Dashboard overview</sub></p></td>
+<td width="50%"><img src="docs/screenshots/superadmin-users.png" alt="Super Admin users" /><p align="center"><sub>User management</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/superadmin-businesses.png" alt="Super Admin businesses" /><p align="center"><sub>Business accounts</sub></p></td>
+<td width="50%"><img src="docs/screenshots/superadmin-ads.png" alt="Super Admin ads" /><p align="center"><sub>Ads management</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/superadmin-profile.png" alt="Super Admin profile" /><p align="center"><sub>Profile settings</sub></p></td>
+<td width="50%"></td>
+</tr>
+</table>
+
 Running locally
 
 Requires PHP 8.2+, Composer, MySQL, and Node.js.
