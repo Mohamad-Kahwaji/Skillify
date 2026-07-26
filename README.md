@@ -50,6 +50,10 @@ Scope note: Skillify is a web application. Its interface is rendered server-side
 <td width="50%"><img src="docs/screenshots/landing-page.png" alt="Landing page" /><p align="center"><sub>Landing page</sub></p></td>
 <td width="50%"><img src="docs/screenshots/login-page.png" alt="Login page" /><p align="center"><sub>Login page</sub></p></td>
 </tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/register-page.png" alt="Register page" /><p align="center"><sub>Account registration</sub></p></td>
+<td width="50%"><img src="docs/screenshots/forgot-password-page.png" alt="Forgot password page" /><p align="center"><sub>Password recovery via WhatsApp OTP</sub></p></td>
+</tr>
 </table>
 
 ### User panel
@@ -60,8 +64,12 @@ Scope note: Skillify is a web application. Its interface is rendered server-side
 <td width="50%"><img src="docs/screenshots/user-profile.png" alt="User profile" /><p align="center"><sub>User profile</sub></p></td>
 </tr>
 <tr>
+<td width="50%"><img src="docs/screenshots/user-explore.png" alt="Explore professionals" /><p align="center"><sub>Discovering professionals near you</sub></p></td>
 <td width="50%"><img src="docs/screenshots/user-community-posts.png" alt="Community posts" /><p align="center"><sub>Community posts (with sponsored ads in feed)</sub></p></td>
+</tr>
+<tr>
 <td width="50%"><img src="docs/screenshots/user-service-details.png" alt="Service details" /><p align="center"><sub>Service details</sub></p></td>
+<td width="50%"></td>
 </tr>
 </table>
 
@@ -74,11 +82,15 @@ Scope note: Skillify is a web application. Its interface is rendered server-side
 </tr>
 <tr>
 <td width="50%"><img src="docs/screenshots/superadmin-businesses.png" alt="Super Admin businesses" /><p align="center"><sub>Business accounts</sub></p></td>
-<td width="50%"><img src="docs/screenshots/superadmin-ads.png" alt="Super Admin ads" /><p align="center"><sub>Ads management</sub></p></td>
+<td width="50%"><img src="docs/screenshots/superadmin-identity-verification.png" alt="Identity verification queue" /><p align="center"><sub>AI-assisted identity verification queue</sub></p></td>
 </tr>
 <tr>
+<td width="50%"><img src="docs/screenshots/superadmin-admins.png" alt="Admin accounts" /><p align="center"><sub>Admin account management</sub></p></td>
+<td width="50%"><img src="docs/screenshots/superadmin-permissions.png" alt="Roles and permissions" /><p align="center"><sub>Roles &amp; permissions</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/superadmin-ads.png" alt="Super Admin ads" /><p align="center"><sub>Ads management</sub></p></td>
 <td width="50%"><img src="docs/screenshots/superadmin-profile.png" alt="Super Admin profile" /><p align="center"><sub>Profile settings</sub></p></td>
-<td width="50%"></td>
 </tr>
 </table>
 
