@@ -104,7 +104,11 @@ Register  →  User account  →  Apply for Business Account
 </tr>
 <tr>
 <td width="50%"><img src="docs/screenshots/superadmin-ads.png" alt="Super Admin ads" /><p align="center"><sub>Ads management</sub></p></td>
+<td width="50%"><img src="docs/screenshots/superadmin-reports.png" alt="Reported posts" /><p align="center"><sub>User-reported posts</sub></p></td>
+</tr>
+<tr>
 <td width="50%"><img src="docs/screenshots/superadmin-profile.png" alt="Super Admin profile" /><p align="center"><sub>Profile settings</sub></p></td>
+<td width="50%"></td>
 </tr>
 </table>
 

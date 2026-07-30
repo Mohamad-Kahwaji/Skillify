@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             UserSeedeers::class,             // المستخدمون + الأعمال + المنشورات
             ServiceSeedeers::class,          // الخدمات
             RequestServiceSeedeers::class,   // طلبات الخدمة
+            ReportSeeder::class,             // البلاغات
         ]);
     }
 }
