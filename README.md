@@ -112,6 +112,43 @@ Register  →  User account  →  Apply for Business Account
 </tr>
 </table>
 
+### Admin panel
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/admin-login.png" alt="Admin login" /><p align="center"><sub>Admin login</sub></p></td>
+<td width="50%"><img src="docs/screenshots/admin-dashboard.png" alt="Admin dashboard" /><p align="center"><sub>Dashboard overview</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/admin-workers.png" alt="Admin workers" /><p align="center"><sub>Business accounts</sub></p></td>
+<td width="50%"><img src="docs/screenshots/admin-services.png" alt="Admin services" /><p align="center"><sub>Services</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/admin-users.png" alt="Admin users" /><p align="center"><sub>User management</sub></p></td>
+<td width="50%"><img src="docs/screenshots/admin-identity-verifications.png" alt="Admin identity verifications" /><p align="center"><sub>AI-assisted identity verification queue</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/admin-ads.png" alt="Admin ads" /><p align="center"><sub>Ads management</sub></p></td>
+<td width="50%"><img src="docs/screenshots/admin-reports.png" alt="Admin reports" /><p align="center"><sub>User-reported posts</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/admin-blocked.png" alt="Admin blocked users" /><p align="center"><sub>Blocked users</sub></p></td>
+<td width="50%"><img src="docs/screenshots/admin-categories.png" alt="Admin categories" /><p align="center"><sub>Categories</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/admin-subcategories.png" alt="Admin subcategories" /><p align="center"><sub>Subcategories</sub></p></td>
+<td width="50%"><img src="docs/screenshots/admin-active-types.png" alt="Admin activity types" /><p align="center"><sub>Activity types</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/admin-active-type-businesses.png" alt="Admin business types" /><p align="center"><sub>Business types</sub></p></td>
+<td width="50%"><img src="docs/screenshots/admin-cities.png" alt="Admin cities" /><p align="center"><sub>Cities</sub></p></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/admin-notifications.png" alt="Admin notifications" /><p align="center"><sub>Notifications</sub></p></td>
+<td width="50%"><img src="docs/screenshots/admin-profile.png" alt="Admin profile" /><p align="center"><sub>Profile settings</sub></p></td>
+</tr>
+</table>
+
 ## Getting Started
 
 Requires PHP 8.3+, Composer, MySQL, and Node.js.
