@@ -47,106 +47,109 @@ function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock }) {
     const bizStatus = biz ? (biz.status === 'active' ? { label: 'نشط', color: '#065F46', bg: '#D1FAE5' } : biz.status === 'pending' ? { label: 'قيد المراجعة', color: '#92400E', bg: '#FEF3C7' } : { label: 'مرفوض', color: '#991B1B', bg: '#FEE2E2' }) : null;
 
     return (
-        <>
-            {/* Overlay */}
-            <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.35)', zIndex: 100, backdropFilter: 'blur(2px)' }} />
+        <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 100, backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
 
-            {/* Drawer */}
-            <div style={{
-                position: 'fixed', top: 0, right: 0, bottom: 0, width: 460, maxWidth: '92vw',
-                background: '#fff', zIndex: 101,
-                boxShadow: '-4px 0 40px rgba(0,0,0,0.18)',
-                display: 'flex', flexDirection: 'column',
-                animation: 'slideInRight 0.22s ease',
-            }}>
-                <style>{`@keyframes slideInRight { from { transform: translateX(24px); opacity:0; } to { transform: translateX(0); opacity:1; } }`}</style>
+                {/* Modal */}
+                <div onClick={e => e.stopPropagation()} style={{
+                    width: '100%', maxWidth: 700, maxHeight: '92vh',
+                    background: '#fff', borderRadius: 24, zIndex: 101,
+                    boxShadow: '0 32px 80px rgba(0,0,0,0.35)',
+                    display: 'flex', flexDirection: 'column', overflow: 'hidden',
+                    animation: 'modalPopIn 0.22s cubic-bezier(.22,.68,0,1.2)',
+                }}>
+                    <style>{`@keyframes modalPopIn { from { transform: scale(0.96) translateY(10px); opacity:0; } to { transform: scale(1) translateY(0); opacity:1; } }`}</style>
 
-                {/* Drawer header */}
-                <div style={{ padding: '20px 22px 16px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: '#1E1B4B' }}>تفاصيل المستخدم</span>
-                    <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(0,0,0,0.10)', background: '#F8FAFC', color: '#64748B', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <i className="ti ti-x" />
-                    </button>
-                </div>
-
-                {/* Scrollable body */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '22px' }}>
-
-                    {/* Avatar + name */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
-                        <div style={{
-                            width: 72, height: 72, borderRadius: '50%', marginBottom: 12,
-                            background: `linear-gradient(135deg,${avColor(index)},${avColor2(index)})`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 26, fontWeight: 800, color: '#fff',
-                            boxShadow: `0 6px 20px ${avColor(index)}44`,
-                        }}>
-                            {initials(user)}
+                    {/* Hero header */}
+                    <div style={{ position: 'relative', flexShrink: 0, background: 'linear-gradient(135deg,#7C3AED,#5B21B6 60%,#1E1B4B)', padding: '22px 26px 52px', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.9)' }}>تفاصيل المستخدم</span>
+                            <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <i className="ti ti-x" />
+                            </button>
                         </div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', textAlign: 'center' }}>
-                            {user.first_name} {user.middle_name ? user.middle_name + ' ' : ''}{user.last_name}
+                    </div>
+
+                    {/* Scrollable body */}
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '0 30px 26px' }}>
+
+                        {/* Avatar + name, overlapping the hero */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -46, marginBottom: 26 }}>
+                            <div style={{
+                                width: 92, height: 92, borderRadius: '50%', marginBottom: 14,
+                                background: `linear-gradient(135deg,${avColor(index)},${avColor2(index)})`,
+                                border: '4px solid #fff',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: 32, fontWeight: 800, color: '#fff',
+                                boxShadow: `0 10px 28px rgba(0,0,0,0.18)`,
+                            }}>
+                                {initials(user)}
+                            </div>
+                            <div style={{ fontSize: 21, fontWeight: 800, color: '#0F172A', textAlign: 'center' }}>
+                                {user.first_name} {user.middle_name ? user.middle_name + ' ' : ''}{user.last_name}
+                            </div>
+                            <div style={{ fontSize: 12.5, color: '#94A3B8', marginTop: 4 }}>#{user.id}</div>
+                            <span style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 20, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc.dot, display: 'inline-block' }} />
+                                {sc.label}
+                            </span>
                         </div>
-                        <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 4 }}>#{user.id}</div>
-                        <span style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc.dot, display: 'inline-block' }} />
-                            {sc.label}
-                        </span>
-                    </div>
 
-                    {/* Stats row */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 22 }}>
-                        {[
-                            { icon: 'ti-file-text',  label: 'المنشورات',  value: user.posts_count ?? 0,    color: '#7C3AED', bg: '#F5F3FF' },
-                            { icon: 'ti-tool',       label: 'الخدمات',    value: user.services_count ?? 0,  color: '#0D9488', bg: '#F0FDFA' },
-                            { icon: 'ti-message',    label: 'التعليقات',  value: user.comments_count ?? 0,  color: '#2563EB', bg: '#EFF6FF' },
-                        ].map(stat => (
-                            <div key={stat.label} style={{ background: stat.bg, borderRadius: 12, padding: '12px 10px', textAlign: 'center' }}>
-                                <i className={`ti ${stat.icon}`} style={{ fontSize: 18, color: stat.color, display: 'block', marginBottom: 4 }} />
-                                <div style={{ fontSize: 18, fontWeight: 800, color: '#0F172A' }}>{stat.value}</div>
-                                <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>{stat.label}</div>
-                            </div>
-                        ))}
-                    </div>
+                        {/* Stats row */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 24 }}>
+                            {[
+                                { icon: 'ti-file-text',  label: 'المنشورات',  value: user.posts_count ?? 0,    color: '#7C3AED', bg: '#F5F3FF' },
+                                { icon: 'ti-tool',       label: 'الخدمات',    value: user.services_count ?? 0,  color: '#0D9488', bg: '#F0FDFA' },
+                                { icon: 'ti-message',    label: 'التعليقات',  value: user.comments_count ?? 0,  color: '#2563EB', bg: '#EFF6FF' },
+                            ].map(stat => (
+                                <div key={stat.label} style={{ background: stat.bg, borderRadius: 14, padding: '16px 10px', textAlign: 'center' }}>
+                                    <i className={`ti ${stat.icon}`} style={{ fontSize: 21, color: stat.color, display: 'block', marginBottom: 6 }} />
+                                    <div style={{ fontSize: 22, fontWeight: 800, color: '#0F172A' }}>{stat.value}</div>
+                                    <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 3 }}>{stat.label}</div>
+                                </div>
+                            ))}
+                        </div>
 
-                    {/* Contact info */}
-                    <div style={{ background: '#F8FAFC', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>معلومات التواصل</div>
-                        {[
-                            { icon: 'ti-mail',     label: 'البريد الإلكتروني', value: user.email },
-                            { icon: 'ti-phone',    label: 'رقم الهاتف',         value: user.phone ?? '—' },
-                            { icon: 'ti-map-pin',  label: 'المدينة',            value: user.city ?? '—' },
-                        ].map(row => (
-                            <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                                <div style={{ width: 30, height: 30, borderRadius: 8, background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#4F46E5', flexShrink: 0 }}>
-                                    <i className={`ti ${row.icon}`} />
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: 10, color: '#94A3B8', marginBottom: 1 }}>{row.label}</div>
-                                    <div style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A', wordBreak: 'break-all' }}>{row.value}</div>
-                                </div>
+                        {/* Contact + Personal info, side by side */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 18 }}>
+                            <div style={{ background: '#F8FAFC', borderRadius: 14, padding: '16px' }}>
+                                <div style={{ fontSize: 11.5, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>معلومات التواصل</div>
+                                {[
+                                    { icon: 'ti-mail',     label: 'البريد الإلكتروني', value: user.email },
+                                    { icon: 'ti-phone',    label: 'رقم الهاتف',         value: user.phone ?? '—' },
+                                    { icon: 'ti-map-pin',  label: 'المدينة',            value: user.city ?? '—' },
+                                ].map(row => (
+                                    <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                                        <div style={{ width: 32, height: 32, borderRadius: 9, background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: '#4F46E5', flexShrink: 0 }}>
+                                            <i className={`ti ${row.icon}`} />
+                                        </div>
+                                        <div style={{ minWidth: 0 }}>
+                                            <div style={{ fontSize: 10.5, color: '#94A3B8', marginBottom: 1 }}>{row.label}</div>
+                                            <div style={{ fontSize: 13, fontWeight: 600, color: '#0F172A', wordBreak: 'break-all' }}>{row.value}</div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
 
-                    {/* Personal info */}
-                    <div style={{ background: '#F8FAFC', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>المعلومات الشخصية</div>
-                        {[
-                            { icon: 'ti-gender-bigender', label: 'الجنس',          value: GENDER_LABEL[user.gender] ?? '—' },
-                            { icon: 'ti-cake',            label: 'تاريخ الميلاد', value: formatDate(user.birthdate) },
-                            { icon: 'ti-calendar-plus',  label: 'تاريخ التسجيل', value: formatDate(user.created_at) },
-                        ].map(row => (
-                            <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                                <div style={{ width: 30, height: 30, borderRadius: 8, background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#0D9488', flexShrink: 0 }}>
-                                    <i className={`ti ${row.icon}`} />
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: 10, color: '#94A3B8', marginBottom: 1 }}>{row.label}</div>
-                                    <div style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>{row.value}</div>
-                                </div>
+                            <div style={{ background: '#F8FAFC', borderRadius: 14, padding: '16px' }}>
+                                <div style={{ fontSize: 11.5, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>المعلومات الشخصية</div>
+                                {[
+                                    { icon: 'ti-gender-bigender', label: 'الجنس',          value: GENDER_LABEL[user.gender] ?? '—' },
+                                    { icon: 'ti-cake',            label: 'تاريخ الميلاد', value: formatDate(user.birthdate) },
+                                    { icon: 'ti-calendar-plus',  label: 'تاريخ التسجيل', value: formatDate(user.created_at) },
+                                ].map(row => (
+                                    <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                                        <div style={{ width: 32, height: 32, borderRadius: 9, background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: '#0D9488', flexShrink: 0 }}>
+                                            <i className={`ti ${row.icon}`} />
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 10.5, color: '#94A3B8', marginBottom: 1 }}>{row.label}</div>
+                                            <div style={{ fontSize: 13, fontWeight: 600, color: '#0F172A' }}>{row.value}</div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </div>
 
                     {/* Business account */}
                     {!biz && (
@@ -275,7 +278,7 @@ function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock }) {
                     </button>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 

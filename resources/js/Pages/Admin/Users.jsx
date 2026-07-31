@@ -52,96 +52,99 @@ function UserDrawer({ user, index, onClose, onToggle, onDelete }) {
         : null;
 
     return (
-        <>
-            <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.35)', zIndex: 100, backdropFilter: 'blur(2px)' }} />
+        <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 100, backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
 
-            <div style={{
-                position: 'fixed', top: 0, right: 0, bottom: 0, width: 460, maxWidth: '92vw',
-                background: '#fff', zIndex: 101,
-                boxShadow: '-4px 0 40px rgba(0,0,0,0.18)',
-                display: 'flex', flexDirection: 'column',
-                animation: 'slideInRight 0.22s ease',
+            <div onClick={e => e.stopPropagation()} style={{
+                width: '100%', maxWidth: 700, maxHeight: '92vh',
+                background: '#fff', borderRadius: 24, zIndex: 101,
+                boxShadow: '0 32px 80px rgba(0,0,0,0.35)',
+                display: 'flex', flexDirection: 'column', overflow: 'hidden',
+                animation: 'modalPopIn 0.22s cubic-bezier(.22,.68,0,1.2)',
             }}>
-                <style>{`@keyframes slideInRight{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
+                <style>{`@keyframes modalPopIn{from{transform:scale(0.96) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}`}</style>
 
-                {/* Header */}
-                <div style={{ padding: '20px 22px 16px', borderBottom: '1px solid rgba(15,23,42,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: C.textDark }}>تفاصيل المستخدم</span>
-                    <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, border: C.cardBorder, background: '#F8FAFC', color: '#64748B', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <i className="ti ti-x" />
-                    </button>
+                {/* Hero header */}
+                <div style={{ position: 'relative', flexShrink: 0, background: `linear-gradient(135deg,${C.teal},#134E4A 60%,#052e16)`, padding: '22px 26px 52px', overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.9)' }}>تفاصيل المستخدم</span>
+                        <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <i className="ti ti-x" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Body */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '22px' }}>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '0 30px 26px' }}>
 
                     {/* Avatar */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
-                        <div style={{ width: 72, height: 72, borderRadius: '50%', marginBottom: 12, background: `linear-gradient(135deg,${avColor(index)},${avColor2(index)})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800, color: '#fff', boxShadow: `0 6px 20px ${avColor(index)}44` }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -46, marginBottom: 26 }}>
+                        <div style={{ width: 92, height: 92, borderRadius: '50%', marginBottom: 14, background: `linear-gradient(135deg,${avColor(index)},${avColor2(index)})`, border: '4px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, fontWeight: 800, color: '#fff', boxShadow: '0 10px 28px rgba(0,0,0,0.18)' }}>
                             {initials(user)}
                         </div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: C.textDark, textAlign: 'center' }}>
+                        <div style={{ fontSize: 21, fontWeight: 800, color: C.textDark, textAlign: 'center' }}>
                             {user.first_name} {user.middle_name ? user.middle_name + ' ' : ''}{user.last_name}
                         </div>
-                        <div style={{ fontSize: 12, color: C.textFaint, marginTop: 4 }}>#{user.id}</div>
-                        <span style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                        <div style={{ fontSize: 12.5, color: C.textFaint, marginTop: 4 }}>#{user.id}</div>
+                        <span style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 20, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc.dot }} />{sc.label}
                         </span>
                     </div>
 
                     {/* Stats */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 22 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 24 }}>
                         {[
                             { icon: 'ti-file-text', label: 'المنشورات', value: user.posts_count    ?? 0, color: '#7C3AED', bg: '#F5F3FF' },
                             { icon: 'ti-tool',      label: 'الخدمات',   value: user.services_count ?? 0, color: C.teal,   bg: '#F0FDFA' },
                             { icon: 'ti-message',   label: 'التعليقات', value: user.comments_count ?? 0, color: C.primary, bg: '#EFF6FF' },
                         ].map(s => (
-                            <div key={s.label} style={{ background: s.bg, borderRadius: 12, padding: '12px 10px', textAlign: 'center' }}>
-                                <i className={`ti ${s.icon}`} style={{ fontSize: 18, color: s.color, display: 'block', marginBottom: 4 }} />
-                                <div style={{ fontSize: 18, fontWeight: 800, color: C.textDark }}>{s.value}</div>
-                                <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>{s.label}</div>
+                            <div key={s.label} style={{ background: s.bg, borderRadius: 14, padding: '16px 10px', textAlign: 'center' }}>
+                                <i className={`ti ${s.icon}`} style={{ fontSize: 21, color: s.color, display: 'block', marginBottom: 6 }} />
+                                <div style={{ fontSize: 22, fontWeight: 800, color: C.textDark }}>{s.value}</div>
+                                <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 3 }}>{s.label}</div>
                             </div>
                         ))}
                     </div>
 
-                    {/* Contact */}
-                    <div style={{ background: '#F8FAFC', borderRadius: 14, padding: 16, marginBottom: 14 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, letterSpacing: 0.8, marginBottom: 12 }}>معلومات التواصل</div>
-                        {[
-                            { icon: 'ti-mail',    label: 'البريد الإلكتروني', value: user.email },
-                            { icon: 'ti-phone',   label: 'رقم الهاتف',         value: user.phone ?? '—' },
-                            { icon: 'ti-map-pin', label: 'المدينة',            value: user.city  ?? '—' },
-                        ].map(r => (
-                            <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                                <div style={{ width: 30, height: 30, borderRadius: 8, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: C.primary, flexShrink: 0 }}>
-                                    <i className={`ti ${r.icon}`} />
+                    {/* Contact + Personal, side by side */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 18 }}>
+                        <div style={{ background: '#F8FAFC', borderRadius: 14, padding: 16 }}>
+                            <div style={{ fontSize: 11.5, fontWeight: 700, color: C.textFaint, letterSpacing: 0.8, marginBottom: 12 }}>معلومات التواصل</div>
+                            {[
+                                { icon: 'ti-mail',    label: 'البريد الإلكتروني', value: user.email },
+                                { icon: 'ti-phone',   label: 'رقم الهاتف',         value: user.phone ?? '—' },
+                                { icon: 'ti-map-pin', label: 'المدينة',            value: user.city  ?? '—' },
+                            ].map(r => (
+                                <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: 9, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: C.primary, flexShrink: 0 }}>
+                                        <i className={`ti ${r.icon}`} />
+                                    </div>
+                                    <div style={{ minWidth: 0 }}>
+                                        <div style={{ fontSize: 10.5, color: C.textFaint, marginBottom: 1 }}>{r.label}</div>
+                                        <div style={{ fontSize: 13, fontWeight: 600, color: C.textDark, wordBreak: 'break-all' }}>{r.value}</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div style={{ fontSize: 10, color: C.textFaint, marginBottom: 1 }}>{r.label}</div>
-                                    <div style={{ fontSize: 12.5, fontWeight: 600, color: C.textDark, wordBreak: 'break-all' }}>{r.value}</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
 
-                    {/* Personal */}
-                    <div style={{ background: '#F8FAFC', borderRadius: 14, padding: 16, marginBottom: 14 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, letterSpacing: 0.8, marginBottom: 12 }}>المعلومات الشخصية</div>
-                        {[
-                            { icon: 'ti-gender-bigender', label: 'الجنس',          value: GENDER_LABEL[user.gender] ?? '—' },
-                            { icon: 'ti-cake',            label: 'تاريخ الميلاد', value: fmtDate(user.birthdate) },
-                            { icon: 'ti-calendar-plus',   label: 'تاريخ التسجيل', value: fmtDate(user.created_at) },
-                        ].map(r => (
-                            <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                                <div style={{ width: 30, height: 30, borderRadius: 8, background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: C.teal, flexShrink: 0 }}>
-                                    <i className={`ti ${r.icon}`} />
+                        <div style={{ background: '#F8FAFC', borderRadius: 14, padding: 16 }}>
+                            <div style={{ fontSize: 11.5, fontWeight: 700, color: C.textFaint, letterSpacing: 0.8, marginBottom: 12 }}>المعلومات الشخصية</div>
+                            {[
+                                { icon: 'ti-gender-bigender', label: 'الجنس',          value: GENDER_LABEL[user.gender] ?? '—' },
+                                { icon: 'ti-cake',            label: 'تاريخ الميلاد', value: fmtDate(user.birthdate) },
+                                { icon: 'ti-calendar-plus',   label: 'تاريخ التسجيل', value: fmtDate(user.created_at) },
+                            ].map(r => (
+                                <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: 9, background: '#F0FDFA', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: C.teal, flexShrink: 0 }}>
+                                        <i className={`ti ${r.icon}`} />
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 10.5, color: C.textFaint, marginBottom: 1 }}>{r.label}</div>
+                                        <div style={{ fontSize: 13, fontWeight: 600, color: C.textDark }}>{r.value}</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div style={{ fontSize: 10, color: C.textFaint, marginBottom: 1 }}>{r.label}</div>
-                                    <div style={{ fontSize: 12.5, fontWeight: 600, color: C.textDark }}>{r.value}</div>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
 
                     {/* Business */}
@@ -272,7 +275,7 @@ function UserDrawer({ user, index, onClose, onToggle, onDelete }) {
                     </button>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 
