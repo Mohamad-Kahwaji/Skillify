@@ -53,13 +53,13 @@ function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock }) {
 
             {/* Drawer */}
             <div style={{
-                position: 'fixed', top: 0, left: 0, bottom: 0, width: 380, maxWidth: '92vw',
+                position: 'fixed', top: 0, right: 0, bottom: 0, width: 460, maxWidth: '92vw',
                 background: '#fff', zIndex: 101,
-                boxShadow: '4px 0 40px rgba(0,0,0,0.18)',
+                boxShadow: '-4px 0 40px rgba(0,0,0,0.18)',
                 display: 'flex', flexDirection: 'column',
-                animation: 'slideInLeft 0.22s ease',
+                animation: 'slideInRight 0.22s ease',
             }}>
-                <style>{`@keyframes slideInLeft { from { transform: translateX(-24px); opacity:0; } to { transform: translateX(0); opacity:1; } }`}</style>
+                <style>{`@keyframes slideInRight { from { transform: translateX(24px); opacity:0; } to { transform: translateX(0); opacity:1; } }`}</style>
 
                 {/* Drawer header */}
                 <div style={{ padding: '20px 22px 16px', borderBottom: '0.5px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
