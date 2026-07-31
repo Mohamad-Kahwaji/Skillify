@@ -149,6 +149,12 @@ function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock }) {
                     </div>
 
                     {/* Business account */}
+                    {!biz && (
+                        <div style={{ background: '#F8FAFC', border: '1px dashed rgba(0,0,0,0.10)', borderRadius: 14, padding: '22px 16px', marginBottom: 16, textAlign: 'center' }}>
+                            <i className="ti ti-briefcase" style={{ fontSize: 26, color: '#CBD5E1', display: 'block', marginBottom: 8 }} />
+                            <div style={{ fontSize: 12.5, fontWeight: 600, color: '#64748B' }}>لا يمتلك حساب أعمال</div>
+                        </div>
+                    )}
                     {biz && (
                         <div style={{ background: '#F5F3FF', border: '1px solid #DDD6FE', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -201,6 +207,12 @@ function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock }) {
                     )}
 
                     {/* Services */}
+                    {(user.services ?? []).length === 0 && (
+                        <div style={{ background: '#F8FAFC', border: '1px dashed rgba(0,0,0,0.10)', borderRadius: 14, padding: '22px 16px', marginBottom: 16, textAlign: 'center' }}>
+                            <i className="ti ti-tool" style={{ fontSize: 26, color: '#CBD5E1', display: 'block', marginBottom: 8 }} />
+                            <div style={{ fontSize: 12.5, fontWeight: 600, color: '#64748B' }}>لا توجد خدمات منشورة</div>
+                        </div>
+                    )}
                     {(user.services ?? []).length > 0 && (
                         <div style={{ background: '#F8FAFC', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>
