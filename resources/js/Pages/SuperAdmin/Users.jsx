@@ -60,40 +60,43 @@ function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock }) {
                     <style>{`@keyframes modalPopIn { from { transform: scale(0.96) translateY(10px); opacity:0; } to { transform: scale(1) translateY(0); opacity:1; } }`}</style>
 
                     {/* Hero header */}
-                    <div style={{ position: 'relative', flexShrink: 0, background: 'linear-gradient(135deg,#7C3AED,#5B21B6 60%,#1E1B4B)', padding: '22px 26px 52px', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
+                    <div style={{ position: 'relative', flexShrink: 0, background: 'linear-gradient(135deg,#7C3AED,#5B21B6 60%,#1E1B4B)', padding: '22px 26px 52px', overflow: 'visible' }}>
+                        <div style={{ position: 'absolute', inset: 0, borderRadius: 'inherit', overflow: 'hidden', backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.9)' }}>تفاصيل المستخدم</span>
                             <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <i className="ti ti-x" />
                             </button>
                         </div>
+
+                        {/* Avatar, straddling the hero's bottom edge */}
+                        <div style={{
+                            position: 'absolute', bottom: -46, left: '50%', transform: 'translateX(-50%)',
+                            width: 92, height: 92, borderRadius: '50%',
+                            background: `linear-gradient(135deg,${avColor(index)},${avColor2(index)})`,
+                            border: '4px solid #fff',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 32, fontWeight: 800, color: '#fff',
+                            boxShadow: '0 10px 28px rgba(0,0,0,0.25)',
+                        }}>
+                            {initials(user)}
+                        </div>
+                    </div>
+
+                    {/* Name + status, fixed below the hero (clears the overlapping avatar) */}
+                    <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 56, paddingBottom: 18 }}>
+                        <div style={{ fontSize: 21, fontWeight: 800, color: '#0F172A', textAlign: 'center' }}>
+                            {user.first_name} {user.middle_name ? user.middle_name + ' ' : ''}{user.last_name}
+                        </div>
+                        <div style={{ fontSize: 12.5, color: '#94A3B8', marginTop: 4 }}>#{user.id}</div>
+                        <span style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 20, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc.dot, display: 'inline-block' }} />
+                            {sc.label}
+                        </span>
                     </div>
 
                     {/* Scrollable body */}
                     <div style={{ flex: 1, overflowY: 'auto', padding: '0 30px 26px' }}>
-
-                        {/* Avatar + name, overlapping the hero */}
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -46, marginBottom: 26 }}>
-                            <div style={{
-                                width: 92, height: 92, borderRadius: '50%', marginBottom: 14,
-                                background: `linear-gradient(135deg,${avColor(index)},${avColor2(index)})`,
-                                border: '4px solid #fff',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: 32, fontWeight: 800, color: '#fff',
-                                boxShadow: `0 10px 28px rgba(0,0,0,0.18)`,
-                            }}>
-                                {initials(user)}
-                            </div>
-                            <div style={{ fontSize: 21, fontWeight: 800, color: '#0F172A', textAlign: 'center' }}>
-                                {user.first_name} {user.middle_name ? user.middle_name + ' ' : ''}{user.last_name}
-                            </div>
-                            <div style={{ fontSize: 12.5, color: '#94A3B8', marginTop: 4 }}>#{user.id}</div>
-                            <span style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 20, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc.dot, display: 'inline-block' }} />
-                                {sc.label}
-                            </span>
-                        </div>
 
                         {/* Stats row */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 24 }}>
