@@ -521,7 +521,14 @@ class SuperAdminController extends Controller
     // ── Blocked ──────────────────────────────────────────────────────────────────
     public function blocked()
     {
-        $users = User::where('status', 'inactive')->latest()->get();
+        $users = User::where('status', 'inactive')
+            ->withCount(['posts', 'services', 'comments'])
+            ->with([
+                'businesses',
+                'services' => fn ($q) => $q->with(['category:id,name', 'subcategory:id,name', 'city:id,name'])->latest(),
+            ])
+            ->latest()
+            ->get();
         return Inertia::render('SuperAdmin/Blocked', ['users' => $users]);
     }
 

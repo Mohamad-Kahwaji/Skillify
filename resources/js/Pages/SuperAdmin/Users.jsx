@@ -39,7 +39,7 @@ function formatDate(d, opts = { day: 'numeric', month: 'short', year: 'numeric' 
 }
 
 /* ════════════════ User Detail Drawer ════════════════ */
-function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock }) {
+export function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock }) {
     if (!user) return null;
     const sc  = STATUS_CFG[user.status] ?? DEFAULT_STATUS;
     const isBlocked = user.status === 'inactive';
