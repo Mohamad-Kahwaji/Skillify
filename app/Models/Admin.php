@@ -31,9 +31,4 @@ class Admin extends Authenticatable
     {
         return $this->hasMany(Advertisement::class);
     }
-
-    public function blockedUsers()
-    {
-        return $this->hasMany(Blocked::class);
-    }
 }

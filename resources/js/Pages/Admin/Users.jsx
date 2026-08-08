@@ -39,7 +39,7 @@ function priceLabel(s) {
 }
 
 /* ── User Detail Drawer ─────────────────────────────────────── */
-function UserDrawer({ user, index, onClose, onToggle, onDelete }) {
+export function UserDrawer({ user, index, onClose, onToggle, onDelete }) {
     if (!user) return null;
     const sc  = STATUS_CFG[user.status] ?? DEFAULT_SC;
     const biz = user.businesses;

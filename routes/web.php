@@ -188,15 +188,9 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::delete('/services/{id}',        [ServiceController::class, 'destroy'])->name('services.destroy')
         ->middleware('permission:services.delete');
 
-    // Blocked Users
-    Route::get('/blocked',           [AdminBlockedController::class, 'index'])->name('blocked.index')
+    // Blocked Users (users with status = inactive)
+    Route::get('/blocked', [AdminBlockedController::class, 'index'])->name('blocked.index')
         ->middleware('permission:blocked.view');
-    Route::get('/blocked/create',    [AdminBlockedController::class, 'create'])->name('blocked.create')
-        ->middleware('permission:blocked.create');
-    Route::post('/blocked',          [AdminBlockedController::class, 'store'])->name('blocked.store')
-        ->middleware('permission:blocked.create');
-    Route::delete('/blocked/{id}',   [AdminBlockedController::class, 'destroy'])->name('blocked.destroy')
-        ->middleware('permission:blocked.delete');
 
     // Notifications
     Route::get('/notifications',              [AdminController::class, 'notifications'])->name('notifications.index');
