@@ -60,7 +60,7 @@ class AdSeeder extends Seeder
                 'title'        => 'صيانة أجهزة التكييف',
                 'description'  => 'استعد لفصل الصيف مع خدمة الصيانة الشاملة لمكيفاتك. فحص مجاني للوحدات الجديدة.',
                 'company_name' => 'تقنية التبريد المتطور',
-                'image'        => 'https://images.unsplash.com/photo-1631193817605-a81a670fd8f2?w=600&h=400&fit=crop',
+                'image'        => 'https://picsum.photos/seed/ac-maintenance1/600/400',
                 'start_date'   => $today->copy()->subDays(5)->toDateString(),
                 'end_date'     => $today->copy()->addDays(45)->toDateString(),
                 'status'       => 'approved',
