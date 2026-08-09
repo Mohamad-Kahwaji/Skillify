@@ -415,7 +415,226 @@ class ServiceSeedeers extends Seeder
                 'price'       => 600000,  'price_type' => 'syp',
                 'city_idx'    => 1, 'img_seed' => 'security1',
             ],
+
+            // ── الفن والتصميم ────────────────────────────────────────────
+            [
+                'name'        => 'جلسة تصوير بورتريه احترافية',
+                'category'    => 'الفن والتصميم',
+                'subcategory' => 'مصور فوتوغرافي',
+                'description' => 'جلسة تصوير شخصي احترافية في الاستوديو أو خارجه مع تعديل الصور.',
+                'price'       => 40.00,   'price_type' => 'usd',
+                'city_idx'    => 2, 'img_seed' => 'portrait1',
+            ],
+            [
+                'name'        => 'تصميم ديكور داخلي لغرفة معيشة',
+                'category'    => 'الفن والتصميم',
+                'subcategory' => 'مصمم داخلي',
+                'description' => 'تصميم ثلاثي الأبعاد لغرف المعيشة واختيار الأثاث والألوان المناسبة.',
+                'price'       => 150.00,  'price_type' => 'usd',
+                'city_idx'    => 0, 'img_seed' => 'interior1',
+            ],
+
+            // ── الإعلام والصحافة ──────────────────────────────────────────
+            [
+                'name'        => 'مونتاج فيديو احترافي',
+                'category'    => 'الإعلام والصحافة',
+                'subcategory' => 'مونتير',
+                'description' => 'مونتاج وتحرير فيديوهات إعلانية وتوثيقية مع مؤثرات بصرية احترافية.',
+                'price'       => 80.00,   'price_type' => 'usd',
+                'city_idx'    => 1, 'img_seed' => 'editing1',
+            ],
+            [
+                'name'        => 'تغطية صحفية لفعاليات ومؤتمرات',
+                'category'    => 'الإعلام والصحافة',
+                'subcategory' => 'صحفي',
+                'description' => 'تغطية إعلامية مكتوبة ومصورة للفعاليات والمؤتمرات والمناسبات.',
+                'price'       => 300000,  'price_type' => 'syp',
+                'city_idx'    => 1, 'img_seed' => 'press1',
+            ],
+
+            // ── الحدادة والمعادن ──────────────────────────────────────────
+            [
+                'name'        => 'تصنيع بوابة حديد مزخرفة',
+                'category'    => 'الحدادة والمعادن',
+                'subcategory' => 'حداد',
+                'description' => 'تصميم وتصنيع بوابات وشبابيك حديدية مزخرفة حسب الطلب.',
+                'price'       => 3500000, 'price_type' => 'syp',
+                'city_idx'    => 7, 'img_seed' => 'gate1',
+            ],
+            [
+                'name'        => 'لحام ودرابزين معدني للسلالم',
+                'category'    => 'الحدادة والمعادن',
+                'subcategory' => 'لحام',
+                'description' => 'تصنيع وتركيب درابزين معدني للسلالم والشرفات بجودة عالية.',
+                'price'       => 1800000, 'price_type' => 'syp',
+                'city_idx'    => 7, 'img_seed' => 'railing1',
+            ],
+
+            // ── الزراعة والبستنة ──────────────────────────────────────────
+            [
+                'name'        => 'تنسيق وزراعة حديقة منزلية',
+                'category'    => 'الزراعة والبستنة',
+                'subcategory' => 'بستاني',
+                'description' => 'تصميم وتنسيق الحدائق المنزلية وزراعة النباتات والأشجار.',
+                'price'       => 700000,  'price_type' => 'syp',
+                'city_idx'    => 6, 'img_seed' => 'landscaping1',
+            ],
+            [
+                'name'        => 'توريد شتول وأشجار مثمرة',
+                'category'    => 'الزراعة والبستنة',
+                'subcategory' => 'مزارع',
+                'description' => 'توريد شتول الخضار والأشجار المثمرة بأسعار الجملة للمزارعين.',
+                'price'       => 15.00,   'price_type' => 'usd',
+                'city_idx'    => 6, 'img_seed' => 'seedlings1',
+            ],
+
+            // ── مختبر تحليل مياه ──────────────────────────────────────────
+            [
+                'name'        => 'تحليل شامل لمياه الشرب',
+                'category'    => 'مختبر تحليل مياه',
+                'subcategory' => 'تحليل مياه الشرب',
+                'description' => 'فحص جودة مياه الشرب من الآبار والشبكة العامة وفق المعايير الصحية.',
+                'price'       => 250000,  'price_type' => 'syp',
+                'city_idx'    => 5, 'img_seed' => 'watertest1',
+            ],
+            [
+                'name'        => 'تحليل مياه الري الزراعي',
+                'category'    => 'مختبر تحليل مياه',
+                'subcategory' => 'تحليل مياه زراعية',
+                'description' => 'فحص ملوحة وصلاحية مياه الري للمحاصيل الزراعية.',
+                'price'       => 200000,  'price_type' => 'syp',
+                'city_idx'    => 5, 'img_seed' => 'irrigation1',
+            ],
+
+            // ── معمل أغذية ────────────────────────────────────────────────
+            [
+                'name'        => 'فحص جودة منتج غذائي جديد',
+                'category'    => 'معمل أغذية',
+                'subcategory' => 'فحص جودة أغذية',
+                'description' => 'فحص وتحليل شامل لجودة وسلامة المنتجات الغذائية قبل الطرح بالسوق.',
+                'price'       => 400000,  'price_type' => 'syp',
+                'city_idx'    => 0, 'img_seed' => 'foodtest1',
+            ],
+            [
+                'name'        => 'تحليل المضافات الغذائية',
+                'category'    => 'معمل أغذية',
+                'subcategory' => 'تحليل مضافات غذائية',
+                'description' => 'تحليل نسب المواد الحافظة والمضافات في المنتجات الغذائية المصنّعة.',
+                'price'       => 350000,  'price_type' => 'syp',
+                'city_idx'    => 0, 'img_seed' => 'additives1',
+            ],
+
+            // ── معمل كيميائي ──────────────────────────────────────────────
+            [
+                'name'        => 'تحليل عينة تربة زراعية',
+                'category'    => 'معمل كيميائي',
+                'subcategory' => 'فحص تربة',
+                'description' => 'تحليل خصائص التربة الكيميائية لتحديد الأسمدة المناسبة للمحصول.',
+                'price'       => 300000,  'price_type' => 'syp',
+                'city_idx'    => 1, 'img_seed' => 'soiltest1',
+            ],
+            [
+                'name'        => 'تحليل مواد كيميائية صناعية',
+                'category'    => 'معمل كيميائي',
+                'subcategory' => 'تحليل مواد كيميائية',
+                'description' => 'تحليل تركيبة المواد الكيميائية الخام للمصانع والمشاريع الصناعية.',
+                'price'       => 500000,  'price_type' => 'syp',
+                'city_idx'    => 1, 'img_seed' => 'chemtest1',
+            ],
+
+            // ── معمل حاسوب ────────────────────────────────────────────────
+            [
+                'name'        => 'صيانة وتجميع أجهزة كمبيوتر',
+                'category'    => 'معمل حاسوب',
+                'subcategory' => 'صيانة أجهزة',
+                'description' => 'تجميع وصيانة أجهزة الحاسوب المكتبية وترقية القطع بأفضل الأسعار.',
+                'price'       => 400000,  'price_type' => 'syp',
+                'city_idx'    => 2, 'img_seed' => 'pcbuild1',
+            ],
+            [
+                'name'        => 'تمديد وتركيب شبكات إنترنت',
+                'category'    => 'معمل حاسوب',
+                'subcategory' => 'شبكات وإنترنت',
+                'description' => 'تمديد شبكات إنترنت داخلية للمنازل والمكاتب مع تركيب نقاط واي فاي.',
+                'price'       => 600000,  'price_type' => 'syp',
+                'city_idx'    => 2, 'img_seed' => 'network1',
+            ],
+
+            // ── معمل خياطة ────────────────────────────────────────────────
+            [
+                'name'        => 'تفصيل زي موحد لموظفين',
+                'category'    => 'معمل خياطة',
+                'subcategory' => 'تفصيل ملابس',
+                'description' => 'تفصيل أزياء موحدة للشركات والمطاعم بكميات وجودة عالية.',
+                'price'       => 25.00,   'price_type' => 'usd',
+                'city_idx'    => 4, 'img_seed' => 'uniform1',
+            ],
+            [
+                'name'        => 'تطريز شعارات على الملابس',
+                'category'    => 'معمل خياطة',
+                'subcategory' => 'تطريز آلي',
+                'description' => 'تطريز آلي دقيق لشعارات الشركات على القمصان والقبعات.',
+                'price'       => 150000,  'price_type' => 'syp',
+                'city_idx'    => 4, 'img_seed' => 'embroidery1',
+            ],
+
+            // ── شركة تجارية ───────────────────────────────────────────────
+            [
+                'name'        => 'استيراد مستلزمات مكتبية بالجملة',
+                'category'    => 'شركة تجارية',
+                'subcategory' => 'استيراد',
+                'description' => 'استيراد وتوزيع المستلزمات المكتبية والقرطاسية بأسعار جملة تنافسية.',
+                'price'       => 3000.00, 'price_type' => 'usd',
+                'city_idx'    => 0, 'img_seed' => 'wholesale1',
+            ],
+            [
+                'name'        => 'توزيع بضائع بالتجزئة للمحلات',
+                'category'    => 'شركة تجارية',
+                'subcategory' => 'تجزئة',
+                'description' => 'توزيع منتجات استهلاكية متنوعة للمحلات التجارية داخل المدينة.',
+                'price'       => 1000000, 'price_type' => 'syp',
+                'city_idx'    => 0, 'img_seed' => 'retail1',
+            ],
+
+            // ── شركة إعلانية ──────────────────────────────────────────────
+            [
+                'name'        => 'حملة إعلانات ممولة على مواقع التواصل',
+                'category'    => 'شركة إعلانية',
+                'subcategory' => 'إعلانات رقمية',
+                'description' => 'إدارة حملات إعلانية مدفوعة على فيسبوك وإنستغرام مع تقارير أداء دورية.',
+                'price'       => 250.00,  'price_type' => 'usd',
+                'city_idx'    => 1, 'img_seed' => 'adscampaign1',
+            ],
+            [
+                'name'        => 'تصميم هوية بصرية متكاملة للعلامة التجارية',
+                'category'    => 'شركة إعلانية',
+                'subcategory' => 'تصميم هوية بصرية',
+                'description' => 'تصميم الشعار وكتيب الهوية البصرية الكامل للعلامات التجارية الجديدة.',
+                'price'       => 400.00,  'price_type' => 'usd',
+                'city_idx'    => 1, 'img_seed' => 'branding1',
+            ],
+
+            // ── شركة استيراد وتصدير ───────────────────────────────────────
+            [
+                'name'        => 'استيراد مواد بناء من الخارج',
+                'category'    => 'شركة استيراد وتصدير',
+                'subcategory' => 'استيراد مواد بناء',
+                'description' => 'استيراد مواد البناء والتشطيبات عالية الجودة من الأسواق العالمية.',
+                'price'       => 10000.00,'price_type' => 'usd',
+                'city_idx'    => 4, 'img_seed' => 'importmat1',
+            ],
+            [
+                'name'        => 'تصدير منتجات زراعية محلية',
+                'category'    => 'شركة استيراد وتصدير',
+                'subcategory' => 'تصدير منتجات محلية',
+                'description' => 'تصدير المنتجات الزراعية والغذائية السورية إلى الأسواق الإقليمية.',
+                'price'       => 5000.00, 'price_type' => 'usd',
+                'city_idx'    => 4, 'img_seed' => 'export1',
+            ],
         ];
+
+        $businesses = \App\Models\Business::whereNotNull('activity')->get()->groupBy('activity');
+        $anyBusinessOwnerIds = \App\Models\Business::pluck('user_id')->toArray();
 
         foreach ($services as $srv) {
             $cityName = $cities[$srv['city_idx'] % \count($cities)];
@@ -428,9 +647,16 @@ class ServiceSeedeers extends Seeder
                 continue;
             }
 
+            // اربط كل خدمة بصاحب عمل من نفس النشاط إن أمكن، وإلا بصاحب عمل عشوائي
+            $matchingBusinesses = $businesses->get($srv['category']);
+            $userId = $matchingBusinesses && $matchingBusinesses->isNotEmpty()
+                ? $matchingBusinesses->random()->user_id
+                : ($anyBusinessOwnerIds[array_rand($anyBusinessOwnerIds)] ?? null);
+
             Service::firstOrCreate(
                 ['name' => $srv['name'], 'city_id' => $city->id],
                 [
+                    'user_id'        => $userId,
                     'description'    => $srv['description'],
                     'category_id'    => $category->id,
                     'subcategory_id' => $subcategory->id,
@@ -438,6 +664,8 @@ class ServiceSeedeers extends Seeder
                     'image'          => "https://picsum.photos/seed/{$srv['img_seed']}/640/480",
                     'price'          => $srv['price'],
                     'price_type'     => $srv['price_type'],
+                    'is_active'      => true,
+                    'status'         => 'approved',
                 ]
             );
         }

@@ -22,9 +22,12 @@ class DatabaseSeeder extends Seeder
             SubcategorySeedeers::class,      // التصنيفات الفرعية
             RolesAndPermissionsSeeder::class,// الأدوار والصلاحيات
             SuperAdminSeedeers::class,       // السوبر أدمن
+            AdminSeeder::class,              // المشرفون
             UserSeedeers::class,             // المستخدمون + الأعمال + المنشورات
             ServiceSeedeers::class,          // الخدمات
             RequestServiceSeedeers::class,   // طلبات الخدمة
+            AdSeeder::class,                 // الإعلانات
+            IdentityVerificationSeeder::class,// طلبات توثيق الهوية
             ReportSeeder::class,             // البلاغات
         ]);
     }

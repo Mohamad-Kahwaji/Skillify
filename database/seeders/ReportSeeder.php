@@ -13,36 +13,40 @@ class ReportSeeder extends Seeder
     {
         $reports = [
             [
-                'post_title'    => 'مبروك: نالت شركتنا جائزة التميز في الجودة 2025',
-                'reporter_email' => 'user27@hirfa.sy',
-                'reason'        => 'منشور مكرر، نفس المحتوى تم نشره أكثر من مرة من حسابات مختلفة.',
+                'post_title' => 'مبروك: نالت شركتنا جائزة التميز في الجودة 2025',
+                'reason'     => 'منشور مكرر، نفس المحتوى تم نشره أكثر من مرة من حسابات مختلفة.',
             ],
             [
-                'post_title'    => 'أقدم خدمات صيانة كهربائية منزلية بأسعار مناسبة',
-                'reporter_email' => 'user16@hirfa.sy',
-                'reason'        => 'الأسعار المذكورة في المنشور غير حقيقية ومختلفة تماماً عمّا طُلب مني عند التواصل.',
+                'post_title' => 'أقدم خدمات صيانة كهربائية منزلية بأسعار مناسبة',
+                'reason'     => 'الأسعار المذكورة في المنشور غير حقيقية ومختلفة تماماً عمّا طُلب مني عند التواصل.',
             ],
             [
-                'post_title'    => 'تدريب على المحاسبة وإدارة الأعمال',
-                'reporter_email' => 'user8@hirfa.sy',
-                'reason'        => 'محتوى ترويجي غير مرتبط بمجال المنصة ويطلب التواصل عبر رقم خارجي مباشرة.',
+                'post_title' => 'تدريب على المحاسبة وإدارة الأعمال',
+                'reason'     => 'محتوى ترويجي غير مرتبط بمجال المنصة ويطلب التواصل عبر رقم خارجي مباشرة.',
             ],
         ];
 
-        foreach ($reports as $data) {
-            $post = Post::where('title', $data['post_title'])->first();
-            $user = User::where('email', $data['reporter_email'])->first();
+        $created  = 0;
+        $usedPost = [];
 
-            if (!$post || !$user) continue;
+        foreach ($reports as $data) {
+            $post = Post::where('title', $data['post_title'])->inRandomOrder()->first()
+                ?? Post::whereNotIn('id', $usedPost)->inRandomOrder()->first();
+            if (!$post) continue;
+            $usedPost[] = $post->id;
+
+            $reporter = User::where('id', '!=', $post->user_id)->inRandomOrder()->first();
+            if (!$reporter) continue;
 
             Report::firstOrCreate([
                 'post_id' => $post->id,
-                'user_id' => $user->id,
+                'user_id' => $reporter->id,
             ], [
                 'reason' => $data['reason'],
             ]);
+            $created++;
         }
 
-        $this->command->info('Reports seeded: ' . count($reports) . ' records.');
+        $this->command->info('Reports seeded: ' . $created . ' records.');
     }
 }
