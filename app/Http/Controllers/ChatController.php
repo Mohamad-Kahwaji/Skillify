@@ -15,7 +15,7 @@ class ChatController extends Controller
 
         $conversation = Conversation::where('id', $conversationId)
             ->where(fn($q) => $q->where('user_id_1', $userId)->orWhere('user_id_2', $userId))
-            ->with(['userOne', 'userTwo'])
+            ->with(['userOne.businesses', 'userTwo.businesses'])
             ->firstOrFail();
 
         $messages = Message::where('conversation_id', $conversationId)
@@ -25,7 +25,7 @@ class ChatController extends Controller
 
         $conversations = Conversation::where('user_id_1', $userId)
             ->orWhere('user_id_2', $userId)
-            ->with(['userOne', 'userTwo'])
+            ->with(['userOne.businesses', 'userTwo.businesses'])
             ->orderByDesc('last_message_at')
             ->get();
 
@@ -35,17 +35,27 @@ class ChatController extends Controller
 
         return Inertia::render('User/Chat', [
             'conversation'  => array_merge($conversation->toArray(), [
-                'user_one' => $conversation->userOne?->only('id','first_name','last_name'),
-                'user_two' => $conversation->userTwo?->only('id','first_name','last_name'),
+                'user_one' => $conversation->userOne ? array_merge($conversation->userOne->only(['id', 'first_name', 'last_name', 'profile_photo']), [
+                    'businesses' => $conversation->userOne->businesses ? $conversation->userOne->businesses->only(['id', 'image']) : null,
+                ]) : null,
+                'user_two' => $conversation->userTwo ? array_merge($conversation->userTwo->only(['id', 'first_name', 'last_name', 'profile_photo']), [
+                    'businesses' => $conversation->userTwo->businesses ? $conversation->userTwo->businesses->only(['id', 'image']) : null,
+                ]) : null,
             ]),
             'messages'      => $messages,
             'conversations' => $conversations->map(function ($c) use ($userId) {
                 return array_merge($c->toArray(), [
-                    'user_one' => $c->userOne ? $c->userOne->only('id','first_name','last_name') : null,
-                    'user_two' => $c->userTwo ? $c->userTwo->only('id','first_name','last_name') : null,
+                    'user_one' => $c->userOne ? array_merge($c->userOne->only(['id', 'first_name', 'last_name', 'profile_photo']), [
+                        'businesses' => $c->userOne->businesses ? $c->userOne->businesses->only(['id', 'image']) : null,
+                    ]) : null,
+                    'user_two' => $c->userTwo ? array_merge($c->userTwo->only(['id', 'first_name', 'last_name', 'profile_photo']), [
+                        'businesses' => $c->userTwo->businesses ? $c->userTwo->businesses->only(['id', 'image']) : null,
+                    ]) : null,
                 ]);
             }),
-            'otherUser'     => $otherUser ? $otherUser->only('id','first_name','last_name') : null,
+            'otherUser'     => $otherUser ? array_merge($otherUser->only(['id', 'first_name', 'last_name', 'profile_photo']), [
+                'businesses' => $otherUser->businesses ? $otherUser->businesses->only(['id', 'image']) : null,
+            ]) : null,
             'authId'        => $userId,
         ]);
     }

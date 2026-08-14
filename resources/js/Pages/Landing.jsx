@@ -122,8 +122,9 @@ function getCategoryIconPaths(name = '') {
     return CATEGORY_ICON_PATHS[rule ? rule[1] : 'briefcase'];
 }
 
-export default function Landing({ ads = [], topProfessionals = [], categories = [], stats = {} }) {
+export default function Landing({ ads = [], topProfessionals = [], categories = [], stats = {}, platform = {} }) {
     const [mobileOpen, setMobileOpen] = useState(false);
+    const whatsappUrl = (message = '') => `https://wa.me/${String(platform.whatsapp_number ?? '+963995227120').replace(/\D/g, '')}${message ? `?text=${encodeURIComponent(message)}` : ''}`;
 
     const displayProfessionals = topProfessionals.length > 0 ? topProfessionals : DEMO_PROFESSIONALS;
     const displayAds           = ads.length > 0            ? ads            : DEMO_ADS;
@@ -335,7 +336,7 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                                 <div key={pro.id} className="group bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center">
                                     <div className="relative mb-4">
                                         <img
-                                            src={pro.image ? storageUrl(pro.image) : avatar(pro.name)}
+                                            src={pro.user?.profile_photo ? storageUrl(pro.user.profile_photo) : (pro.image ? storageUrl(pro.image) : avatar(pro.name))}
                                             alt={pro.name}
                                             className="w-20 h-20 rounded-2xl object-cover ring-4 ring-[#F0FDFA] group-hover:ring-[#0D9488]/30 transition-all"
                                             onError={e => { e.target.src = avatar(pro.name); }}
@@ -393,13 +394,13 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                                         </div>
                                         <h3 className="font-bold text-gray-900 text-base mb-1.5 line-clamp-1">{ad.title}</h3>
                                         <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{ad.description}</p>
-                                        <Link href="/register"
+                                        <a href={whatsappUrl('مرحباً، أود إضافة إعلان على منصة Skillify.')} target="_blank" rel="noreferrer"
                                             className="mt-4 inline-flex items-center gap-1 text-sm text-[#0D9488] font-semibold hover:gap-2 transition-all">
-                                            اعرف أكثر
+                                            لإضافة إعلان تواصل معنا
                                             <svg className="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                                             </svg>
-                                        </Link>
+                                        </a>
                                     </div>
                                 </div>
                             ))}
@@ -452,9 +453,9 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                                 <img src="/images/logo.png" alt="Skillify" className="h-8 w-auto" />
                             </div>
                             <div className="flex gap-6 text-sm">
-                                <a href="#" className="hover:text-white transition-colors">من نحن</a>
+                                <Link href="/about" className="hover:text-white transition-colors">من نحن</Link>
                                 <a href="#" className="hover:text-white transition-colors">سياسة الخصوصية</a>
-                                <a href="#" className="hover:text-white transition-colors">تواصل معنا</a>
+                                <a href={whatsappUrl('مرحباً، أود الاستفسار عن منصة Skillify.')} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">تواصل معنا</a>
                             </div>
                             <p className="text-xs">© {new Date().getFullYear()} Skillify. جميع الحقوق محفوظة.</p>
                         </div>

@@ -268,6 +268,7 @@
     $fullName   = trim("$firstName $lastName") ?: ($author?->name ?? 'Unknown User');
     $initial    = strtoupper(substr($firstName ?: ($author?->name ?? 'U'), 0, 1));
     $color      = $palette[$post->user_id % count($palette)];
+    $profileUrl = $author?->profile_photo_url;
     $likeCount  = $post->likes->count();
     $isLiked    = $post->likes->contains('user_id', $authId);
     $cmtCount   = $post->comments->count();
@@ -280,7 +281,13 @@
     {{-- Header --}}
     <div class="post-head">
       <div class="post-author">
-        <div class="post-avatar" style="background:{{ $color }};">{{ $initial }}</div>
+        <div class="post-avatar" style="background:{{ $color }};">
+          @if($profileUrl)
+            <img src="{{ $profileUrl }}" alt="{{ $fullName }}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='{{ $initial }}'" />
+          @else
+            {{ $initial }}
+          @endif
+        </div>
         <div>
           <div class="post-author-name">{{ $fullName }}</div>
           <div class="post-author-time">

@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             AdSeeder::class,                 // الإعلانات
             IdentityVerificationSeeder::class,// طلبات توثيق الهوية
             ReportSeeder::class,             // البلاغات
-        ]);
+            PresentationDataSeeder::class,
+            ]);
     }
 }

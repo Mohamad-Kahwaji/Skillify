@@ -10,8 +10,10 @@ use App\Models\City;
 use App\Models\Conversation;
 use App\Models\Service;
 use App\Models\Subcategory;
+use App\Services\GeminiIdentityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -34,12 +36,14 @@ class UserDashboardController extends Controller
         $servicesCount = Service::where('is_active', true)
             ->where(function ($q) use ($userId) {
                 $q->whereNull('user_id')
-                  ->orWhere(function ($q2) use ($userId) {
-                      $q2->where('user_id', '!=', $userId)
-                         ->whereHas('user', fn($u) =>
-                             $u->whereHas('businesses', fn($b) => $b->where('status', 'active'))
-                         );
-                  });
+                    ->orWhere(function ($q2) use ($userId) {
+                        $q2->where('user_id', '!=', $userId)
+                            ->whereHas(
+                                'user',
+                                fn($u) =>
+                                $u->whereHas('businesses', fn($b) => $b->where('status', 'active'))
+                            );
+                    });
             })->count();
         $recentPosts        = $this->user()->posts()->latest()->limit(4)->get();
 
@@ -50,7 +54,8 @@ class UserDashboardController extends Controller
             ->take(6)
             ->get();
 
-        $topBusinesses = Business::where('status', 'active')
+        $topBusinesses = Business::with('user')
+            ->where('status', 'active')
             ->latest()
             ->take(6)
             ->get();
@@ -69,12 +74,13 @@ class UserDashboardController extends Controller
 
     // ── Profile ───────────────────────────────────────────────────────────────
 
-    public function profile()
+    public function profile(GeminiIdentityService $gemini)
     {
         $user          = $this->user()->load('businesses', 'services');
+        $this->verifyExistingProfilePhoto($user, $gemini);
         $business      = $user->businesses;
         $gallery       = $business ? $business->gallery()->get() : collect();
-        $userServices  = $user->services()->with(['category','subcategory','city'])->latest()->get();
+        $userServices  = $user->services()->with(['category', 'subcategory', 'city'])->latest()->get();
         $activeTypes   = ActiveTypebusiness::orderBy('name')->get();
         $categories    = Category::orderBy('name')->get();
         $subcategories = Subcategory::orderBy('name')->get();
@@ -91,10 +97,11 @@ class UserDashboardController extends Controller
             'subcategories' => $subcategories,
             'cities'        => $cities,
             'verification'  => $verification ? ['status' => $verification->status, 'rejection_reason' => $verification->rejection_reason] : null,
+            'profilePhotoAiVerified' => (bool) $user->profile_photo_ai_verified,
         ]);
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request, GeminiIdentityService $gemini)
     {
         $request->validate([
             'first_name'    => 'required|string|max:60',
@@ -108,9 +115,24 @@ class UserDashboardController extends Controller
         ]);
 
         $user = $this->user();
-        $data = $request->only('first_name','middle_name','last_name','phone','city','gender','birthdate');
+        $data = $request->only('first_name', 'middle_name', 'last_name', 'phone', 'city', 'gender', 'birthdate');
 
         if ($request->hasFile('profile_photo')) {
+            try {
+                $portraitResult = $gemini->analyseProfilePhoto($request->file('profile_photo'));
+
+                if (! ($portraitResult['is_human'] ?? false)) {
+                    return back()->withErrors([
+                        'profile_photo' => 'يجب رفع صورة شخصية واضحة لوجه إنسان. ' . ($portraitResult['reason'] ?? ''),
+                    ]);
+                }
+
+                $data['profile_photo_ai_verified'] = true;
+            } catch (\Throwable $exception) {
+                Log::warning('فشل فحص الصورة الشخصية الجديدة عبر Gemini: ' . $exception->getMessage());
+                $data['profile_photo_ai_verified'] = false;
+            }
+
             if ($user->profile_photo) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
@@ -120,6 +142,21 @@ class UserDashboardController extends Controller
         $user->update($data);
 
         return back()->with('success', 'تم تحديث المعلومات الشخصية بنجاح.');
+    }
+
+    private function verifyExistingProfilePhoto($user, GeminiIdentityService $gemini): void
+    {
+        if (! $user->profile_photo || $user->profile_photo_ai_verified !== null) {
+            return;
+        }
+
+        try {
+            $result = $gemini->analyseStoredProfilePhoto(Storage::disk('public')->path($user->profile_photo));
+            $user->forceFill(['profile_photo_ai_verified' => (bool) ($result['is_human'] ?? false)])->save();
+        } catch (\Throwable $exception) {
+            Log::warning('فشل فحص الصورة الشخصية المحفوظة عبر Gemini: ' . $exception->getMessage());
+            $user->forceFill(['profile_photo_ai_verified' => false])->save();
+        }
     }
 
     public function verifyPassword()
@@ -193,8 +230,15 @@ class UserDashboardController extends Controller
             'image'       => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only('name','description','category','subcategory','city','latitude','longitude','price','price_type');
-        $data['user_id']   = Auth::guard('users')->id();
+        $user = $this->user();
+        $business = $user->businesses;
+
+        if (!$business || $business->status !== 'active') {
+            return back()->with('error', 'يجب أن يكون لديك حساب أعمال نشط لإضافة خدمة.');
+        }
+
+        $data = $request->only('name', 'description', 'category', 'subcategory', 'city', 'latitude', 'longitude', 'price', 'price_type');
+        $data['user_id']   = $user->id;
         $data['is_active'] = true;
 
         if ($request->hasFile('image')) {
@@ -247,59 +291,6 @@ class UserDashboardController extends Controller
         return back()->with('success', 'تم حذف الخدمة.');
     }
 
-    // ── Explore ───────────────────────────────────────────────────────────────
-
-    public function explore(Request $request)
-    {
-        $userId = Auth::guard('users')->id();
-        $query  = Business::where('status', 'active');
-
-        if ($request->filled('q')) {
-            $q = $request->q;
-            $query->where(fn($b) => $b->where('name', 'like', "%$q%")
-                ->orWhere('name_job', 'like', "%$q%")
-                ->orWhere('activity', 'like', "%$q%")
-                ->orWhere('description', 'like', "%$q%"));
-        }
-
-        if ($request->filled('activity')) {
-            $query->where('activity', $request->activity);
-        }
-
-        $businesses = $query->latest()->paginate(12);
-
-        $businessUserIds = $businesses->pluck('user_id');
-        $conversations   = Conversation::where(function ($q) use ($userId, $businessUserIds) {
-            $q->where('user_id_1', $userId)->whereIn('user_id_2', $businessUserIds);
-        })->orWhere(function ($q) use ($userId, $businessUserIds) {
-            $q->where('user_id_2', $userId)->whereIn('user_id_1', $businessUserIds);
-        })->get()->keyBy(function ($c) use ($userId) {
-            return $c->user_id_1 == $userId ? $c->user_id_2 : $c->user_id_1;
-        });
-
-        // Load identity verification status for each business owner
-        $identityStatuses = \App\Models\IdentityVerification::whereIn('user_id', $businessUserIds)
-            ->select('user_id', 'status')
-            ->latest()
-            ->get()
-            ->keyBy('user_id');
-
-        $businesses->getCollection()->transform(function ($b) use ($conversations, $identityStatuses) {
-            $b->conversationId  = isset($conversations[$b->user_id]) ? $conversations[$b->user_id]->id : null;
-            $b->joined          = $b->created_at->diffForHumans();
-            $b->identity_status = $identityStatuses[$b->user_id]?->status ?? null;
-            return $b;
-        });
-
-        $activities = Business::where('status', 'active')->whereNotNull('activity')->distinct()->pluck('activity');
-
-        return Inertia::render('User/Explore', [
-            'businesses' => $businesses,
-            'activities' => $activities,
-            'filters'    => $request->only(['q', 'activity']),
-        ]);
-    }
-
     // ── Services browse ───────────────────────────────────────────────────────
 
     public function servicesBrowse(Request $request)
@@ -309,7 +300,7 @@ class UserDashboardController extends Controller
         $query = Service::where('is_active', true)
             ->where(function ($q) use ($myId) {
                 $q->whereNull('user_id')
-                  ->orWhere('user_id', '!=', $myId);
+                    ->orWhere('user_id', '!=', $myId);
             });
 
         if ($request->filled('q')) {
@@ -341,14 +332,18 @@ class UserDashboardController extends Controller
 
         $conversations = Conversation::where('user_id_1', $userId)
             ->orWhere('user_id_2', $userId)
-            ->with(['userOne', 'userTwo'])
+            ->with(['userOne.businesses', 'userTwo.businesses'])
             ->orderByDesc('last_message_at')
             ->orderByDesc('created_at')
             ->get()
             ->map(function ($c) {
                 return array_merge($c->toArray(), [
-                    'user_one' => $c->userOne ? $c->userOne->only('id','first_name','last_name') : null,
-                    'user_two' => $c->userTwo ? $c->userTwo->only('id','first_name','last_name') : null,
+                    'user_one' => $c->userOne ? array_merge($c->userOne->only(['id', 'first_name', 'last_name', 'profile_photo']), [
+                        'businesses' => $c->userOne->businesses ? $c->userOne->businesses->only(['id', 'image']) : null,
+                    ]) : null,
+                    'user_two' => $c->userTwo ? array_merge($c->userTwo->only(['id', 'first_name', 'last_name', 'profile_photo']), [
+                        'businesses' => $c->userTwo->businesses ? $c->userTwo->businesses->only(['id', 'image']) : null,
+                    ]) : null,
                 ]);
             });
 

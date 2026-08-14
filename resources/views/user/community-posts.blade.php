@@ -109,12 +109,19 @@
     $initial  = strtoupper(substr($author?->first_name ?? 'U', 0, 1));
     $colors   = ['#0D9488','#0891B2','#3B82F6','#8B5CF6','#F59E0B','#EF4444'];
     $color    = $colors[$post->user_id % count($colors)];
+    $profileUrl = $author?->profile_photo_url;
     $authorName = trim(($author?->first_name ?? '') . ' ' . ($author?->last_name ?? '')) ?: 'Unknown User';
   @endphp
   <div class="post-card" data-title="{{ strtolower($post->title ?? '') }}" data-author="{{ strtolower($authorName) }}">
     <div class="post-head">
       <div class="post-author">
-        <div class="post-avatar" style="background:{{ $color }};">{{ $initial }}</div>
+        <div class="post-avatar" style="background:{{ $color }};">
+          @if($profileUrl)
+            <img src="{{ $profileUrl }}" alt="{{ $authorName }}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='{{ $initial }}'" />
+          @else
+            {{ $initial }}
+          @endif
+        </div>
         <div>
           <div class="post-author-name">{{ $authorName }}</div>
           <div class="post-author-date">{{ $post->created_at->diffForHumans() }}</div>

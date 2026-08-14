@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AdminLayout, { C } from '../../Layouts/AdminLayout';
+import { storageUrl } from '../../utils/image';
 
 const AV = ['#6D28D9','#0D9488','#2563EB','#D97706','#DC2626','#0891B2','#7C3AED','#059669'];
 
@@ -39,6 +40,21 @@ function ServiceImage({ service, size = 40, colorIdx = 0 }) {
             fontSize: size * 0.38, color: '#fff',
         }}>
             <i className="ti ti-tool" />
+        </div>
+    );
+}
+
+function ProviderAvatar({ user, colorStart, colorEnd }) {
+    const [failed, setFailed] = useState(false);
+    const imageUrl = failed ? null : storageUrl(user?.profile_photo);
+    const initial = (user?.first_name?.[0] ?? 'م').toUpperCase();
+
+    return (
+        <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: `linear-gradient(135deg,${colorStart},${colorEnd})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', border: '2px solid #fff', boxShadow: '0 2px 7px rgba(15,23,42,0.12)' }}>
+            {imageUrl
+                ? <img src={imageUrl} alt="" onError={() => setFailed(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : initial
+            }
         </div>
     );
 }
@@ -190,14 +206,7 @@ export default function Services({ services }) {
                                     {/* Provider */}
                                     <td style={{ padding: '12px 16px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <div style={{
-                                                width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-                                                background: `linear-gradient(135deg,${uv1},${uv2})`,
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                fontSize: 11, fontWeight: 700, color: '#fff',
-                                            }}>
-                                                {(s.user?.first_name?.[0] ?? 'م').toUpperCase()}
-                                            </div>
+                                            <ProviderAvatar user={s.user} colorStart={uv1} colorEnd={uv2} />
                                             <div style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 110 }}>
                                                 {s.user?.first_name} {s.user?.last_name}
                                             </div>

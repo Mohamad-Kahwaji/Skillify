@@ -104,6 +104,7 @@ const NAV_GROUPS = [
     {
         group: 'الإعدادات',
         items: [
+            { href: '/super-admin/platform-settings',    icon: 'ti-settings', label: 'إعدادات المنصة' },
             { href: '/super-admin/categories',             icon: 'ti-tag',      label: 'الفئات' },
             { href: '/super-admin/subcategories',          icon: 'ti-tags',     label: 'الفئات الفرعية' },
             { href: '/super-admin/active-types',           icon: 'ti-activity', label: 'أنواع النشاط' },
@@ -194,7 +195,7 @@ export default function SuperAdminLayout({ children, title }) {
     };
 
     return (
-        <div dir="rtl" style={{ display: 'flex', minHeight: '100vh', background: '#F0F2F8', fontFamily: "'Cairo', 'Inter', sans-serif" }}>
+        <div dir="rtl" className="admin-interface admin-interface-super" style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: '#F0F2F8', fontFamily: "'Cairo', 'Inter', sans-serif" }}>
 
             {/* ── Mobile overlay ── */}
             {sidebarOpen && (
@@ -203,13 +204,13 @@ export default function SuperAdminLayout({ children, title }) {
 
             {/* ══════════════ Sidebar ══════════════ */}
             <aside
-                className={`w-[234px] max-w-[80vw] fixed top-0 bottom-0 right-0 z-40 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`admin-sidebar admin-sidebar-super w-[234px] max-w-[80vw] fixed top-0 bottom-0 right-0 z-40 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
                 style={{
                 background: 'linear-gradient(180deg, #16124A 0%, #1E1B4B 40%, #1A1845 100%)',
                 boxShadow: '-4px 0 24px rgba(0,0,0,0.18)',
             }}>
                 {/* Brand */}
-                <div style={{ padding: '20px 20px 16px', borderBottom: '0.5px solid rgba(167,139,250,0.15)' }}>
+                <div className="admin-sidebar-brand" style={{ padding: '20px 20px 16px', borderBottom: '0.5px solid rgba(167,139,250,0.15)' }}>
                     <img src="/images/logo.png" alt="Skillify" style={{ height: 36, width: 'auto', display: 'block' }} />
                     <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(167,139,250,0.55)', letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 7 }}>
                         Super Admin
@@ -217,11 +218,11 @@ export default function SuperAdminLayout({ children, title }) {
                 </div>
 
                 {/* Nav */}
-                <nav style={{ flex: 1, overflowY: 'auto', padding: '10px 10px' }}>
+                <nav className="admin-sidebar-nav" style={{ flex: 1, overflowY: 'auto', padding: '10px 10px' }}>
                     {NAV_GROUPS.map((grp, gi) => (
-                        <div key={gi} style={{ marginBottom: grp.group ? 6 : 0 }}>
+                        <div key={gi} className="admin-sidebar-group" style={{ marginBottom: grp.group ? 6 : 0 }}>
                             {grp.group && (
-                                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.1, textTransform: 'uppercase', color: 'rgba(167,139,250,0.35)', padding: '8px 12px 4px', userSelect: 'none' }}>
+                                <div className="admin-sidebar-group-label" style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.1, textTransform: 'uppercase', color: 'rgba(167,139,250,0.35)', padding: '8px 12px 4px', userSelect: 'none' }}>
                                     {grp.group}
                                 </div>
                             )}
@@ -229,7 +230,7 @@ export default function SuperAdminLayout({ children, title }) {
                                 const active  = current === href || current.startsWith(href + '/');
                                 const hasDot  = pendingBadge && pendingBiz > 0;
                                 return (
-                                    <Link key={href} href={href} style={{
+                                    <Link key={href} href={href} className={`admin-sidebar-link${active ? ' is-active' : ''}`} style={{
                                         display: 'flex', alignItems: 'center', gap: 10,
                                         padding: '8px 11px', borderRadius: 8, marginBottom: 2,
                                         fontSize: 12.5, fontWeight: active ? 700 : 400,
@@ -242,8 +243,8 @@ export default function SuperAdminLayout({ children, title }) {
                                         onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#C4B5FD'; } }}
                                         onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(148,163,184,0.75)'; } }}
                                     >
-                                        <div style={{ position: 'relative', width: 28, height: 28, flexShrink: 0 }}>
-                                            <div style={{
+                                        <div className="admin-sidebar-icon-wrap" style={{ position: 'relative', width: 28, height: 28, flexShrink: 0 }}>
+                                            <div className="admin-sidebar-icon" style={{
                                                 width: 28, height: 28, borderRadius: 7,
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 background: active ? 'rgba(167,139,250,0.20)' : 'rgba(255,255,255,0.04)',
@@ -274,8 +275,8 @@ export default function SuperAdminLayout({ children, title }) {
                 </nav>
 
                 {/* User profile */}
-                <div style={{ padding: '14px 16px', borderTop: '0.5px solid rgba(167,139,250,0.12)' }}>
-                    <Link href="/super-admin/profile" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, textDecoration: 'none' }}>
+                <div className="admin-sidebar-footer" style={{ padding: '14px 16px', borderTop: '0.5px solid rgba(167,139,250,0.12)' }}>
+                    <Link href="/super-admin/profile" className="admin-sidebar-account" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, textDecoration: 'none' }}>
                         <div style={{
                             width: 34, height: 34, borderRadius: '50%',
                             background: 'linear-gradient(135deg,#7C3AED,#A78BFA)',
@@ -295,7 +296,7 @@ export default function SuperAdminLayout({ children, title }) {
                     </Link>
                     <form method="POST" action="/super-admin/logout" style={{ margin: 0 }}>
                         <input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]')?.content ?? ''} />
-                        <button type="submit" style={{
+                        <button type="submit" className="admin-sidebar-logout" style={{
                             display: 'flex', alignItems: 'center', gap: 7,
                             color: 'rgba(239,68,68,0.8)', background: 'rgba(239,68,68,0.08)',
                             border: '0.5px solid rgba(239,68,68,0.18)',
@@ -314,7 +315,7 @@ export default function SuperAdminLayout({ children, title }) {
             </aside>
 
             {/* ══════════════ Main ══════════════ */}
-            <div className="mr-0 lg:mr-[234px]" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <div className="admin-shell-main mr-0 lg:mr-[234px]" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', minHeight: 0, minWidth: 0 }}>
 
                 {/* Header */}
                 <header className="px-4 sm:px-6 lg:px-7" style={{
@@ -356,7 +357,7 @@ export default function SuperAdminLayout({ children, title }) {
                     </div>
                 </header>
 
-                <main className="px-4 py-5 sm:px-6 lg:px-7 lg:py-6" style={{ flex: 1, minWidth: 0 }}>
+                <main className="admin-main px-4 py-5 sm:px-6 lg:px-7 lg:py-6" style={{ flex: 1, minHeight: 0, minWidth: 0 }}>
                     <Toast flash={flash} />
                     <LiveToast payload={liveToast} onClose={() => setLiveToast(null)} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 22, minWidth: 0 }}>

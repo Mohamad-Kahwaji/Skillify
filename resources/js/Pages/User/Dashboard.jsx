@@ -1,27 +1,16 @@
 import { Head, Link } from '@inertiajs/react';
+import { useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
+import { storageUrl } from '../../utils/image';
 
 function StatCard({ icon, iconBg, iconColor, value, label }) {
     return (
-        <div style={{
-            background: '#fff', border: '1px solid rgba(0,0,0,0.07)',
-            borderRadius: 14, padding: '18px 20px',
-            display: 'flex', alignItems: 'center', gap: 14,
-            transition: 'box-shadow 0.15s',
-        }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,.07)'}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-        >
-            <div style={{
-                width: 44, height: 44, borderRadius: 12,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 20, flexShrink: 0,
-                background: iconBg, color: iconColor,
-            }}>
+        <div className="ui-surface ui-interactive dashboard-stat-card">
+            <div className="dashboard-stat-icon" style={{ background: iconBg, color: iconColor }}>
                 <i className={`ti ${icon}`} />
             </div>
             <div>
-                <div style={{ fontSize: 24, fontWeight: 700, lineHeight: 1, color: '#0F172A' }}>{value}</div>
+                <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1, color: '#0F172A' }}>{value}</div>
                 <div style={{ fontSize: 12, color: '#475569', marginTop: 3 }}>{label}</div>
             </div>
         </div>
@@ -105,23 +94,35 @@ function ProCard({ business }) {
 }
 
 function AdCard({ ad }) {
+    const [imageFailed, setImageFailed] = useState(false);
+    const imageUrl = imageFailed ? null : storageUrl(ad.image);
+
     return (
-        <div style={{
-            background: '#fff', border: '1px solid rgba(0,0,0,0.07)',
-            borderRadius: 14, overflow: 'hidden',
-            transition: 'box-shadow 0.15s',
-        }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,.09)'}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-        >
-            {ad.image
-                ? <img src={`/storage/${ad.image}`} alt={ad.title} style={{ width: '100%', height: 120, objectFit: 'cover' }} />
-                : <div style={{ width: '100%', height: 120, background: 'linear-gradient(135deg,#134E4A,#0D9488)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 32 }}>📢</div>
-            }
-            <div style={{ padding: '14px 16px' }}>
-                <div style={{ fontSize: 11, color: '#0D9488', fontWeight: 600, marginBottom: 5 }}>🏢 {ad.company_name}</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>{ad.title}</div>
-                <div style={{ fontSize: 12, color: '#475569', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        <div className="ui-surface ui-interactive" style={{ overflow: 'hidden' }}>
+            <div style={{ position: 'relative', height: 148, overflow: 'hidden', background: 'linear-gradient(135deg,#134E4A,#0D9488)' }}>
+                {imageUrl ? (
+                    <img
+                        src={imageUrl}
+                        alt={ad.title}
+                        onError={() => setImageFailed(true)}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                        <i className="ti ti-speakerphone" style={{ fontSize: 34, opacity: 0.9 }} />
+                    </div>
+                )}
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(15,23,42,0) 45%,rgba(15,23,42,.45))', pointerEvents: 'none' }} />
+                {ad.company_name && (
+                    <span style={{ position: 'absolute', right: 12, bottom: 10, display: 'inline-flex', alignItems: 'center', gap: 5, maxWidth: 'calc(100% - 24px)', padding: '5px 9px', borderRadius: 8, background: 'rgba(15,23,42,.62)', color: '#fff', fontSize: 11, fontWeight: 700, backdropFilter: 'blur(5px)' }}>
+                        <i className="ti ti-building-store" />
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ad.company_name}</span>
+                    </span>
+                )}
+            </div>
+            <div style={{ padding: '14px 16px 16px' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 6, lineHeight: 1.45 }}>{ad.title}</div>
+                <div style={{ fontSize: 12, color: '#64748B', lineHeight: 1.65, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {ad.description}
                 </div>
             </div>
@@ -130,7 +131,6 @@ function AdCard({ ad }) {
 }
 
 const QUICK_LINKS = [
-    { href: '/user/explore',         icon: 'ti-search',     label: 'استكشاف' },
     { href: '/user/services',        icon: 'ti-briefcase',  label: 'الخدمات' },
     { href: '/user/community-posts', icon: 'ti-users',      label: 'المجتمع' },
     { href: '/user/profile',         icon: 'ti-user-edit',  label: 'ملفي الشخصي' },
@@ -146,17 +146,12 @@ export default function Dashboard({ postsCount, conversationsCount, servicesCoun
             <Head title="لوحة التحكم — Skillify" />
 
             {/* Welcome Banner */}
-            <div style={{
-                background: 'linear-gradient(135deg,#0D9488 0%,#0891B2 100%)',
-                borderRadius: 14, padding: '24px 28px', color: '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-                boxShadow: '0 4px 20px rgba(13,148,136,.25)',
-            }}>
-                <div>
-                    <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>مرحباً بك في Skillify! 👋</h2>
-                    <p style={{ fontSize: 13, opacity: 0.8 }}>{today} — إليك ما هو جديد</p>
+            <div className="dashboard-hero">
+                <div className="dashboard-hero-content">
+                    <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>مرحباً بك في Skillify</h2>
+                    <p style={{ fontSize: 13, opacity: 0.84 }}>{today} - إليك ما هو جديد</p>
                 </div>
-                <i className="ti ti-sparkles" style={{ fontSize: 52, opacity: 0.18, flexShrink: 0 }} />
+                <i className="ti ti-sparkles dashboard-hero-icon" style={{ fontSize: 50, opacity: 0.44, flexShrink: 0 }} />
             </div>
 
             {/* Stats */}
@@ -167,24 +162,14 @@ export default function Dashboard({ postsCount, conversationsCount, servicesCoun
             </div>
 
             {/* Quick Actions */}
-            <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: 14 }}>
+            <div className="ui-surface">
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.07)', fontWeight: 700, fontSize: 14 }}>
                     إجراءات سريعة
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4" style={{ padding: '16px 20px', gap: 10 }}>
+                <div className="dashboard-quick-grid">
                     {QUICK_LINKS.map(({ href, icon, label }) => (
-                        <Link key={href} href={href} style={{
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                            padding: '16px 12px', borderRadius: 10,
-                            background: '#fff', border: '1px solid rgba(0,0,0,0.07)',
-                            color: '#0F172A', fontSize: 12, fontWeight: 500,
-                            textAlign: 'center', textDecoration: 'none',
-                            transition: 'background 0.12s, border-color 0.12s',
-                        }}
-                            onMouseEnter={e => { e.currentTarget.style.background = '#F0FDFA'; e.currentTarget.style.borderColor = '#0D9488'; e.currentTarget.style.color = '#0D9488'; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.07)'; e.currentTarget.style.color = '#0F172A'; }}
-                        >
-                            <i className={`ti ${icon}`} style={{ fontSize: 24, color: '#0D9488' }} />
+                        <Link key={href} href={href} className="dashboard-quick-action ui-interactive">
+                            <i className={`ti ${icon}`} />
                             {label}
                         </Link>
                     ))}
@@ -193,13 +178,13 @@ export default function Dashboard({ postsCount, conversationsCount, servicesCoun
 
             {/* Recent Services */}
             <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#0F172A' }}>✨ خدمات جديدة</div>
-                    <Link href="/user/services" style={{ fontSize: 12, color: '#0D9488', fontWeight: 600, textDecoration: 'none' }}>عرض الكل ←</Link>
+                <div className="dashboard-section-heading">
+                    <div className="dashboard-section-title"><i className="ti ti-sparkles" style={{ color: '#0D9488' }} /> خدمات جديدة</div>
+                    <Link href="/user/services" className="dashboard-section-link">عرض الكل <i className="ti ti-arrow-left" /></Link>
                 </div>
                 {recentServices?.length > 0 ? (
                     <div style={grid3}>
-                        {recentServices.map(s => <ServiceCard key={s.id} service={s} />)}
+                        {recentServices.map(service => <ServiceCard key={service.id} service={service} />)}
                     </div>
                 ) : (
                     <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: 14, padding: '40px 20px', textAlign: 'center', color: '#94A3B8', fontSize: 13 }}>
@@ -211,9 +196,9 @@ export default function Dashboard({ postsCount, conversationsCount, servicesCoun
 
             {/* Top Professionals */}
             <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#0F172A' }}>⭐ أبرز المزودين</div>
-                    <Link href="/user/explore" style={{ fontSize: 12, color: '#0D9488', fontWeight: 600, textDecoration: 'none' }}>استكشاف الكل ←</Link>
+                <div className="dashboard-section-heading">
+                    <div className="dashboard-section-title"><i className="ti ti-award" style={{ color: '#F59E0B' }} /> أبرز المزودين</div>
+                    <Link href="/user/services" className="dashboard-section-link">عرض الخدمات <i className="ti ti-arrow-left" /></Link>
                 </div>
                 {topBusinesses?.length > 0 ? (
                     <div style={grid3}>
@@ -229,9 +214,9 @@ export default function Dashboard({ postsCount, conversationsCount, servicesCoun
 
             {/* Recent Ads */}
             <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#0F172A' }}>📢 أحدث الإعلانات</div>
-                    <Link href="/user/ads" style={{ fontSize: 12, color: '#0D9488', fontWeight: 600, textDecoration: 'none' }}>عرض الكل ←</Link>
+                <div className="dashboard-section-heading">
+                    <div className="dashboard-section-title"><i className="ti ti-speakerphone" style={{ color: '#2563EB' }} /> أحدث الإعلانات</div>
+                    <Link href="/user/ads" className="dashboard-section-link">عرض الكل <i className="ti ti-arrow-left" /></Link>
                 </div>
                 {recentAds?.length > 0 ? (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 14 }}>

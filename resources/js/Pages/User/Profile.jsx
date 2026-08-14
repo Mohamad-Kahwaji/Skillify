@@ -207,10 +207,7 @@ function StatusBadge({ status }) {
 function Avatar({ user, src, size = 80 }) {
     const [err, setErr] = useState(false);
     const initials = [user.first_name?.[0], user.last_name?.[0]].filter(Boolean).join('').toUpperCase();
-    const photoSrc = src
-        || (user.profile_photo
-            ? (user.profile_photo.startsWith('http') ? user.profile_photo : `/storage/${user.profile_photo}`)
-            : null);
+    const photoSrc = src || (user.profile_photo ? storageUrl(user.profile_photo) : null);
     return (
         <div style={{
             width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
@@ -492,7 +489,7 @@ function PanelHead({ icon, title, sub, action }) {
 }
 
 /* ═══════════════════════════════════════════════════════════ */
-export default function Profile({ user, business, gallery, userServices, activeTypes, categories, subcategories, cities, flash, verification }) {
+export default function Profile({ user, business, gallery, userServices, activeTypes, categories, subcategories, cities, flash, verification, profilePhotoAiVerified }) {
 
     const [tab, setTab]               = useState('profile');
     const [imgPreview, setImgPreview]         = useState(business?.image ? storageUrl(business.image) : null);
@@ -511,7 +508,7 @@ export default function Profile({ user, business, gallery, userServices, activeT
 
     /* ── forms ── */
     const [profilePhotoPreview, setProfilePhotoPreview] = useState(
-        user.profile_photo ? (user.profile_photo.startsWith('http') ? user.profile_photo : `/storage/${user.profile_photo}`) : null
+        user.profile_photo ? storageUrl(user.profile_photo) : null
     );
     const profilePhotoRef = useRef();
 
@@ -676,6 +673,7 @@ export default function Profile({ user, business, gallery, userServices, activeT
     const fullName     = [user.first_name, user.middle_name, user.last_name].filter(Boolean).join(' ');
     const joinDate     = user.created_at ? new Date(user.created_at).toLocaleDateString('ar-SY', { year: 'numeric', month: 'long' }) : '—';
     const genderMap    = { male: 'ذكر', female: 'أنثى' };
+    const hasVerifiedProfilePhoto = Boolean(user.profile_photo && profilePhotoAiVerified);
 
     const TABS = [
         { key: 'profile',  icon: 'ti-user',     label: 'ملفي الشخصي' },
@@ -687,8 +685,46 @@ export default function Profile({ user, business, gallery, userServices, activeT
     return (
         <UserLayout title="الملف الشخصي">
             <Head title="حسابي — Skillify" />
+            <style>{`
+                .profile-workspace { display:flex; flex-direction:column; gap:20px; }
+                .profile-hero { background:#fff; border:1px solid rgba(15,23,42,.08); border-radius:22px; overflow:hidden; box-shadow:0 14px 34px rgba(15,23,42,.06); }
+                .profile-cover { height:155px; position:relative; overflow:hidden; background:linear-gradient(118deg,#0f766e 0%,#134e4a 58%,#052e16 100%); }
+                .profile-summary { padding:0 26px 22px; position:relative; }
+                .profile-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+                .profile-stats { display:flex; gap:10px; flex-wrap:wrap; padding-top:4px; }
+                .profile-tabs { display:flex; gap:4px; padding:5px; overflow-x:auto; background:#fff; border:1px solid rgba(15,23,42,.08); border-radius:16px; box-shadow:0 7px 20px rgba(15,23,42,.035); }
+                .profile-tab { flex:1 0 150px; }
+                .business-workspace { display:flex; flex-direction:column; gap:24px; }
+                .business-overview { display:flex; align-items:center; gap:20px; padding:22px; background:linear-gradient(135deg,#f8fffe,#ecfdf5); }
+                .business-details { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+                .profile-service-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+                .profile-service-card { border:1px solid rgba(15,23,42,.08) !important; box-shadow:0 8px 22px rgba(15,23,42,.04) !important; }
+                .profile-details { border-top:1px solid #edf2f3; }
+                .profile-detail-row { min-height:58px; display:flex; align-items:center; gap:11px; padding:12px 2px; border-bottom:1px solid #edf2f3; }
+                .profile-detail-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:9px; background:#f0fdfa; color:#0f766e; flex-shrink:0; }
+                .profile-detail-label { min-width:88px; color:#64748b; font-size:11px; font-weight:700; }
+                .profile-detail-value { flex:1; min-width:0; color:#0f172a; font-size:13px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+                .profile-detail-copy { width:30px; height:30px; display:flex; align-items:center; justify-content:center; border:0; border-radius:8px; background:transparent; color:#94a3b8; cursor:pointer; }
+                .profile-detail-copy:hover { background:#f0fdfa; color:#0f766e; }
+                @media (max-width:640px) {
+                    .profile-workspace { gap:14px; }
+                    .profile-hero { border-radius:16px; }
+                    .profile-cover { height:120px; }
+                    .profile-summary { padding:0 16px 18px; }
+                    .profile-heading { margin-top:2px; }
+                    .profile-stats { width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+                    .profile-stats > div { min-width:0 !important; padding:8px 5px !important; }
+                    .profile-tabs { border-radius:13px; }
+                    .profile-tab { flex-basis:132px; font-size:12px !important; padding:9px 12px !important; }
+                    .business-overview { align-items:flex-start; gap:14px; padding:16px; }
+                    .business-details { grid-template-columns:1fr; }
+                    .profile-service-grid { grid-template-columns:1fr; }
+                    .profile-detail-row { padding:11px 0; }
+                    .profile-detail-label { min-width:72px; }
+                }
+            `}</style>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div className="profile-workspace">
 
                 {/* flash */}
                 {flash?.success && (
@@ -701,16 +737,14 @@ export default function Profile({ user, business, gallery, userServices, activeT
                 )}
 
                 {/* ══ HERO CARD ══════════════════════════════════════════════ */}
-                <div style={{ background: '#fff', border: '1.5px solid #F1F5F9', borderRadius: 22, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+                <div className="profile-hero">
 
                     {/* ── Cover strip ── */}
-                    <div style={{ height: 155, background: `linear-gradient(135deg,#0D9488 0%,#134E4A 55%,#052e16 100%)`, position: 'relative', overflow: 'hidden' }}>
+                    <div className="profile-cover">
                         {/* business image blurred as cover background */}
                         {editImgPreview && <img src={editImgPreview} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.18, filter: 'blur(10px)', transform: 'scale(1.12)', pointerEvents: 'none' }} onError={() => {}} />}
                         {/* grid mesh */}
                         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)', backgroundSize: '32px 32px' }} />
-                        {/* glow blob */}
-                        <div style={{ position: 'absolute', top: -40, right: 60, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', filter: 'blur(34px)', pointerEvents: 'none' }} />
                         {/* join date */}
                         <div style={{ position: 'absolute', top: 16, left: 20, fontSize: 11.5, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 5, fontFamily: FONT }}>
                             <i className="ti ti-calendar-event" style={{ fontSize: 11 }} /> عضو منذ {joinDate}
@@ -724,12 +758,12 @@ export default function Profile({ user, business, gallery, userServices, activeT
                     </div>
 
                     {/* ── White section ── */}
-                    <div style={{ padding: '0 26px 22px', position: 'relative' }}>
+                    <div className="profile-summary">
 
                         {/* Avatar — overlaps cover, absolutely positioned */}
                         <div style={{ position: 'relative', display: 'inline-block', marginTop: -52, marginBottom: 12 }}>
                             <div style={{ border: '4.5px solid #fff', borderRadius: '50%', boxShadow: '0 6px 24px rgba(0,0,0,0.18)', display: 'inline-block' }}>
-                                <Avatar user={user} src={business ? (editImgPreview || null) : null} size={104} />
+                                <Avatar user={user} size={104} />
                             </div>
                             {/* Verification dot on avatar */}
                             {verification?.status === 'approved' ? (
@@ -748,7 +782,7 @@ export default function Profile({ user, business, gallery, userServices, activeT
                         </div>
 
                         {/* Name row */}
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+                        <div className="profile-heading">
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
                                     <span style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', lineHeight: 1.2 }}>{fullName}</span>
@@ -779,7 +813,7 @@ export default function Profile({ user, business, gallery, userServices, activeT
                             </div>
 
                             {/* Stats chips — top-right of white area */}
-                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', paddingTop: 4 }}>
+                            <div className="profile-stats">
                                 {[
                                     { val: svcCount,           label: 'خدمة',      icon: 'ti-tool' },
                                     { val: galleryCount,       label: 'معرض',      icon: 'ti-photo' },
@@ -801,11 +835,11 @@ export default function Profile({ user, business, gallery, userServices, activeT
                 <VerificationBanner verification={verification} />
 
                 {/* ══ TAB BAR ══════════════════════════════════════════════ */}
-                <div style={{ background: '#fff', border: '1.5px solid #F1F5F9', borderRadius: 16, padding: 5, boxShadow: '0 2px 10px rgba(0,0,0,0.04)', display: 'flex', gap: 3 }}>
+                <div className="profile-tabs">
                     {TABS.map(({ key, icon, label, badge, dot }) => {
                         const active = tab === key;
                         return (
-                            <button key={key} onClick={() => { setTab(key); if (key === 'business') setBizDot(false); }} style={{
+                            <button key={key} className="profile-tab" onClick={() => { setTab(key); if (key === 'business') setBizDot(false); }} style={{
                                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                                 padding: '10px 16px', borderRadius: 12, position: 'relative',
                                 fontSize: 13, fontWeight: active ? 700 : 600, border: 'none',
@@ -842,16 +876,29 @@ export default function Profile({ user, business, gallery, userServices, activeT
                         <PanelHead icon="ti-user-edit" title="المعلومات الشخصية" sub="بياناتك الأساسية المسجّلة على المنصة" />
                         <div style={{ padding: 28 }}>
 
-                            {/* Personal info overview */}
-                            <div style={{ background: '#FAFBFC', border: '1.5px solid #F1F5F9', borderRadius: 18, padding: 22, marginBottom: 30 }}>
-                                <SectionTitle icon="ti-address-book">نظرة عامة</SectionTitle>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 12 }}>
-                                    <PersonalInfoTile icon="ti-phone"           label="الهاتف"         val={user.phone || '—'} copyable />
-                                    <PersonalInfoTile icon="ti-mail"            label="البريد"         val={user.email || '—'} copyable />
-                                    <PersonalInfoTile icon="ti-map-pin"         label="المدينة"        val={user.city  || '—'} />
-                                    <PersonalInfoTile icon="ti-gender-bigender" label="الجنس"          val={genderMap[user.gender] || '—'} />
-                                    <PersonalInfoTile icon="ti-cake"            label="تاريخ الميلاد"  val={user.birthdate ? new Date(user.birthdate).toLocaleDateString('ar-SY') : '—'} />
-                                    <PersonalInfoTile icon="ti-calendar"        label="تاريخ الانضمام" val={joinDate} />
+                            {/* Compact account details */}
+                            <div style={{ marginBottom: 30 }}>
+                                <SectionTitle icon="ti-id">بيانات الحساب</SectionTitle>
+                                <div className="profile-details">
+                                    {[
+                                        { icon: 'ti-phone', label: 'الهاتف', value: user.phone || '—', copyable: true },
+                                        { icon: 'ti-mail', label: 'البريد الإلكتروني', value: user.email || '—', copyable: true },
+                                        { icon: 'ti-map-pin', label: 'المدينة', value: user.city || '—' },
+                                        { icon: 'ti-gender-bigender', label: 'الجنس', value: genderMap[user.gender] || '—' },
+                                        { icon: 'ti-cake', label: 'تاريخ الميلاد', value: user.birthdate ? new Date(user.birthdate).toLocaleDateString('ar-SY') : '—' },
+                                        { icon: 'ti-calendar', label: 'عضو منذ', value: joinDate },
+                                    ].map(detail => (
+                                        <div className="profile-detail-row" key={detail.label}>
+                                            <div className="profile-detail-icon"><i className={`ti ${detail.icon}`} /></div>
+                                            <span className="profile-detail-label">{detail.label}</span>
+                                            <span className="profile-detail-value">{detail.value}</span>
+                                            {detail.copyable && (
+                                                <button type="button" className="profile-detail-copy" title={`نسخ ${detail.label}`} onClick={() => navigator.clipboard?.writeText(detail.value)}>
+                                                    <i className="ti ti-copy" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
@@ -1058,12 +1105,12 @@ export default function Profile({ user, business, gallery, userServices, activeT
                         <div style={{ padding: 28 }}>
 
                             {business ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                                <div className="business-workspace">
                                     {/* Business hero banner */}
                                     <div style={{ borderRadius: 16, overflow: 'hidden', border: `1.5px solid ${T}18` }}>
                                         {/* coloured top bar */}
                                         <div style={{ height: 6, background: `linear-gradient(90deg,${T},${T2})` }} />
-                                        <div style={{ padding: '20px 22px', background: 'linear-gradient(135deg,#F8FFFE,#F0FDF8)', display: 'flex', alignItems: 'center', gap: 20 }}>
+                                        <div className="business-overview">
                                             <BizLogo business={business} />
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
@@ -1100,7 +1147,7 @@ export default function Profile({ user, business, gallery, userServices, activeT
                                     )}
 
                                     {/* Details grid */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 10 }}>
+                                    <div className="business-details">
                                         <InfoCard icon="ti-phone"              label="هاتف العمل"     val={business.number || '—'} />
                                         <InfoCard icon="ti-building-community" label="المدينة"        val={business.city || user.city || '—'} />
                                         <InfoCard icon="ti-map"                label="المنطقة / الحي" val={business.area || '—'} />
@@ -1138,7 +1185,7 @@ export default function Profile({ user, business, gallery, userServices, activeT
                                                     <FInput value={editBizForm.data.street} onChange={e => editBizForm.setData('street', e.target.value)} placeholder="مثال: شارع الجلاء..." />
                                                 </Field>
                                             </div>
-                                            <Field label="صورة الحساب" icon="ti-photo" error={editBizForm.errors.image}>
+                                            <Field label="الصورة الشخصية" icon="ti-user-circle" error={editBizForm.errors.image}>
                                                 <div style={{ marginTop: 4, marginBottom: 20 }}>
                                                     <ImageUploadZone
                                                         preview={editImgPreview}
@@ -1387,16 +1434,27 @@ export default function Profile({ user, business, gallery, userServices, activeT
                                                 />
                                             </div>
                                         </div>
-                                        {/* Logo — required */}
+                                        {/* AI-validated personal portrait */}
+                                        {hasVerifiedProfilePhoto ? (
+                                            <div style={{ marginBottom: 26, display: 'flex', alignItems: 'center', gap: 14, padding: 16, background: '#F0FDF4', border: '1.5px solid #BBF7D0', borderRadius: 16 }}>
+                                                <Avatar user={user} size={54} />
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 800, color: '#166534', marginBottom: 4 }}>
+                                                        <i className="ti ti-shield-check" style={{ fontSize: 16 }} /> الصورة الشخصية موثقة
+                                                    </div>
+                                                    <div style={{ fontSize: 11.5, color: '#15803D', lineHeight: 1.55 }}>سيتم استخدام صورتك الشخصية الحالية لحساب الأعمال، ولا تحتاج إلى رفعها مرة أخرى.</div>
+                                                </div>
+                                            </div>
+                                        ) : (
                                         <div style={{ marginBottom: 26 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                                                 <div style={{ width: 3, height: 16, borderRadius: 2, background: `linear-gradient(180deg,${T},${T2})` }} />
-                                                <i className="ti ti-building-store" style={{ color: T, fontSize: 13 }} />
+                                                <i className="ti ti-user-circle" style={{ color: T, fontSize: 13 }} />
                                                 <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>
-                                                    شعار النشاط التجاري
+                                                    الصورة الشخصية
                                                     <span style={{ color: '#EF4444', marginRight: 4 }}>*</span>
                                                 </span>
-                                                <span style={{ fontSize: 11, color: '#94A3B8', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 6, padding: '2px 8px', fontWeight: 600 }}>إلزامي</span>
+                                                <span style={{ fontSize: 11, color: '#94A3B8', background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: 6, padding: '2px 8px', fontWeight: 600 }}>إلزامي</span>
                                             </div>
                                             <div style={{ background: bizForm.errors.image ? '#FFF5F5' : '#FAFAFA', border: `1.5px solid ${bizForm.errors.image ? '#FCA5A5' : `${T}22`}`, borderRadius: 16, padding: 20 }}>
                                                 <ImageUploadZone
@@ -1408,7 +1466,7 @@ export default function Profile({ user, business, gallery, userServices, activeT
                                                 {!imgPreview && (
                                                     <p style={{ fontSize: 11.5, color: '#94A3B8', textAlign: 'center', marginTop: 12, marginBottom: 0 }}>
                                                         <i className="ti ti-info-circle" style={{ fontSize: 12, marginLeft: 4 }} />
-                                                        الصورة مطلوبة — ستظهر بجانب اسم عملك على المنصة
+                                                        أضف صورة شخصية واضحة لوجهك. يتم التحقق منها بالذكاء الاصطناعي قبل قبول الحساب.
                                                     </p>
                                                 )}
                                             </div>
@@ -1418,6 +1476,7 @@ export default function Profile({ user, business, gallery, userServices, activeT
                                                 </p>
                                             )}
                                         </div>
+                                        )}
 
                                         {/* ── معرض الأعمال ── */}
                                         <div style={{ marginBottom: 26, padding: 22, background: `${T}05`, border: `1.5px solid ${T}22`, borderRadius: 18 }}>
@@ -1534,7 +1593,7 @@ export default function Profile({ user, business, gallery, userServices, activeT
                                     </a>
                                 </div>
                             ) : (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
+                                <div className="profile-service-grid">
                                     {(userServices ?? []).map(s => {
                                         const imgSrc = s.image ? (s.image.startsWith('http') ? s.image : `/storage/${s.image}`) : null;
                                         const stMap  = {
@@ -1544,7 +1603,7 @@ export default function Profile({ user, business, gallery, userServices, activeT
                                         };
                                         const st = stMap[s.status] ?? stMap.pending;
                                         return (
-                                            <div key={s.id}
+                                            <div key={s.id} className="profile-service-card ui-interactive"
                                                 style={{ border: '1.5px solid #F1F5F9', borderRadius: 16, overflow: 'hidden', background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', transition: 'box-shadow .15s, transform .15s' }}
                                                 onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,0,0,0.09)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                                                 onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.04)'; e.currentTarget.style.transform = 'translateY(0)'; }}

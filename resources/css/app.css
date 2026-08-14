@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
@@ -8,30 +7,597 @@
 
 @theme {
     --font-sans: 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
-
     /* Skillify Brand — Teal */
-    --color-brand:       #0D9488;
-    --color-brand-dark:  #134E4A;
+    --color-brand: #0D9488;
+    --color-brand-dark: #134E4A;
     --color-brand-hover: #0F766E;
     --color-brand-light: #F0FDFA;
-    --color-brand-text:  #134E4A;
-    --color-sidebar:     #134E4A;
+    --color-brand-text: #134E4A;
+    --color-sidebar: #134E4A;
 }
 
+
 /* ── Skillify Global CSS Variables (used by Blade layouts) ── */
+
 :root {
-    --skillify-primary:       #0D9488;
+    --skillify-primary: #0D9488;
     --skillify-primary-hover: #0F766E;
-    --skillify-primary-dark:  #134E4A;
+    --skillify-primary-dark: #134E4A;
     --skillify-primary-light: #F0FDFA;
-    --skillify-primary-text:  #134E4A;
-    --skillify-sidebar:       #134E4A;
+    --skillify-primary-text: #134E4A;
+    --skillify-sidebar: #134E4A;
 }
+
 
 /* Edge/IE inject their own native "reveal password" and "clear field" icons
    inside password/text inputs. We already render our own custom eye-toggle
    button, so without this they show up doubled — hide the native ones. */
+
 input::-ms-reveal,
 input::-ms-clear {
     display: none;
+}
+
+
+/* Shared field treatment for standard form selects. Custom listboxes use the
+   classes below when the opened menu itself needs a consistent application UI. */
+
+select:not([multiple]) {
+    min-height: 42px;
+    border: 1px solid rgba(148, 163, 184, 0.34);
+    border-radius: 10px;
+    color: #334155;
+    background-color: #fff;
+    transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+
+select:not([multiple]):hover:not(:disabled) {
+    border-color: rgba(13, 148, 136, 0.45);
+    background-color: #fcfefe;
+}
+
+select:not([multiple]):focus {
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.14);
+}
+
+.skillify-listbox {
+    position: relative;
+    min-width: 116px;
+    z-index: 10;
+}
+
+.skillify-listbox-trigger {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 9px;
+    border: 1px solid rgba(15, 23, 42, .08);
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #475569;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.skillify-listbox-trigger:hover:not(:disabled),
+.skillify-listbox-trigger:focus-visible {
+    border-color: rgba(13, 148, 136, .48);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, .12);
+    outline: none;
+}
+
+.skillify-listbox-trigger:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+.skillify-listbox-label {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.skillify-listbox-label span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.skillify-listbox-label i {
+    color: #0d9488;
+    font-size: 15px;
+}
+
+.skillify-listbox-chevron {
+    flex: 0 0 auto;
+    color: #94a3b8;
+    font-size: 15px;
+}
+
+.skillify-listbox-options {
+    position: absolute;
+    top: calc(100% + 7px);
+    right: 0;
+    left: 0;
+    min-width: 174px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 6px;
+    border: 1px solid rgba(15, 23, 42, .1);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 20px 38px rgba(15, 23, 42, .16);
+    animation: skillify-listbox-in .14s ease-out;
+}
+
+.skillify-listbox-option {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #475569;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    text-align: right;
+    transition: background .12s ease, color .12s ease;
+}
+
+.skillify-listbox-option:hover,
+.skillify-listbox-option.is-active {
+    background: #f0fdfa;
+    color: #0f766e;
+}
+
+.skillify-listbox-option.is-active {
+    font-weight: 700;
+}
+
+.skillify-listbox-option i {
+    font-size: 15px;
+}
+
+@keyframes skillify-listbox-in {
+    from {
+        opacity: 0;
+        transform: translateY(-5px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* Shared interactive language for the user dashboard and future user pages. */
+
+:where(a, button, input, select, textarea):focus-visible {
+    outline: 3px solid rgba(13, 148, 136, .24);
+    outline-offset: 2px;
+}
+
+.ui-surface {
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, .08);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .035);
+}
+
+.ui-interactive {
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+.ui-interactive:hover {
+    transform: translateY(-3px);
+    border-color: rgba(13, 148, 136, .25) !important;
+    box-shadow: 0 15px 30px rgba(15, 23, 42, .09) !important;
+}
+
+.dashboard-hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 132px;
+    padding: 26px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-radius: 18px;
+    color: #fff;
+    background: linear-gradient(118deg, #0f766e 0%, #0d9488 52%, #2563a9 100%);
+    box-shadow: 0 18px 34px rgba(13, 148, 136, .2);
+}
+
+.dashboard-hero::after {
+    content: '';
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    top: -120px;
+    left: 8%;
+    border: 30px solid rgba(255, 255, 255, .11);
+    border-radius: 50%;
+}
+
+.dashboard-hero-content,
+.dashboard-hero-icon {
+    position: relative;
+    z-index: 1;
+}
+
+.dashboard-stat-card {
+    min-height: 88px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.dashboard-stat-icon {
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    font-size: 21px;
+    flex-shrink: 0;
+}
+
+.dashboard-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding: 16px 20px 20px;
+}
+
+.dashboard-quick-action {
+    min-height: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid rgba(15, 23, 42, .08);
+    border-radius: 12px;
+    background: #fff;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.dashboard-quick-action i {
+    color: #0d9488;
+    font-size: 23px;
+}
+
+.dashboard-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.dashboard-section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0f172a;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.dashboard-section-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    color: #0f766e;
+    background: #f0fdfa;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .15s ease, color .15s ease;
+}
+
+.dashboard-section-link:hover {
+    background: #ccfbf1;
+    color: #115e59;
+}
+
+
+/* Shared operational polish for every Admin and Super Admin page. */
+
+.admin-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.admin-main input:not([type='checkbox']):not([type='radio']),
+.admin-main textarea,
+.admin-main select {
+    transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+
+.admin-main input:not([type='checkbox']):not([type='radio']):hover,
+.admin-main textarea:hover,
+.admin-main select:hover {
+    border-color: rgba(14, 165, 233, .42) !important;
+    background-color: #fff !important;
+}
+
+.admin-main input:not([type='checkbox']):not([type='radio']):focus,
+.admin-main textarea:focus,
+.admin-main select:focus {
+    border-color: #0ea5e9 !important;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, .13) !important;
+}
+
+.admin-interface-super .admin-main input:not([type='checkbox']):not([type='radio']):focus,
+.admin-interface-super .admin-main textarea:focus,
+.admin-interface-super .admin-main select:focus {
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, .13) !important;
+}
+
+.admin-main button:not(:disabled),
+.admin-main a {
+    transition: transform .14s ease, box-shadow .14s ease, filter .14s ease, background-color .14s ease, border-color .14s ease;
+}
+
+.admin-main button:not(:disabled):active,
+.admin-main a:active {
+    transform: translateY(1px) scale(.99);
+}
+
+.admin-main table {
+    min-width: 720px;
+}
+
+.admin-main table tbody tr {
+    transition: background-color .14s ease;
+}
+
+.admin-main table tbody tr:hover {
+    background-color: rgba(248, 250, 252, .9) !important;
+}
+
+.admin-interface-standard .admin-main table thead tr {
+    background: linear-gradient(90deg, #f8fafc, #f0f9ff) !important;
+}
+
+.admin-interface-super .admin-main table thead tr {
+    background: linear-gradient(90deg, #fafaff, #f5f3ff) !important;
+}
+
+.admin-main [style*='overflowX: auto'] {
+    scrollbar-color: rgba(100, 116, 139, .4) transparent;
+    scrollbar-width: thin;
+}
+
+.admin-main [style*='overflowX: auto']::-webkit-scrollbar {
+    height: 7px;
+}
+
+.admin-main [style*='overflowX: auto']::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, .35);
+    border-radius: 99px;
+}
+
+
+/* Administrative navigation: dense enough for operations, calm enough for long sessions. */
+
+.admin-sidebar {
+    overflow: hidden;
+    height: 100dvh;
+}
+
+.admin-sidebar-brand {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.admin-sidebar-brand::after {
+    content: '';
+    position: absolute;
+    inset: auto 18px 0;
+    height: 1px;
+    opacity: .42;
+}
+
+.admin-sidebar-standard .admin-sidebar-brand::after {
+    background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+}
+
+.admin-sidebar-super .admin-sidebar-brand::after {
+    background: linear-gradient(90deg, transparent, #a78bfa, transparent);
+}
+
+.admin-sidebar-nav {
+    min-height: 0;
+    overscroll-behavior: contain;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(148, 163, 184, .25) transparent;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar {
+    width: 5px;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar-thumb {
+    border-radius: 99px;
+    background: rgba(148, 163, 184, .25);
+}
+
+.admin-sidebar-group {
+    position: relative;
+}
+
+.admin-sidebar-group-label {
+    user-select: none;
+}
+
+.admin-sidebar-link {
+    min-height: 42px;
+    position: relative;
+    isolation: isolate;
+}
+
+.admin-sidebar-link::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 2px;
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity .16s ease;
+}
+
+.admin-sidebar-standard .admin-sidebar-link::before {
+    background: linear-gradient(90deg, rgba(56, 189, 248, .14), rgba(13, 148, 136, .08));
+}
+
+.admin-sidebar-super .admin-sidebar-link::before {
+    background: linear-gradient(90deg, rgba(167, 139, 250, .18), rgba(124, 58, 237, .08));
+}
+
+.admin-sidebar-link:hover::before,
+.admin-sidebar-link.is-active::before {
+    opacity: 1;
+}
+
+.admin-sidebar-link.is-active {
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, .08), 0 4px 13px rgba(0, 0, 0, .12);
+}
+
+.admin-sidebar-icon {
+    transition: transform .16s ease, background-color .16s ease, box-shadow .16s ease;
+}
+
+.admin-sidebar-link:hover .admin-sidebar-icon {
+    transform: translateX(-2px) scale(1.06);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .14);
+}
+
+.admin-sidebar-footer {
+    background: rgba(2, 6, 23, .16);
+    flex-shrink: 0;
+}
+
+.admin-sidebar-account {
+    padding: 8px;
+    border-radius: 10px;
+    transition: background-color .16s ease, transform .16s ease;
+}
+
+.admin-sidebar-account:hover {
+    background: rgba(255, 255, 255, .06);
+    transform: translateY(-1px);
+}
+
+.admin-sidebar-logout {
+    justify-content: center;
+    min-height: 32px;
+    transition: background-color .16s ease, color .16s ease, transform .16s ease !important;
+}
+
+.admin-sidebar-logout:hover {
+    transform: translateY(-1px);
+}
+
+.admin-shell-main {
+    overflow: hidden;
+}
+
+.admin-main {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, .38) transparent;
+}
+
+.admin-main::-webkit-scrollbar {
+    width: 9px;
+}
+
+.admin-main::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-main::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, .34);
+    border: 2px solid transparent;
+    border-radius: 99px;
+    background-clip: padding-box;
+}
+
+.admin-main::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(71, 85, 105, .55);
+}
+
+@media (max-width: 1023px) {
+    .admin-sidebar {
+        box-shadow: -12px 0 34px rgba(15, 23, 42, .28) !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-main {
+        gap: 14px;
+    }
+
+    .admin-main>div[style*='justify-content: space-between'] {
+        gap: 10px !important;
+    }
+
+    .admin-main input:not([type='checkbox']):not([type='radio']),
+    .admin-main select,
+    .admin-main textarea {
+        font-size: 16px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-hero {
+        min-height: 118px;
+        padding: 20px;
+        align-items: flex-start;
+    }
+
+    .dashboard-hero-icon {
+        font-size: 38px !important;
+    }
+
+    .dashboard-quick-grid {
+        grid-template-columns: 1fr;
+        padding: 12px;
+    }
+
+    .dashboard-quick-action {
+        min-height: 58px;
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 0 16px;
+    }
 }

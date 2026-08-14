@@ -35,30 +35,55 @@ class User extends Authenticatable
     }
 
     public function getLocationAttribute()
-{
-    return [
-        'personal' => [
-            'latitude'  => $this->latitude,
-            'longitude' => $this->longitude,
-        ],
-        'business' => $this->business ? [
-            'latitude'  => $this->business->latitude,
-            'longitude' => $this->business->longitude,
-        ] : null,
-    ];
-}
+    {
+        return [
+            'personal' => [
+                'latitude'  => $this->latitude,
+                'longitude' => $this->longitude,
+            ],
+            'business' => $this->business ? [
+                'latitude'  => $this->business->latitude,
+                'longitude' => $this->business->longitude,
+            ] : null,
+        ];
+    }
 
     public function getNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->last_name}");
     }
-    Public function tokens(){
+
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if (! $this->profile_photo) {
+            return null;
+        }
+
+        if (str_starts_with($this->profile_photo, ['http://', 'https://'])) {
+            return $this->profile_photo;
+        }
+
+        if (str_starts_with($this->profile_photo, ['/'])) {
+            return asset($this->profile_photo);
+        }
+
+        if (str_starts_with($this->profile_photo, 'avatars/')) {
+            return asset(preg_replace('/^avatars\/business\/business-(?:male|female)-/', 'avatars/business/business-', $this->profile_photo));
+        }
+
+        return asset('storage/' . $this->profile_photo);
+    }
+
+    public function tokens()
+    {
         return $this->hasMany(Token::class);
     }
-    public function active(){
+    public function active()
+    {
         return $this->status === 'active';
     }
-    public function inactive(){
+    public function inactive()
+    {
         return $this->status === 'inactive';
     }
     public function posts()
@@ -108,24 +133,24 @@ class User extends Authenticatable
     }
 
     public function distanceTo(User $other): float
-{
-    $lat1 = $this->location['latitude'];
-    $lng1 = $this->location['longitude'];
-    $lat2 = $other->location['latitude'];
-    $lng2 = $other->location['longitude'];
+    {
+        $lat1 = $this->location['latitude'];
+        $lng1 = $this->location['longitude'];
+        $lat2 = $other->location['latitude'];
+        $lng2 = $other->location['longitude'];
 
-    // Haversine Formula
-    $earthRadius = 6371; // كيلومتر
+        // Haversine Formula
+        $earthRadius = 6371; // كيلومتر
 
-    $dLat = deg2rad($lat2 - $lat1);
-    $dLng = deg2rad($lng2 - $lng1);
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
 
-    $a = sin($dLat / 2) * sin($dLat / 2) +
-         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-         sin($dLng / 2) * sin($dLng / 2);
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLng / 2) * sin($dLng / 2);
 
-    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
-    return round($earthRadius * $c, 2);
-}
+        return round($earthRadius * $c, 2);
+    }
 }

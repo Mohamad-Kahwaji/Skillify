@@ -1,8 +1,24 @@
 import { Head } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
+import { avatarUrl } from '../../utils/image';
 
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
+
+function Avatar({ user, size = 40 }) {
+    const [err, setErr] = useState(false);
+    const src = avatarUrl(user);
+    const initial = (user?.first_name ?? 'U')[0].toUpperCase();
+    const color = AV_COLORS[(user?.id ?? 0) % AV_COLORS.length];
+    return (
+        <div style={{ width: size, height: size, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.38, fontWeight: 700, flexShrink: 0, overflow: 'hidden' }}>
+            {src && !err
+                ? <img src={src} alt="" onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : initial
+            }
+        </div>
+    );
+}
 
 export default function Chat({ conversation, messages: initialMessages, conversations, otherUser, authId }) {
     const [messages, setMessages]   = useState(initialMessages ?? []);
@@ -11,9 +27,9 @@ export default function Chat({ conversation, messages: initialMessages, conversa
     const bottomRef                 = useRef(null);
     const inputRef                  = useRef(null);
 
-    const myId    = authId;
-    const initial = (otherUser?.first_name ?? 'U')[0].toUpperCase();
-    const color   = AV_COLORS[(otherUser?.id ?? 0) % 7];
+    const myId = authId;
+    const otherInitial = (otherUser?.first_name ?? 'U')[0].toUpperCase();
+    const otherColor = AV_COLORS[(otherUser?.id ?? 0) % AV_COLORS.length];
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -102,17 +118,13 @@ export default function Chat({ conversation, messages: initialMessages, conversa
                         {(conversations ?? []).map((conv) => {
                             const other   = conv.user_id_1 == myId ? conv.user_two : conv.user_one;
                             const isActive = conv.id === conversation.id;
-                            const ini = (other?.first_name ?? 'U')[0].toUpperCase();
-                            const col = AV_COLORS[(other?.id ?? 0) % 7];
                             return (
                                 <a key={conv.id} href={`/user/chat/${conv.id}`} style={{
                                     display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', textDecoration: 'none',
                                     background: isActive ? '#F0FDFA' : 'transparent', color: 'inherit',
                                     borderLeft: isActive ? '3px solid #0D9488' : '3px solid transparent',
                                 }}>
-                                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: col, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
-                                        {ini}
-                                    </div>
+                                    <Avatar user={other} size={36} />
                                     <div style={{ minWidth: 0 }}>
                                         <div style={{ fontSize: 12, fontWeight: 600, color: isActive ? '#0D9488' : '#0F172A' }}>
                                             {other?.first_name} {other?.last_name}
@@ -137,9 +149,7 @@ export default function Chat({ conversation, messages: initialMessages, conversa
                         }}>
                             <i className="ti ti-arrow-right" />
                         </a>
-                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, flexShrink: 0 }}>
-                            {initial}
-                        </div>
+                        <Avatar user={otherUser} size={40} />
                         <div>
                             <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>
                                 {otherUser?.first_name} {otherUser?.last_name}
@@ -159,11 +169,15 @@ export default function Chat({ conversation, messages: initialMessages, conversa
                                 </div>
                                 {msgs.map((msg) => {
                                     const isMe = msg.user_id == myId;
+                                    const otherAvatar = avatarUrl(otherUser);
                                     return (
                                         <div key={msg.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
                                             {!isMe && (
-                                                <div style={{ width: 28, height: 28, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0, marginRight: 8, alignSelf: 'flex-end' }}>
-                                                    {initial}
+                                                <div style={{ width: 28, height: 28, borderRadius: '50%', background: otherColor, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0, marginRight: 8, alignSelf: 'flex-end', overflow: 'hidden' }}>
+                                                    {otherAvatar
+                                                        ? <img src={otherAvatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        : otherInitial
+                                                    }
                                                 </div>
                                             )}
                                             <div style={{ maxWidth: '68%' }}>

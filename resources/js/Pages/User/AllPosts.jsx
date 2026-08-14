@@ -1,18 +1,19 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
+import { avatarUrl } from '../../utils/image';
 
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
 
 function CommentAvatar({ user, size = 28 }) {
     const [err, setErr] = useState(false);
     const initial = (user?.first_name ?? 'U')[0].toUpperCase();
-    const color = AV_COLORS[(user?.id ?? 0) % 7];
-    const avatarPath = user?.businesses?.image || user?.profile_photo;
+    const color = AV_COLORS[(user?.id ?? 0) % AV_COLORS.length];
+    const src = avatarUrl(user);
     return (
         <div style={{ width: size, height: size, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.4, fontWeight: 600, flexShrink: 0, overflow: 'hidden' }}>
-            {(avatarPath && !err)
-                ? <img src={`/storage/${avatarPath}`} alt="" onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {(src && !err)
+                ? <img src={src} alt="" onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : initial
             }
         </div>

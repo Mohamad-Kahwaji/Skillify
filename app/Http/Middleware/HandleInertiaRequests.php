@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Business;
+use App\Models\PlatformSetting;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -49,6 +50,7 @@ class HandleInertiaRequests extends Middleware
                     'last_name'  => $user->last_name,
                     'email'      => $user->email,
                     'phone'      => $user->phone,
+                    'profile_photo' => $user->profile_photo,
                 ] : null,
                 'admin' => $admin ? [
                     'id'         => $admin->id,
@@ -78,6 +80,13 @@ class HandleInertiaRequests extends Middleware
                         ? $superAdmin->unreadNotifications()->count()
                         : ($user ? $user->unreadNotifications()->count() : 0)),
             ],
+            'platform' => fn() => PlatformSetting::current()->only([
+                'whatsapp_number',
+                'contact_email',
+                'contact_phone',
+                'about_title',
+                'about_body',
+            ]),
         ];
     }
 }

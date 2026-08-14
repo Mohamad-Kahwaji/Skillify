@@ -1,9 +1,9 @@
 import { Link, usePage, router } from '@inertiajs/react';
 import { useState, useEffect, useCallback } from 'react';
+import { storageUrl } from '../utils/image';
 
 const NAV = [
     { href: '/user/dashboard',       icon: 'ti-home',           label: 'الرئيسية' },
-    { href: '/user/explore',         icon: 'ti-search',         label: 'استكشاف' },
     { href: '/user/services',        icon: 'ti-briefcase',      label: 'الخدمات' },
     { href: '/user/my-services',     icon: 'ti-tool',           label: 'خدماتي' },
     { href: '/user/community-posts', icon: 'ti-users',          label: 'المجتمع' },
@@ -11,6 +11,7 @@ const NAV = [
     { href: '/user/notifications',   icon: 'ti-bell',           label: 'الإشعارات' },
     { href: '/user/posts',           icon: 'ti-file-text',      label: 'منشوراتي' },
     { href: '/user/profile',         icon: 'ti-user-edit',      label: 'ملفي الشخصي' },
+    { href: '/about',                icon: 'ti-info-circle',    label: 'من نحن' },
 ];
 
 function LiveToast({ payload, onClose }) {
@@ -45,7 +46,7 @@ function LiveToast({ payload, onClose }) {
 }
 
 export default function UserLayout({ children, title = 'الرئيسية' }) {
-    const { auth, flash, badges } = usePage().props;
+    const { auth, flash, badges, platform } = usePage().props;
     const user = auth?.user;
     const [menuOpen,    setMenuOpen]    = useState(false);
     const [liveToast,   setLiveToast]   = useState(null);
@@ -72,6 +73,7 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
     const initials = user
         ? `${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase()
         : '?';
+    const whatsappUrl = `https://wa.me/${String(platform?.whatsapp_number ?? '+963995227120').replace(/\D/g, '')}?text=${encodeURIComponent('مرحباً، أود الاستفسار عن منصة Skillify.')}`;
 
     // Try once on load — modern Chrome silently ignores this without a user gesture,
     // so the explicit button below (requestNotifPermission) is the reliable path.
@@ -197,6 +199,7 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
                             </Link>
                         );
                     })}
+                    <a href={whatsappUrl} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 10px', borderRadius: 6, fontSize: 12.5, whiteSpace: 'nowrap', color: '#15803D', background: '#F0FDF4', fontWeight: 600, textDecoration: 'none', flexShrink: 0 }}><i className="ti ti-brand-whatsapp" style={{ fontSize: 15 }} /> تواصل معنا</a>
                 </nav>
 
                 {/* User area */}
@@ -215,7 +218,7 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
                             overflow: 'hidden', flexShrink: 0,
                         }}>
                             {user?.profile_photo
-                                ? <img src={`/storage/${user.profile_photo}`} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ? <img src={storageUrl(user.profile_photo)} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 : initials
                             }
                         </div>
@@ -271,6 +274,7 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
                                     </Link>
                                 );
                             })}
+                            <a href={whatsappUrl} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 8, fontSize: 14, color: '#15803D', background: '#F0FDF4', fontWeight: 700, textDecoration: 'none' }}><i className="ti ti-brand-whatsapp" style={{ fontSize: 17 }} /> تواصل معنا</a>
                             <div style={{ borderTop: '0.5px solid rgba(0,0,0,0.07)', margin: '6px 4px' }} />
                             <div style={{ padding: '8px 14px', fontSize: 13, color: '#475569' }}>
                                 {user?.first_name} {user?.last_name} — {user?.email}

@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Mail;
 
 use App\Http\Controllers\LandingController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostLikeController;
+use App\Http\Controllers\PlatformController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\ServiceController;
@@ -33,7 +35,7 @@ use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth routes (login, register, forgot/reset password) ────────────────────
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // Broadcasting auth is registered in AppServiceProvider to take priority over the framework route.
 
@@ -56,7 +58,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
         ->middleware('permission:users.view');
     Route::patch('/users/{user}/activate',  [UserController::class,  'active'])->name('users.activate')
         ->middleware('permission:users.activate');
-    Route::patch('/users/{user}/deactivate',[UserController::class,  'inactive'])->name('users.deactivate')
+    Route::patch('/users/{user}/deactivate', [UserController::class,  'inactive'])->name('users.deactivate')
         ->middleware('permission:users.deactivate');
     Route::delete('/users/{user}',          [AdminController::class, 'deleteaccountsuser'])->name('users.destroy')
         ->middleware('permission:users.delete');
@@ -70,11 +72,11 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
         ->middleware('permission:businesses.view');
     Route::get('/workers/{id}',          [BusinessController::class, 'show'])->name('workers.show')
         ->middleware('permission:businesses.show');
-    Route::patch('/workers/{business}/approve',[AdminController::class, 'businessto_approve'])->name('workers.approve')
+    Route::patch('/workers/{business}/approve', [AdminController::class, 'businessto_approve'])->name('workers.approve')
         ->middleware('permission:businesses.approve');
     Route::patch('/workers/{business}/reject', [AdminController::class, 'businessto_rejected'])->name('workers.reject')
         ->middleware('permission:businesses.reject');
-    Route::patch('/workers/{business}/pending',[AdminController::class, 'businessto_pending'])->name('workers.pending');
+    Route::patch('/workers/{business}/pending', [AdminController::class, 'businessto_pending'])->name('workers.pending');
     Route::delete('/workers/{id}',       [BusinessController::class, 'destroy'])->name('workers.destroy')
         ->middleware('permission:businesses.delete');
 
@@ -241,6 +243,10 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::post('/notifications/notify-admin', [NotificationController::class, 'notifyAdmin'])->name('notifications.notify-admin');
     Route::post('/notifications/announce',     [NotificationController::class, 'announceToAll'])->name('notifications.announce');
 
+    // Platform information and public contact settings
+    Route::get('/platform-settings', [PlatformController::class, 'edit'])->name('platform-settings.edit');
+    Route::put('/platform-settings', [PlatformController::class, 'update'])->name('platform-settings.update');
+
     // Users
     Route::get('/users',              [SuperAdminController::class, 'users'])->name('users.index');
     Route::get('/users/{user}/profile', [UserController::class,     'superAdminProfile'])->name('users.profile');
@@ -300,7 +306,7 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::get('/subcategories',        [SuperAdminController::class,  'subcategories'])->name('subcategories.index');
     Route::post('/subcategories',       [SubcategoryController::class, 'store'])->name('subcategories.store');
     Route::put('/subcategories/{id}',   [SubcategoryController::class, 'update'])->name('subcategories.update');
-    Route::delete('/subcategories/{id}',[SubcategoryController::class, 'destroy'])->name('subcategories.destroy');
+    Route::delete('/subcategories/{id}', [SubcategoryController::class, 'destroy'])->name('subcategories.destroy');
 
     // Active Types
     Route::get('/active-types',         [SuperAdminController::class, 'activeTypes'])->name('active_types.index');
@@ -310,9 +316,9 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
 
     // Active Type Businesses
     Route::get('/active-type-businesses',         [SuperAdminController::class,       'activeTypeBusinesses'])->name('active_typebusinesses.index');
-    Route::post('/active-type-businesses',        [ActiveTypebusinessController::class,'store'])->name('active_typebusinesses.store');
-    Route::patch('/active-type-businesses/{id}',  [ActiveTypebusinessController::class,'update'])->name('active_typebusinesses.update');
-    Route::delete('/active-type-businesses/{id}', [ActiveTypebusinessController::class,'destroy'])->name('active_typebusinesses.destroy');
+    Route::post('/active-type-businesses',        [ActiveTypebusinessController::class, 'store'])->name('active_typebusinesses.store');
+    Route::patch('/active-type-businesses/{id}',  [ActiveTypebusinessController::class, 'update'])->name('active_typebusinesses.update');
+    Route::delete('/active-type-businesses/{id}', [ActiveTypebusinessController::class, 'destroy'])->name('active_typebusinesses.destroy');
 
     // Cities
     Route::get('/cities',           [SuperAdminController::class, 'cities'])->name('cities.index');
@@ -365,8 +371,7 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     Route::delete('/my-services/{id}', [UserDashboardController::class, 'destroyService'])->name('my-services.destroy')
         ->middleware('permission:my_services.delete');
 
-    // Explore & Browse
-    Route::get('/explore',               [UserDashboardController::class, 'explore'])->name('explore');
+    // Browse services
     Route::get('/services',              [ServiceController::class,       'servicesusers'])->name('services');
     Route::get('/services/{id}/details', [ServiceController::class,       'serviceDetails'])->name('services.details');
     Route::post('/chat/start',           [UserDashboardController::class, 'startChat'])->name('chat.start');
@@ -430,7 +435,7 @@ Route::post('/skillify-broadcast-auth', function (\Illuminate\Http\Request $requ
     }
 
     if (!$authed) return response()->json(['error' => 'Unauthenticated.'], 403);
-    $request->setUserResolver(fn () => $authed);
+    $request->setUserResolver(fn() => $authed);
     return \Illuminate\Support\Facades\Broadcast::auth($request);
 })->middleware('web')->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class);
 
@@ -465,6 +470,7 @@ Route::get('/test-broadcast/{guard?}', function (string $guard = 'admins') {
 
 // ── Root ─────────────────────────────────────────────────────────────────────
 Route::get('/', [LandingController::class, 'index'])->name('home');
+Route::get('/about', [PlatformController::class, 'about'])->name('about');
 
 
 
@@ -473,7 +479,7 @@ Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/test-mail', function () {
     Mail::raw('Testing Gmail SMTP', function ($message) {
         $message->to('mohamad.17.kawaji@gmail.com')
-                ->subject('SMTP Test');
+            ->subject('SMTP Test');
     });
 
     return 'sent';

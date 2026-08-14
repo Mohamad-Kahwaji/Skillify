@@ -34,7 +34,7 @@ class GeminiIdentityService
                 if (file_exists($path)) {
                     $mime = mime_content_type($path);
                     $b64  = base64_encode(file_get_contents($path));
-                    $label = match($field) {
+                    $label = match ($field) {
                         'front_image'  => 'الوجه الأمامي للوثيقة',
                         'back_image'   => 'الوجه الخلفي للوثيقة',
                         'selfie_image' => 'صورة السيلفي مع الوثيقة',
@@ -47,7 +47,8 @@ class GeminiIdentityService
 
         $idTypeAr = $verification->id_type === 'passport' ? 'جواز سفر' : 'هوية وطنية';
 
-        $parts[] = ['text' => <<<PROMPT
+        $parts[] = [
+            'text' => <<<PROMPT
 أنت محلل وثائق هوية محترف. راجع صور الوثيقة أعلاه وأجب بـ JSON فقط بدون أي نص إضافي.
 
 بيانات المستخدم المُدخلة على المنصة:
@@ -140,7 +141,8 @@ PROMPT
 
         $parts = [
             ['inline_data' => ['mime_type' => $mime, 'data' => $b64]],
-            ['text' => <<<PROMPT
+            [
+                'text' => <<<PROMPT
 أنت نظام فحص صور شخصية لمنصة خدمات. انظر إلى الصورة أعلاه وأجب بـ JSON فقط بدون أي نص إضافي:
 {
   "is_human": true أو false,
@@ -197,5 +199,21 @@ PROMPT
         }
 
         return $result;
+    }
+
+    /** Analyse a profile photo that already exists on the public storage disk. */
+    public function analyseStoredProfilePhoto(string $path): array
+    {
+        if (! is_file($path)) {
+            throw new \RuntimeException('ملف الصورة الشخصية غير موجود.');
+        }
+
+        return $this->analyseProfilePhoto(new \Illuminate\Http\UploadedFile(
+            $path,
+            basename($path),
+            mime_content_type($path) ?: 'image/jpeg',
+            null,
+            true,
+        ));
     }
 }

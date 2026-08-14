@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Advertisement;
 use App\Models\Business;
 use App\Models\Category;
+use App\Models\PlatformSetting;
 use App\Models\Service;
 use App\Models\User;
 use Inertia\Inertia;
@@ -18,7 +19,8 @@ class LandingController extends Controller
             ->take(6)
             ->get(['id', 'title', 'description', 'image', 'company_name']);
 
-        $topProfessionals = Business::where('status', 'approved')
+        $topProfessionals = Business::with('user:id,profile_photo')
+            ->where('status', 'approved')
             ->latest()
             ->take(6)
             ->get(['id', 'name', 'name_job', 'description', 'image', 'activity']);
@@ -39,6 +41,7 @@ class LandingController extends Controller
             'topProfessionals' => $topProfessionals,
             'categories'       => $categories,
             'stats'            => $stats,
+            'platform'         => PlatformSetting::current(),
         ]);
     }
 }

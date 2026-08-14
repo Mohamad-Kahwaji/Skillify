@@ -78,8 +78,11 @@ export function UserDrawer({ user, index, onClose, onDelete, onBlock, onUnblock 
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 32, fontWeight: 800, color: '#fff',
                             boxShadow: '0 10px 28px rgba(0,0,0,0.25)',
+                            overflow: 'hidden',
                         }}>
-                            {initials(user)}
+                            {user.profile_photo
+                                ? <img src={storageUrl(user.profile_photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                : initials(user)}
                         </div>
                     </div>
 
@@ -420,8 +423,11 @@ export default function Users({ users }) {
                                                 background: `linear-gradient(135deg,${av},${av2})`,
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 fontSize: 13, fontWeight: 700, color: '#fff',
+                                                overflow: 'hidden',
                                             }}>
-                                                {initials(u)}
+                                                {u.profile_photo
+                                                    ? <img src={storageUrl(u.profile_photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    : initials(u)}
                                             </div>
                                             <div>
                                                 <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap' }}>

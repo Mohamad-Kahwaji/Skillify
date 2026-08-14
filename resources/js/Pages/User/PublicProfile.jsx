@@ -1,16 +1,14 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
-import { storageUrl } from '../../utils/image';
+import { avatarUrl, storageUrl } from '../../utils/image';
 
 const T = '#0D9488';
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
 
 function Avatar({ user, size = 80 }) {
     const [err, setErr] = useState(false);
-    const business = user.businesses;
-    const src = business?.image ? storageUrl(business.image)
-        : user.profile_photo ? storageUrl(user.profile_photo) : null;
+    const src = avatarUrl(user);
     const initial = [user.first_name?.[0], user.last_name?.[0]].filter(Boolean).join('').toUpperCase();
     const color = AV_COLORS[(user.id ?? 0) % 7];
     return (
@@ -92,7 +90,7 @@ export default function PublicProfile({ profile, authId, isSelf, verifyStatus })
 
             {/* Breadcrumb */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94A3B8' }}>
-                <Link href="/user/explore" style={{ color: T, textDecoration: 'none' }}>الاستكشاف</Link>
+                <Link href="/user/services" style={{ color: T, textDecoration: 'none' }}>الخدمات</Link>
                 <i className="ti ti-chevron-right" style={{ fontSize: 11 }} />
                 <span>{fullName}</span>
             </div>

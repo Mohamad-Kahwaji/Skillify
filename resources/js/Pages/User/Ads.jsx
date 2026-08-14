@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import UserLayout from '../../Layouts/UserLayout';
 
 function AdCard({ ad }) {
@@ -46,6 +46,8 @@ function AdCard({ ad }) {
 
 export default function Ads({ advertisements }) {
     const count = (advertisements ?? []).length;
+    const { platform } = usePage().props;
+    const whatsappUrl = `https://wa.me/${String(platform?.whatsapp_number ?? '+963995227120').replace(/\D/g, '')}?text=${encodeURIComponent('مرحباً، أود إضافة إعلان على منصة Skillify.')}`;
 
     return (
         <UserLayout title="الإعلانات">
@@ -64,6 +66,8 @@ export default function Ads({ advertisements }) {
                 </div>
                 <i className="ti ti-speakerphone" style={{ fontSize: 48, opacity: 0.18, flexShrink: 0 }} />
             </div>
+
+            <a href={whatsappUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: 7, padding: '10px 16px', borderRadius: 10, background: '#16A34A', color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700, boxShadow: '0 6px 14px rgba(22,163,74,.18)' }}><i className="ti ti-brand-whatsapp" style={{ fontSize: 17 }} /> لإضافة إعلان تواصل معنا</a>
 
             {!count ? (
                 <div style={{ textAlign: 'center', padding: '72px 24px', background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 14, color: '#94A3B8' }}>

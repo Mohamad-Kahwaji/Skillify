@@ -179,10 +179,6 @@
   </div>
   <div class="card-body">
     <div class="shortcuts-grid">
-      <a href="{{ route('user.explore') }}" class="shortcut-btn">
-        <i class="ti ti-search"></i>
-        <span>Explore</span>
-      </a>
       <a href="{{ route('user.services') }}" class="shortcut-btn">
         <i class="ti ti-briefcase"></i>
         <span>Services</span>
@@ -248,17 +244,20 @@
 <div>
   <div class="section-header">
     <div class="section-title">⭐ Top Professionals</div>
-    <a href="{{ route('user.explore') }}" class="section-link">Explore all →</a>
+    <a href="{{ route('user.services') }}" class="section-link">Browse services →</a>
   </div>
   @if($topBusinesses->isNotEmpty())
   <div class="pro-grid">
     @foreach($topBusinesses as $biz)
     @php
       $avatarUrl = "https://ui-avatars.com/api/?name=" . urlencode($biz->name) . "&background=0D9488&color=fff&size=128";
+      $ownerPhoto = $biz->user?->profile_photo_url;
+      $bizPhoto   = $biz->image ? (Str::startsWith($biz->image, 'http') ? $biz->image : asset('storage/' . $biz->image)) : null;
+      $imgSrc     = $ownerPhoto ?? $bizPhoto ?? $avatarUrl;
     @endphp
     <div class="pro-card">
       <img
-        src="{{ $biz->image ? (Str::startsWith($biz->image, 'http') ? $biz->image : asset('storage/' . $biz->image)) : $avatarUrl }}"
+        src="{{ $imgSrc }}"
         alt="{{ $biz->name }}"
         class="pro-avatar"
         onerror="this.src='{{ $avatarUrl }}'">

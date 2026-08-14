@@ -106,6 +106,10 @@
       font-size: 14px; font-weight: 800; color: #fff;
       box-shadow: 0 3px 10px rgba(13,148,136,0.25);
       flex-shrink: 0;
+      overflow: hidden;
+    }
+    .user-avatar img {
+      width: 100%; height: 100%; object-fit: cover;
     }
     .user-info { line-height: 1.25; }
     .user-name  { font-size: 13px; font-weight: 700; color: #0F172A; }
@@ -272,10 +276,6 @@
        class="nav-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
       <i class="ti ti-home"></i> الرئيسية
     </a>
-    <a href="{{ route('user.explore') }}"
-       class="nav-link {{ request()->routeIs('user.explore') ? 'active' : '' }}">
-      <i class="ti ti-compass"></i> استكشاف
-    </a>
     <a href="{{ route('user.services') }}"
        class="nav-link {{ request()->routeIs('user.services') ? 'active' : '' }}">
       <i class="ti ti-briefcase"></i> الخدمات
@@ -322,7 +322,17 @@
   <div class="header-user">
     <x-notifications />
     <div class="nav-divider"></div>
-    <div class="user-avatar">{{ $initials }}</div>
+    @php
+      $avatarUrl = $authUser->profile_photo_url;
+    @endphp
+    <div class="user-avatar">
+      @if($avatarUrl)
+        <img src="{{ $avatarUrl }}" alt="{{ $authUser->name }}"
+             onerror="this.parentElement.innerHTML='{{ $initials }}'">
+      @else
+        {{ $initials }}
+      @endif
+    </div>
     <div class="user-info">
       <div class="user-name">{{ $authUser->first_name ?? '' }} {{ $authUser->last_name ?? '' }}</div>
       <div class="user-email">{{ $authUser->email ?? '' }}</div>

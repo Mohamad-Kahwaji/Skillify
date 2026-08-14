@@ -1,7 +1,24 @@
 import { Head, Link } from '@inertiajs/react';
+import { useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
+import { avatarUrl } from '../../utils/image';
 
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
+
+function Avatar({ user, size = 46 }) {
+    const [err, setErr] = useState(false);
+    const src = avatarUrl(user);
+    const initial = (user?.first_name ?? 'U')[0].toUpperCase();
+    const color = AV_COLORS[(user?.id ?? 0) % AV_COLORS.length];
+    return (
+        <div style={{ width: size, height: size, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.4, fontWeight: 700, flexShrink: 0, overflow: 'hidden' }}>
+            {src && !err
+                ? <img src={src} alt="" onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : initial
+            }
+        </div>
+    );
+}
 
 export default function Conversations({ conversations, authId }) {
     return (
@@ -18,12 +35,12 @@ export default function Conversations({ conversations, authId }) {
                     <div style={{ textAlign: 'center', padding: '64px 24px', color: '#94A3B8' }}>
                         <i className="ti ti-message-off" style={{ fontSize: 48, display: 'block', marginBottom: 12, opacity: 0.3 }} />
                         <p style={{ fontSize: 14, marginBottom: 16 }}>لا توجد محادثات بعد.</p>
-                        <Link href="/user/explore" style={{
+                        <Link href="/user/services" style={{
                             display: 'inline-flex', alignItems: 'center', gap: 6,
                             padding: '8px 18px', borderRadius: 8,
                             background: '#0D9488', color: '#fff', fontSize: 13, fontWeight: 500, textDecoration: 'none',
                         }}>
-                            <i className="ti ti-search" /> استكشاف الحرفيين
+                            <i className="ti ti-briefcase" /> تصفح الخدمات
                         </Link>
                     </div>
                 ) : (
@@ -50,9 +67,7 @@ export default function Conversations({ conversations, authId }) {
                                 onMouseEnter={e => e.currentTarget.style.background = '#F8FAFC'}
                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             >
-                                <div style={{ width: 46, height: 46, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, fontWeight: 700, flexShrink: 0 }}>
-                                    {initial}
-                                </div>
+                                <Avatar user={other} size={46} />
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>
                                         {other?.first_name} {other?.last_name}

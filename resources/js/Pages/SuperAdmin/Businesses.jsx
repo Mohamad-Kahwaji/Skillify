@@ -21,7 +21,9 @@ const TABS = [
 ];
 
 function OwnerAvatar({ user }) {
+    const [err, setErr] = useState(false);
     const initials = `${user?.first_name?.[0] ?? ''}${user?.last_name?.[0] ?? ''}`.toUpperCase() || '?';
+    const src = storageUrl(user?.profile_photo);
     return (
         <div style={{
             width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
@@ -29,7 +31,13 @@ function OwnerAvatar({ user }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 11, fontWeight: 800, color: '#fff',
             boxShadow: `0 2px 8px ${P}44`,
-        }}>{initials}</div>
+            overflow: 'hidden',
+        }}>
+            {src && !err
+                ? <img src={src} alt={initials} onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : initials
+            }
+        </div>
     );
 }
 

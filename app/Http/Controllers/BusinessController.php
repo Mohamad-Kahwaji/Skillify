@@ -10,6 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
@@ -75,8 +76,15 @@ class BusinessController extends Controller
             'latitude'               => 'required|numeric|between:-90,90',
             'longitude'              => 'required|numeric|between:-180,180',
             'description'            => 'nullable|string|max:1000',
-            'image'                  => 'required|image|max:2048',
+            'image'                  => 'nullable|image|max:2048',
         ]);
+
+        $hasVerifiedProfilePhoto = $user->profile_photo && $user->profile_photo_ai_verified;
+        if (! $hasVerifiedProfilePhoto && ! $request->hasFile('image')) {
+            throw ValidationException::withMessages([
+                'image' => 'ارفع صورة شخصية واضحة ليتم التحقق منها بالذكاء الاصطناعي.',
+            ]);
+        }
 
         $data = $request->only('name_job', 'number', 'active_typebusiness_id', 'description', 'latitude', 'longitude');
         $data['name']     = $user->first_name . ' ' . $user->last_name;
@@ -88,6 +96,10 @@ class BusinessController extends Controller
         if ($request->hasFile('image')) {
             $imageReason = $this->verifyHumanImage($request->file('image'), $gemini);
             $data['image'] = $request->file('image')->store('businesses', 'public');
+        } else {
+            $extension = pathinfo($user->profile_photo, PATHINFO_EXTENSION) ?: 'jpg';
+            $data['image'] = 'businesses/profile-' . $user->id . '-' . Str::uuid() . '.' . $extension;
+            Storage::disk('public')->copy($user->profile_photo, $data['image']);
         }
 
         Business::create($data);
@@ -100,7 +112,8 @@ class BusinessController extends Controller
 
     public function edit(Request $request, GeminiIdentityService $gemini)
     {
-        $business = Business::where('user_id', Auth::guard('users')->id())->firstOrFail();
+        $user = Auth::guard('users')->user();
+        $business = Business::where('user_id', $user->id)->firstOrFail();
 
         $request->validate([
             'name_job'    => 'required|string|max:120',
@@ -157,5 +170,4 @@ class BusinessController extends Controller
             return null;
         }
     }
-   
 }

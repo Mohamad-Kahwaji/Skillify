@@ -1,6 +1,20 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import SelectMenu from '../../Components/SelectMenu';
 import UserLayout from '../../Layouts/UserLayout';
+import { avatarUrl, storageUrl } from '../../utils/image';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: markerIcon2x,
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+});
 
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
 
@@ -28,9 +42,7 @@ function VerifiedBadge({ status }) {
 
 function ProviderAvatar({ user, size = 24 }) {
     const [err, setErr] = useState(false);
-    const src = user?.businesses?.image
-        ? `/storage/${user.businesses.image}`
-        : user?.profile_photo ? `/storage/${user.profile_photo}` : null;
+    const src = avatarUrl(user);
     const initial = (user?.first_name ?? '?')[0].toUpperCase();
     const color = AV_COLORS[(user?.id ?? 0) % 7];
     return (
@@ -43,17 +55,94 @@ function ProviderAvatar({ user, size = 24 }) {
     );
 }
 
-function ServiceCard({ service, authId }) {
+function getServiceCoords(service) {
+    const lat = service?.business?.latitude ?? service?.user?.businesses?.latitude ?? service?.user?.latitude ?? null;
+    const lng = service?.business?.longitude ?? service?.user?.businesses?.longitude ?? service?.user?.longitude ?? null;
+    if (lat == null || lng == null || Number.isNaN(Number(lat)) || Number.isNaN(Number(lng))) return null;
+    return [Number(lat), Number(lng)];
+}
+
+function ServiceMap({ items, userLocation }) {
+    const containerRef = useRef(null);
+    const mapRef = useRef(null);
+    const markersRef = useRef([]);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const center = userLocation || (items[0] ? getServiceCoords(items[0]) : [33.5138, 36.2765]);
+        const map = L.map(containerRef.current, { zoomControl: true, attributionControl: false }).setView(center, userLocation ? 12 : 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(map);
+        L.control.attribution({ prefix: false }).addTo(map);
+
+        if (userLocation) {
+            const homeMarker = L.marker([userLocation.lat, userLocation.lng], {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div style="width:16px;height:16px;border-radius:50%;background:#10B981;border:3px solid #fff;box-shadow:0 0 0 5px rgba(16,185,129,0.18);"></div>',
+                    iconSize: [18, 18],
+                    iconAnchor: [9, 9],
+                })
+            }).addTo(map);
+            homeMarker.bindPopup('موقعك الحالي');
+            markersRef.current.push(homeMarker);
+        }
+
+        items.forEach((service, index) => {
+            const coords = getServiceCoords(service);
+            if (!coords) return;
+            const marker = L.marker(coords, {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div style="width:16px;height:16px;border-radius:50%;background:#0D9488;border:3px solid #fff;box-shadow:0 0 0 5px rgba(13,148,136,0.15);"></div>',
+                    iconSize: [18, 18],
+                    iconAnchor: [9, 9],
+                })
+            }).addTo(map);
+
+            const distance = Number(service.distance_km ?? 0);
+            const label = distance > 0 ? `${distance.toFixed(1)} كم` : 'موقع الخدمة';
+            marker.bindPopup(`<div style="font-family:'Cairo',sans-serif;min-width:160px;padding:2px"><div style="font-weight:700;color:#0F172A;margin-bottom:4px">${service.name}</div><div style="font-size:12px;color:#475569">${service.user?.first_name ?? 'مزود الخدمة'} • ${label}</div></div>`);
+            markersRef.current.push(marker);
+            if (index === 0 && !userLocation) {
+                map.setView(coords, 11);
+            }
+        });
+
+        mapRef.current = map;
+        setTimeout(() => map.invalidateSize(), 150);
+
+        return () => {
+            markersRef.current.forEach(marker => marker.remove());
+            markersRef.current = [];
+            if (mapRef.current) {
+                mapRef.current.remove();
+                mapRef.current = null;
+            }
+        };
+    }, [items, userLocation]);
+
+    return <div ref={containerRef} style={{ width: '100%', height: 260, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(15, 23, 42, 0.08)', boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)' }} />;
+}
+
+function ServiceCard({ service, authId, isNearest = false }) {
     const [chatLoading, setChatLoading] = useState(false);
     const category    = service.category?.name ?? '';
     const subcategory = service.subcategory?.name ?? '';
     const cityName    = service.city?.name ?? '';
     const price       = Number(service.price).toLocaleString();
-    const imageSrc    = service.image
-        ? (service.image.startsWith('http') ? service.image : `/storage/${service.image}`)
-        : null;
+    const imageSrc    = storageUrl(service.image);
     const isOwner = service.user?.id === authId;
     const identityStatus = service.user?.identity_verification?.status;
+    const distanceLabel = useMemo(() => {
+        if (service.distance_km == null || Number.isNaN(Number(service.distance_km))) return null;
+        const km = Number(service.distance_km);
+        if (km < 1) return `${Math.round(km * 1000)} م`;
+        return `${km.toFixed(1)} كم`;
+    }, [service.distance_km]);
 
     const startChat = (e) => {
         e.preventDefault();
@@ -67,14 +156,27 @@ function ServiceCard({ service, authId }) {
 
     return (
         <div style={{
-            background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)',
-            borderRadius: 16, overflow: 'hidden',
+            background: isNearest ? 'linear-gradient(180deg,#F0FDF4,#FFFFFF 30%)' : '#fff',
+            border: isNearest ? '1.5px solid rgba(13,148,136,0.22)' : '0.5px solid rgba(0,0,0,0.07)',
+            borderRadius: 18, overflow: 'hidden',
             display: 'flex', flexDirection: 'column',
-            transition: 'border-color 0.15s, box-shadow 0.15s',
+            transition: 'border-color 0.15s, box-shadow 0.15s, transform 0.15s',
+            position: 'relative',
+            boxShadow: isNearest ? '0 18px 24px rgba(13,148,136,0.08)' : '0 8px 16px rgba(15,23,42,0.02)',
         }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(13,148,136,0.2)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(13,148,136,0.08)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.07)'; e.currentTarget.style.boxShadow = 'none'; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = isNearest ? 'rgba(13,148,136,0.35)' : 'rgba(13,148,136,0.2)'; e.currentTarget.style.boxShadow = isNearest ? '0 18px 26px rgba(13,148,136,0.12)' : '0 6px 20px rgba(13,148,136,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = isNearest ? 'rgba(13,148,136,0.22)' : 'rgba(0,0,0,0.07)'; e.currentTarget.style.boxShadow = isNearest ? '0 18px 24px rgba(13,148,136,0.08)' : '0 8px 16px rgba(15,23,42,0.02)'; e.currentTarget.style.transform = 'translateY(0)'; }}
         >
+            {isNearest && (
+                <div style={{
+                    position: 'absolute', top: 12, left: 12, zIndex: 2,
+                    background: 'linear-gradient(135deg,#0D9488,#0F766E)', color: '#fff',
+                    borderRadius: 999, padding: '6px 10px', fontSize: 10, fontWeight: 800,
+                    boxShadow: '0 8px 18px rgba(13,148,136,0.24)',
+                }}>
+                    <i className="ti ti-navigation" style={{ fontSize: 10, marginLeft: 4 }} /> الأقرب لك
+                </div>
+            )}
             {/* Image */}
             <div style={{ width: '100%', height: 156, background: 'linear-gradient(135deg,#F0FDFA,#E6FFFA)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
                 {imageSrc
@@ -105,6 +207,11 @@ function ServiceCard({ service, authId }) {
                     {subcategory && (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#94A3B8' }}>
                             <i className="ti ti-tag" style={{ fontSize: 12 }} /> {subcategory}
+                        </span>
+                    )}
+                    {distanceLabel && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#0D9488', fontWeight: 600 }}>
+                            <i className="ti ti-navigation" style={{ fontSize: 12 }} /> {distanceLabel} بعيداً
                         </span>
                     )}
                 </div>
@@ -165,10 +272,56 @@ export default function Services({ services, cities, categories, filters, authId
     const [city, setCity] = useState(filters?.city ?? '');
     const [priceType, setPriceType] = useState(filters?.price_type ?? '');
     const [category, setCategory] = useState(filters?.category ?? '');
+    const [radius, setRadius] = useState(filters?.radius ?? '');
+    const [userLocation, setUserLocation] = useState(
+        filters?.lat && filters?.lng ? { lat: Number(filters.lat), lng: Number(filters.lng) } : null
+    );
+    const [locating, setLocating] = useState(false);
+    const autoLocationRequested = useRef(false);
 
-    const applyFilter = (params) => {
-        router.get('/user/services', { q, city, price_type: priceType, category, ...params }, {
-            preserveState: true, replace: true,
+    useEffect(() => {
+        if (autoLocationRequested.current || typeof navigator === 'undefined' || !navigator.geolocation) {
+            return;
+        }
+
+        if (filters?.lat && filters?.lng) {
+            autoLocationRequested.current = true;
+            return;
+        }
+
+        autoLocationRequested.current = true;
+        setLocating(true);
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                setUserLocation({ lat, lng });
+                applyFilter({ lat, lng });
+                setLocating(false);
+            },
+            () => {
+                setLocating(false);
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+    }, []);
+
+    const applyFilter = (params = {}) => {
+        const payload = {
+            q: params.q ?? q,
+            city: params.city ?? city,
+            price_type: params.price_type ?? priceType,
+            category: params.category ?? category,
+            radius: params.radius ?? radius,
+            lat: params.lat ?? userLocation?.lat ?? '',
+            lng: params.lng ?? userLocation?.lng ?? '',
+        };
+
+        router.get('/user/services', payload, {
+            preserveState: true,
+            replace: true,
+            preserveScroll: true,
         });
     };
 
@@ -178,104 +331,262 @@ export default function Services({ services, cities, categories, filters, authId
     };
 
     const clearFilters = () => {
-        setQ(''); setCity(''); setPriceType(''); setCategory('');
+        setQ(''); setCity(''); setPriceType(''); setCategory(''); setRadius(''); setUserLocation(null);
         router.get('/user/services');
+    };
+
+    const requestUserLocation = () => {
+        if (!navigator.geolocation) {
+            alert('المتصفح لا يدعم تحديد الموقع تلقائياً.');
+            return;
+        }
+
+        setLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                setUserLocation({ lat, lng });
+                applyFilter({ lat, lng });
+                setLocating(false);
+            },
+            () => {
+                setLocating(false);
+                alert('تعذر الوصول إلى موقعك. تأكد من تفعيل الموقع في المتصفح والمحاولة مرة أخرى.');
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
     };
 
     const items = services?.data ?? [];
     const total = services?.total ?? 0;
     const links = services?.links ?? [];
-    const hasFilters = q || city || priceType || category;
+    const hasFilters = q || city || priceType || category || radius || userLocation;
 
     return (
         <UserLayout title="الخدمات">
             <Head title="الخدمات — Skillify" />
-            <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+            <style>{`
+                @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+                .type-select-shell {
+                    background: linear-gradient(180deg, #F8FBFA 0%, #F3F7F7 100%);
+                    border: 1px solid rgba(15, 23, 42, 0.06);
+                    border-radius: 18px;
+                    padding: 6px;
+                    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 10px 18px rgba(15, 23, 42, 0.03);
+                }
+                .category-strip {
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(148,163,184,0.5) transparent;
+                }
+                .category-strip::-webkit-scrollbar {
+                    height: 6px;
+                }
+                .category-strip::-webkit-scrollbar-thumb {
+                    background: rgba(148, 163, 184, 0.4);
+                    border-radius: 99px;
+                }
+                .category-pill {
+                    position: relative;
+                    letter-spacing: -0.01em;
+                    min-height: 38px;
+                }
+                .category-pill::before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    border-radius: inherit;
+                    background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+                    pointer-events: none;
+                }
+                .result-badge {
+                    border: 1px solid rgba(13, 148, 136, 0.12);
+                    background: linear-gradient(135deg, rgba(13,148,136,0.08), rgba(15,118,110,0.03));
+                    color: #0F766E;
+                    box-shadow: 0 8px 18px rgba(13,148,136,0.08);
+                }
+                .map-panel {
+                    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                    border: 1px solid rgba(15,23,42,0.08);
+                    box-shadow: 0 14px 32px rgba(15,23,42,0.04);
+                }
+                @media (max-width: 768px) {
+                    .service-page-shell { padding: 0 4px; }
+                    .service-header { flex-direction: column; align-items: stretch; }
+                    .service-actions { width: 100%; }
+                    .service-actions > * { flex: 1; }
+                    .service-tools { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+                    .service-tools > * { width: 100%; }
+                    .service-tools select, .service-input-wrap, .service-tools button { width: 100%; }
+                    .service-grid { grid-template-columns: 1fr !important; }
+                    .category-strip { gap: 8px !important; }
+                    .category-pill { padding: 8px 12px !important; font-size: 11px !important; }
+                }
+                @media (max-width: 520px) {
+                    .service-tools { grid-template-columns: 1fr !important; }
+                    .service-header-title { font-size: 22px !important; }
+                    .service-header-subtitle { font-size: 12px !important; }
+                    .service-topbar { padding: 12px !important; }
+                    .type-select-shell { padding: 5px !important; }
+                    .result-badge { width: 100%; justify-content: center; }
+                }
+            `}</style>
 
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <div>
-                    <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.3px', color: '#0F172A' }}>الخدمات المتاحة</div>
-                    <div style={{ fontSize: 13, color: '#64748B', marginTop: 2 }}>تصفح وابحث عن الخدمة المناسبة</div>
-                </div>
-                <Link href="/user/my-services" style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    padding: '8px 16px', borderRadius: 10,
-                    background: '#F0FDFA', border: '1px solid #99F6E4',
-                    color: '#0D9488', fontSize: 12, fontWeight: 600, textDecoration: 'none',
+<div className="service-page-shell" style={{ display:'flex', flexDirection:'column', gap:18 }}>
+                <div className="service-topbar" style={{
+                    background: 'linear-gradient(135deg, rgba(13,148,136,0.12), rgba(15,118,110,0.04) 35%, rgba(255,255,255,0.9) 100%)',
+                    border: '1px solid rgba(13,148,136,0.12)',
+                    borderRadius: 22,
+                    padding: 18,
+                    boxShadow: '0 16px 44px rgba(15, 23, 42, 0.05)',
                 }}>
-                    <i className="ti ti-plus" /> خدماتي
-                </Link>
-            </div>
-
-            {/* Search bar */}
-            <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
-                        <i className="ti ti-search" style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: 12, fontSize: 16, color: '#94A3B8', pointerEvents: 'none' }} />
-                        <input
-                            type="text" value={q} onChange={e => setQ(e.target.value)}
-                            placeholder="ابحث عن خدمة..."
-                            onKeyDown={e => e.key === 'Enter' && submit(e)}
-                            style={{ width: '100%', padding: '10px 14px 10px 40px', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: 10, background: '#fff', fontSize: 13, color: '#0F172A', outline: 'none' }}
-                        />
-                    </div>
-                    <select value={city} onChange={e => { setCity(e.target.value); applyFilter({ city: e.target.value }); }}
-                        style={{ padding: '10px 12px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.12)', background: '#fff', fontSize: 12, color: '#475569', outline: 'none', cursor: 'pointer', minWidth: 110 }}>
-                        <option value="">كل المدن</option>
-                        {(cities ?? []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                    <select value={priceType} onChange={e => { setPriceType(e.target.value); applyFilter({ price_type: e.target.value }); }}
-                        style={{ padding: '10px 12px', borderRadius: 10, border: '0.5px solid rgba(0,0,0,0.12)', background: '#fff', fontSize: 12, color: '#475569', outline: 'none', cursor: 'pointer', minWidth: 100 }}>
-                        <option value="">كل العملات</option>
-                        <option value="usd">USD</option>
-                        <option value="syp">SYP</option>
-                    </select>
-                    {hasFilters && (
-                        <button type="button" onClick={clearFilters} title="مسح التصفية" style={{
-                            padding: '10px 14px', borderRadius: 10, fontSize: 12,
-                            border: '0.5px solid #FCA5A5', background: '#FEF2F2', color: '#EF4444',
-                            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0,
-                        }}>
-                            <i className="ti ti-x" style={{ fontSize: 13 }} /> مسح
-                        </button>
-                    )}
-                </div>
-
-                {/* Category chips — horizontally scrollable */}
-                {(categories ?? []).length > 0 && (
-                    <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
-                        <div style={{ display: 'flex', gap: 6, width: 'max-content' }}>
-                            {['', ...categories].map(cat => {
-                                const catId   = cat?.id ?? '';
-                                const catName = cat?.name ?? 'الكل';
-                                const isActive = catId === category;
-                                return (
-                                    <button key={catId || '__all'} type="button"
-                                        onClick={() => { setCategory(catId); applyFilter({ category: catId }); }}
-                                        style={{
-                                            padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500,
-                                            border: `1px solid ${isActive ? '#0D9488' : 'rgba(0,0,0,0.1)'}`,
-                                            background: isActive ? '#0D9488' : '#fff',
-                                            color: isActive ? '#fff' : '#64748B',
-                                            cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all .12s',
-                                        }}>
-                                        {catName}
-                                    </button>
-                                );
-                            })}
+                    <div className="service-header" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
+                        <div>
+                            <div className="service-header-title" style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.4px', color: '#0F172A', lineHeight:1.1 }}>الخدمات المتاحة</div>
+                            <div className="service-header-subtitle" style={{ fontSize: 13, color: '#64748B', marginTop: 6 }}>تصفح أفضل الخدمات الأقرب لك، وبحثك أصبح أسرع وأذكى.</div>
+                        </div>
+                        <div className="service-actions" style={{ display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}>
+                            <button type="button" onClick={requestUserLocation} disabled={locating} style={{
+                                display:'inline-flex', alignItems:'center', gap:6,
+                                padding:'10px 14px', borderRadius:12,
+                                background: userLocation ? 'linear-gradient(135deg,#ECFDF5,#DCFCE7)' : 'linear-gradient(135deg,#F0FDFA,#ECFEFF)',
+                                border: `1px solid ${userLocation ? '#A7F3D0' : '#99F6E4'}`,
+                                color:'#0D9488', fontSize:12, fontWeight:800, cursor: locating ? 'not-allowed' : 'pointer',
+                                boxShadow: '0 10px 18px rgba(13,148,136,0.08)',
+                            }}>
+                                <i className={locating ? 'ti ti-loader-2' : 'ti ti-current-location'} style={{ fontSize:13, animation: locating ? 'spin 1s linear infinite' : 'none' }} />
+                                {locating ? 'يتم تحديد الموقع...' : userLocation ? 'الأقرب لموقعي' : 'استخدم موقعي'}
+                            </button>
+                            <Link href="/user/my-services" style={{
+                                display:'inline-flex', alignItems:'center', gap:6,
+                                padding:'10px 16px', borderRadius:12,
+                                background:'linear-gradient(135deg,#0D9488,#0F766E)',
+                                border:'1px solid rgba(13,148,136,0.15)',
+                                color:'#fff', fontSize:12, fontWeight:700, textDecoration:'none',
+                                boxShadow: '0 12px 24px rgba(13,148,136,0.18)',
+                            }}>
+                                <i className="ti ti-plus" /> خدماتي
+                            </Link>
                         </div>
                     </div>
-                )}
-            </form>
+                </div>
 
-            {/* Count */}
-            <div style={{ fontSize: 12, color: '#94A3B8', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <i className="ti ti-layout-grid" style={{ fontSize: 13 }} />
-                {total} خدمة متاحة
+                <form onSubmit={submit} style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                    <div style={{
+                        background:'#fff', border:'1px solid rgba(15,23,42,0.06)', borderRadius:18,
+                        padding:12, boxShadow:'0 12px 26px rgba(15,23,42,0.04)',
+                    }}>
+                        <div className="service-tools" style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                            <div className="service-input-wrap" style={{ position:'relative', flex:1, minWidth:180, minHeight: 44 }}>
+                                <i className="ti ti-search" style={{ position:'absolute', top:'50%', transform:'translateY(-50%)', left:12, fontSize:16, color:'#94A3B8', pointerEvents:'none' }} />
+                                <input
+                                    type="text" value={q} onChange={e => setQ(e.target.value)}
+                                    placeholder="ابحث عن خدمة أو اسم مزود..."
+                                    onKeyDown={e => e.key === 'Enter' && submit(e)}
+                                    style={{ width:'100%', height:44, padding:'12px 14px 12px 40px', border:'1px solid rgba(15,23,42,0.08)', borderRadius:12, background:'#F8FAFC', fontSize:13, color:'#0F172A', outline:'none', boxShadow:'inset 0 1px 2px rgba(15,23,42,0.02)' }}
+                                />
+                            </div>
+                            <SelectMenu
+                                value={city}
+                                placeholder="كل المدن"
+                                icon="ti-map-pin"
+                                options={[{ value: '', label: 'كل المدن' }, ...(cities ?? []).map(c => ({ value: c.id, label: c.name }))]}
+                                onChange={next => { setCity(next); applyFilter({ city: next }); }}
+                            />
+                            <SelectMenu
+                                value={radius}
+                                placeholder="كل المسافات"
+                                icon="ti-route"
+                                options={[
+                                    { value: '', label: 'كل المسافات' }, { value: '5', label: 'حتى 5 كم' },
+                                    { value: '10', label: 'حتى 10 كم' }, { value: '20', label: 'حتى 20 كم' },
+                                    { value: '50', label: 'حتى 50 كم' }, { value: '100', label: 'حتى 100 كم' },
+                                ]}
+                                onChange={next => { setRadius(next); applyFilter({ radius: next }); }}
+                            />
+                            <SelectMenu
+                                value={priceType}
+                                placeholder="كل العملات"
+                                icon="ti-coin"
+                                options={[{ value: '', label: 'كل العملات' }, { value: 'usd', label: 'دولار أمريكي' }, { value: 'syp', label: 'ليرة سورية' }]}
+                                onChange={next => { setPriceType(next); applyFilter({ price_type: next }); }}
+                            />
+                            {hasFilters && (
+                                <button type="button" onClick={clearFilters} title="مسح التصفية" style={{
+                                    padding:'12px 14px', borderRadius:12, fontSize:12,
+                                    border:'1px solid rgba(239,68,68,0.2)', background:'linear-gradient(135deg,#FEF2F2,#FFF1F2)', color:'#EF4444',
+                                    cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4, flexShrink:0,
+                                }}>
+                                    <i className="ti ti-x" style={{ fontSize:13 }} /> مسح
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {(categories ?? []).length > 0 && (
+                        <div className="type-select-shell">
+                            <div className="category-strip" style={{ overflowX:'auto', padding: '2px 2px 4px' }}>
+                                <div style={{ display:'flex', gap:8, width:'max-content', minWidth:'100%', alignItems:'center' }}>
+                                    {['', ...categories].map(cat => {
+                                        const catId   = cat?.id ?? '';
+                                        const catName = cat?.name ?? 'الكل';
+                                        const isActive = catId === category;
+                                        return (
+                                            <button key={catId || '__all'} type="button" className="category-pill"
+                                                onClick={() => { setCategory(catId); applyFilter({ category: catId }); }}
+                                                style={{
+                                                    padding:'9px 16px', borderRadius:12, fontSize:12, fontWeight:700,
+                                                    border: isActive ? '1px solid rgba(13,148,136,0.15)' : '1px solid transparent',
+                                                    background: isActive ? 'linear-gradient(135deg,#0D9488,#0F766E)' : 'rgba(255,255,255,0.65)',
+                                                    color: isActive ? '#fff' : '#475569',
+                                                    cursor:'pointer', whiteSpace:'nowrap', transition:'all .18s ease',
+                                                    boxShadow: isActive ? '0 12px 20px rgba(13,148,136,0.16)' : 'inset 0 1px 0 rgba(255,255,255,0.8)',
+                                                    display:'inline-flex', alignItems:'center', justifyContent:'center',
+                                                    minHeight:36,
+                                                    backdropFilter: 'blur(4px)',
+                                                }}>
+                                                {catName}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </form>
+
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:10, flexWrap:'wrap', padding:'0 4px' }}>
+                    <div className="result-badge" style={{ fontSize:12, display:'inline-flex', alignItems:'center', gap:6, fontWeight:700, borderRadius:999, padding:'8px 12px' }}>
+                        <i className="ti ti-layout-grid" style={{ fontSize:13, color:'#0D9488' }} />
+                        {userLocation ? `الأقرب لموقعك • ${total} خدمة متاحة` : `${total} خدمة متاحة`}
+                    </div>
+                    <div style={{
+                        display:'inline-flex', alignItems:'center', gap:6,
+                        padding:'8px 12px', borderRadius:999,
+                        background:'linear-gradient(135deg,#F8FAFC,#EEF2FF)', border:'1px solid rgba(148,163,184,0.22)',
+                        fontSize:11, color:'#475569', fontWeight:700,
+                        boxShadow:'0 8px 16px rgba(15,23,42,0.02)',
+                    }}>
+                        <i className="ti ti-rocket" style={{ color:'#0D9488' }} /> نتائج أفضل حسب القرب
+                    </div>
             </div>
 
-            {/* Grid */}
+            {items.length > 0 && (
+                <div className="map-panel" style={{ borderRadius: 18, padding: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <i className="ti ti-map" style={{ color: '#0D9488' }} /> أقرب النتائج على الخريطة
+                        </div>
+                        {userLocation && (
+                            <div style={{ fontSize: 11, color: '#64748B', background: '#F8FAFC', borderRadius: 999, padding: '6px 10px', border: '1px solid rgba(148,163,184,0.18)' }}>
+                                {items[0]?.distance_km != null ? `الأقرب: ${Number(items[0].distance_km).toFixed(1)} كم` : 'تحديد الموقع نشط'}
+                            </div>
+                        )}
+                    </div>
+                    <ServiceMap items={items} userLocation={userLocation} />
+                </div>
+            )}
+
             {items.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 24px', color: '#94A3B8', background: '#fff', borderRadius: 16, border: '0.5px solid rgba(0,0,0,0.07)' }}>
                     <i className="ti ti-briefcase-off" style={{ fontSize: 52, display: 'block', marginBottom: 16, opacity: 0.25 }} />
@@ -296,8 +607,10 @@ export default function Services({ services, cities, categories, filters, authId
                     )}
                 </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(270px,1fr))', gap: 16 }}>
-                    {items.map(s => <ServiceCard key={s.id} service={s} authId={authId} />)}
+                <div className="service-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(270px,1fr))', gap: 16 }}>
+                    {items.map((s, index) => (
+                        <ServiceCard key={s.id} service={s} authId={authId} isNearest={Boolean(userLocation && index === 0)} />
+                    ))}
                 </div>
             )}
 
@@ -323,6 +636,7 @@ export default function Services({ services, cities, categories, filters, authId
                     ))}
                 </div>
             )}
+            </div>
         </UserLayout>
     );
 }

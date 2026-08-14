@@ -82,8 +82,11 @@ export function UserDrawer({ user, index, onClose, onToggle, onDelete }) {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 32, fontWeight: 800, color: '#fff',
                         boxShadow: '0 10px 28px rgba(0,0,0,0.25)',
+                        overflow: 'hidden',
                     }}>
-                        {initials(user)}
+                        {user.profile_photo
+                            ? <img src={storageUrl(user.profile_photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            : initials(user)}
                     </div>
                 </div>
 
@@ -411,8 +414,10 @@ export default function Users({ users }) {
 
                                     <td style={{ padding: '13px 14px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                            <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, background: `linear-gradient(135deg,${avColor(i)},${avColor2(i)})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff' }}>
-                                                {initials(u)}
+                                            <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, background: `linear-gradient(135deg,${avColor(i)},${avColor2(i)})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff', overflow: 'hidden' }}>
+                                                {u.profile_photo
+                                                    ? <img src={storageUrl(u.profile_photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    : initials(u)}
                                             </div>
                                             <div>
                                                 <div style={{ fontSize: 13, fontWeight: 700, color: C.textDark, whiteSpace: 'nowrap' }}>

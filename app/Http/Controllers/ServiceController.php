@@ -9,6 +9,7 @@ use App\Models\Service;
 use App\Models\SuperAdmin;
 use App\Notifications\NewServiceRequestNotification;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
 
 class ServiceController extends Controller
@@ -42,7 +43,7 @@ class ServiceController extends Controller
     public function servicesusers(Request $request)
     {
         $myId  = auth('users')->id();
-        $query = Service::with(['category', 'subcategory', 'city', 'user.identityVerification', 'user.businesses'])
+        $query = Service::with(['category', 'subcategory', 'city', 'business', 'user.identityVerification', 'user.businesses'])
             ->where(fn($q) => $q->where('user_id', '!=', $myId)->orWhereNull('user_id'))
             ->where('status', 'approved')
             ->where('is_active', true);
@@ -55,7 +56,41 @@ class ServiceController extends Controller
         if ($request->filled('category'))   $query->where('category_id', $request->category);
         if ($request->filled('price_type')) $query->where('price_type', $request->price_type);
 
-        $services   = $query->latest()->paginate(12)->withQueryString();
+        $lat = $request->input('lat');
+        $lng = $request->input('lng');
+        $radius = $request->input('radius');
+
+        if (is_numeric($lat) && is_numeric($lng)) {
+            $latitude = (float) $lat;
+            $longitude = (float) $lng;
+            $items = $query->latest()->get()->map(function (Service $service) use ($latitude, $longitude) {
+                $distance = $this->calculateDistanceKm($service, $latitude, $longitude);
+                $service->distance_km = $distance;
+                return $service;
+            });
+
+            if (is_numeric($radius) && (float) $radius >= 0) {
+                $items = $items->filter(
+                    fn(Service $service) =>
+                    $service->distance_km === null || $service->distance_km <= (float) $radius
+                );
+            }
+
+            $items = $items->sortBy(fn(Service $service) => $service->distance_km ?? PHP_FLOAT_MAX)->values();
+            $page = $request->input('page', 1);
+            $perPage = 12;
+            $paginated = new LengthAwarePaginator(
+                $items->forPage($page, $perPage),
+                $items->count(),
+                $perPage,
+                $page,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+            $services = $paginated;
+        } else {
+            $services = $query->latest()->paginate(12)->withQueryString();
+        }
+
         $cities     = City::orderBy('name')->get(['id', 'name']);
         $categories = Category::orderBy('name')->get(['id', 'name']);
 
@@ -63,9 +98,39 @@ class ServiceController extends Controller
             'services'   => $services,
             'cities'     => $cities,
             'categories' => $categories,
-            'filters'    => $request->only(['q', 'city', 'category', 'price_type']),
+            'filters'    => $request->only(['q', 'city', 'category', 'price_type', 'lat', 'lng', 'radius']),
             'authId'     => $myId,
         ]);
+    }
+
+    protected function calculateDistanceKm(Service $service, float $latitude, float $longitude): ?float
+    {
+        $location = null;
+
+        if ($service->business && is_numeric($service->business->latitude) && is_numeric($service->business->longitude)) {
+            $location = [$service->business->latitude, $service->business->longitude];
+        } elseif ($service->user && $service->user->businesses && is_numeric($service->user->businesses->latitude) && is_numeric($service->user->businesses->longitude)) {
+            $location = [$service->user->businesses->latitude, $service->user->businesses->longitude];
+        } elseif ($service->user && is_numeric($service->user->latitude) && is_numeric($service->user->longitude)) {
+            $location = [$service->user->latitude, $service->user->longitude];
+        }
+
+        if (! $location) {
+            return null;
+        }
+
+        [$lat2, $lng2] = $location;
+        $earthRadius = 6371;
+        $dLat = deg2rad($latitude - $lat2);
+        $dLng = deg2rad($longitude - $lng2);
+
+        $a = sin($dLat / 2) * sin($dLat / 2)
+            + cos(deg2rad($lat2)) * cos(deg2rad($latitude))
+            * sin($dLng / 2) * sin($dLng / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return round($earthRadius * $c, 2);
     }
 
     public function serviceDetails($id)
@@ -125,6 +190,4 @@ class ServiceController extends Controller
 
         return back()->with('success', 'تم إضافة الخدمة بنجاح، سيتم مراجعتها قريباً.');
     }
-
-
 }

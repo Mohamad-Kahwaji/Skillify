@@ -1,16 +1,15 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
-import { storageUrl } from '../../utils/image';
+import { avatarUrl, storageUrl } from '../../utils/image';
 
 const T = '#0D9488';
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
 
-function ProviderAvatar({ user, business, size = 56 }) {
+function ProviderAvatar({ user, size = 56 }) {
     const [err, setErr] = useState(false);
-    const src = business?.image ? storageUrl(business.image)
-        : user?.profile_photo ? storageUrl(user.profile_photo) : null;
-    const initial = (user?.first_name ?? business?.name ?? 'U')[0].toUpperCase();
+    const src = avatarUrl(user);
+    const initial = (user?.first_name ?? 'U')[0].toUpperCase();
     const color = AV_COLORS[(user?.id ?? 0) % 7];
     return (
         <div style={{ width: size, height: size, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.36, fontWeight: 700, flexShrink: 0, overflow: 'hidden' }}>
@@ -56,6 +55,7 @@ export default function ServiceDetails({ service, authId }) {
     const business       = service.business ?? service.user?.businesses;
     const owner          = service.user;
     const img            = service.image ? (service.image.startsWith('http') ? service.image : `/storage/${service.image}`) : null;
+    const providerAvatar  = avatarUrl(owner);
     const price          = Number(service.price).toLocaleString();
     const isOwn          = owner?.id === authId;
     const hasOwner       = !!owner?.id;
@@ -205,7 +205,9 @@ export default function ServiceDetails({ service, authId }) {
                             <>
                                 <Link href={`/user/users/${owner.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, textDecoration: 'none' }}>
                                     <div style={{ border: `2px solid ${T}22`, borderRadius: '50%', padding: 2 }}>
-                                        <ProviderAvatar user={owner} business={business} size={52} />
+                                        <div style={{ width: 52, height: 52, borderRadius: '50%', overflow: 'hidden' }}>
+                                            {providerAvatar ? <img src={providerAvatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#CBD5E1', color: '#fff', fontSize: 20 }}>{(owner.first_name ?? 'U')[0]?.toUpperCase()}</div>}
+                                        </div>
                                     </div>
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 3 }}>

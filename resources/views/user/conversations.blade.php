@@ -69,8 +69,8 @@
     <div class="empty-conv">
       <i class="ti ti-message-off"></i>
       <p>No conversations yet.</p>
-      <a href="{{ route('user.explore') }}" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:500;text-decoration:none;border:none;">
-        <i class="ti ti-search"></i> Explore Craftsmen
+      <a href="{{ route('user.services') }}" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:500;text-decoration:none;border:none;">
+        <i class="ti ti-briefcase"></i> Browse services
       </a>
     </div>
   @else

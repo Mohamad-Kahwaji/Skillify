@@ -241,7 +241,7 @@ export default function AdminLayout({ children, title }) {
     };
 
     return (
-        <div dir="rtl" style={{ display: 'flex', minHeight: '100vh', background: C.pageBg, fontFamily: "'Cairo', 'Inter', sans-serif" }}>
+        <div dir="rtl" className="admin-interface admin-interface-standard" style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: C.pageBg, fontFamily: "'Cairo', 'Inter', sans-serif" }}>
 
             {/* ── Mobile overlay ── */}
             {sidebarOpen && (
@@ -250,22 +250,22 @@ export default function AdminLayout({ children, title }) {
 
             {/* ── Sidebar ── */}
             <aside
-                className={`w-[230px] max-w-[80vw] fixed top-0 bottom-0 right-0 z-40 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`admin-sidebar admin-sidebar-standard w-[230px] max-w-[80vw] fixed top-0 bottom-0 right-0 z-40 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
                 style={{
                 background: C.sidebarBg,
                 boxShadow: '-2px 0 20px rgba(0,0,0,0.15)',
             }}>
                 {/* Logo */}
-                <div style={{ padding: '18px 18px 14px', borderBottom: `1px solid ${C.sidebarBorder}` }}>
+                <div className="admin-sidebar-brand" style={{ padding: '18px 18px 14px', borderBottom: `1px solid ${C.sidebarBorder}` }}>
                     <img src="/images/logo.png" alt="Skillify" style={{ height: 34, width: 'auto', display: 'block' }} />
                     <div style={{ fontSize: 9, color: '#475569', fontWeight: 500, letterSpacing: 0.5, marginTop: 6 }}>لوحة الإدارة</div>
                 </div>
 
                 {/* Nav */}
-                <nav style={{ flex: 1, overflowY: 'auto', padding: '10px 10px', scrollbarWidth: 'none' }}>
+                <nav className="admin-sidebar-nav" style={{ flex: 1, overflowY: 'auto', padding: '10px 10px', scrollbarWidth: 'none' }}>
                     {NAV_GROUPS.map((group) => (
-                        <div key={group.label} style={{ marginBottom: 6 }}>
-                            <div style={{ fontSize: 9, fontWeight: 700, color: '#475569', letterSpacing: 1, textTransform: 'uppercase', padding: '10px 10px 4px' }}>
+                        <div key={group.label} className="admin-sidebar-group" style={{ marginBottom: 6 }}>
+                            <div className="admin-sidebar-group-label" style={{ fontSize: 9, fontWeight: 700, color: '#475569', letterSpacing: 1, textTransform: 'uppercase', padding: '10px 10px 4px' }}>
                                 {group.label}
                             </div>
                             {group.items.map(({ href, icon, label, notifBadge, pendingBadge }) => {
@@ -273,7 +273,7 @@ export default function AdminLayout({ children, title }) {
                                 const hasDot  = pendingBadge && pendingBiz > 0;
                                 const hasNotif = notifBadge && unreadNotif > 0;
                                 return (
-                                    <Link key={href} href={href} style={{
+                                    <Link key={href} href={href} className={`admin-sidebar-link${active ? ' is-active' : ''}`} style={{
                                         display: 'flex', alignItems: 'center', gap: 9,
                                         padding: '7px 10px', borderRadius: 9, marginBottom: 1,
                                         fontSize: 12.5, fontWeight: active ? 600 : 400,
@@ -285,8 +285,8 @@ export default function AdminLayout({ children, title }) {
                                         onMouseEnter={e => { if (!active) { e.currentTarget.style.background = C.sidebarHover; e.currentTarget.style.color = '#CBD5E1'; } }}
                                         onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.sidebarText; } }}
                                     >
-                                        <div style={{ position: 'relative', width: 28, height: 28, flexShrink: 0 }}>
-                                            <div style={{ width: 28, height: 28, borderRadius: 7, background: active ? `${C.sidebarActive}18` : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <div className="admin-sidebar-icon-wrap" style={{ position: 'relative', width: 28, height: 28, flexShrink: 0 }}>
+                                            <div className="admin-sidebar-icon" style={{ width: 28, height: 28, borderRadius: 7, background: active ? `${C.sidebarActive}18` : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <i className={`ti ${icon}`} style={{ fontSize: 14 }} />
                                             </div>
                                             {(hasDot || hasNotif) && <span style={{
@@ -310,8 +310,8 @@ export default function AdminLayout({ children, title }) {
                 </nav>
 
                 {/* Footer */}
-                <div style={{ padding: '12px 14px', borderTop: `1px solid ${C.sidebarBorder}` }}>
-                    <Link href="/admin/profile" style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 8, textDecoration: 'none' }}>
+                <div className="admin-sidebar-footer" style={{ padding: '12px 14px', borderTop: `1px solid ${C.sidebarBorder}` }}>
+                    <Link href="/admin/profile" className="admin-sidebar-account" style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 8, textDecoration: 'none' }}>
                         <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,#0EA5E9,#0D9488)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
                             {(admin?.first_name ?? 'A')[0].toUpperCase()}
                         </div>
@@ -322,7 +322,7 @@ export default function AdminLayout({ children, title }) {
                     </Link>
                     <form method="POST" action="/admin/logout" style={{ margin: 0 }}>
                         <input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]')?.content ?? ''} />
-                        <button type="submit" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', fontSize: 11, padding: '5px 10px', borderRadius: 6, width: '100%', fontWeight: 500 }}>
+                        <button type="submit" className="admin-sidebar-logout" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', fontSize: 11, padding: '5px 10px', borderRadius: 6, width: '100%', fontWeight: 500 }}>
                             <i className="ti ti-logout" style={{ fontSize: 13 }} /> تسجيل الخروج
                         </button>
                     </form>
@@ -330,7 +330,7 @@ export default function AdminLayout({ children, title }) {
             </aside>
 
             {/* ── Main ── */}
-            <div className="mr-0 lg:mr-[230px]" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', minWidth: 0 }}>
+            <div className="admin-shell-main mr-0 lg:mr-[230px]" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', minHeight: 0, minWidth: 0 }}>
 
                 {/* Topbar */}
                 <header className="px-4 sm:px-6 lg:px-7" style={{
@@ -381,7 +381,7 @@ export default function AdminLayout({ children, title }) {
                 </header>
 
                 {/* Content */}
-                <main className="px-4 py-5 sm:px-6 lg:px-7 lg:py-6" style={{ flex: 1, minWidth: 0 }}>
+                <main className="admin-main px-4 py-5 sm:px-6 lg:px-7 lg:py-6" style={{ flex: 1, minHeight: 0, minWidth: 0 }}>
                     <Toast flash={flash} />
                     <LiveToast payload={liveToast} onClose={() => setLiveToast(null)} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
