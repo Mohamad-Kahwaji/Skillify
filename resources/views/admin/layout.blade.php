@@ -679,7 +679,6 @@
       <span class="footer-copy">© {{ date('Y') }} Skillify Platform. All rights reserved.</span>
     </div>
     <div class="footer-links">
-      <a href="#">Privacy Policy</a>
       <a href="#">Terms of Service</a>
       <a href="#">Support</a>
     </div>

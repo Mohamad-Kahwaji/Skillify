@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (str_starts_with(config('app.url'), 'https')) {
+URL::forceScheme('https');
+}
         // Super admins bypass all permission/gate checks unconditionally.
         Gate::before(function ($user, string $_ability) {
             if ($user instanceof SuperAdmin) {

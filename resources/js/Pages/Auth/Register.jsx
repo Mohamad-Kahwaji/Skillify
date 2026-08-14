@@ -152,13 +152,6 @@ export default function Register() {
                         </Field>
 
                         {/* Terms */}
-                        <p className="text-xs text-gray-400 text-center">
-                            بالتسجيل، أنت توافق على{' '}
-                            <a href="#" className="text-[#0D9488] hover:underline">شروط الخدمة</a>
-                            {' '}و{' '}
-                            <a href="#" className="text-[#0D9488] hover:underline">سياسة الخصوصية</a>
-                        </p>
-
                         {/* Submit */}
                         <button type="submit" disabled={processing}
                             className="w-full py-3.5 bg-[#0D9488] text-white font-bold rounded-xl hover:bg-[#0F766E] disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-lg shadow-teal-200 text-sm flex items-center justify-center gap-2">

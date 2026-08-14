@@ -438,9 +438,6 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                                     إنشاء حساب جديد
                                 </Link>
                             </div>
-                            <p className="text-teal-200/70 text-xs mt-5">
-                                بالتسجيل، أنت توافق على شروط الخدمة وسياسة الخصوصية.
-                            </p>
                         </div>
                     </div>
                 </section>
@@ -454,7 +451,6 @@ export default function Landing({ ads = [], topProfessionals = [], categories = 
                             </div>
                             <div className="flex gap-6 text-sm">
                                 <Link href="/about" className="hover:text-white transition-colors">من نحن</Link>
-                                <a href="#" className="hover:text-white transition-colors">سياسة الخصوصية</a>
                                 <a href={whatsappUrl('مرحباً، أود الاستفسار عن منصة Skillify.')} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">تواصل معنا</a>
                             </div>
                             <p className="text-xs">© {new Date().getFullYear()} Skillify. جميع الحقوق محفوظة.</p>

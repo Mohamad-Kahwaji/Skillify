@@ -363,10 +363,6 @@
       <div class="footer-link">
         Already have an account? <a href="{{ route('user.login') }}">Sign in</a>
       </div>
-      <div class="terms-note">
-        By creating an account you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-      </div>
-
     </div>
   </main>
 
