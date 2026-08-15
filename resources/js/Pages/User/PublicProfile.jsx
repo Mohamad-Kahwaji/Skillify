@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
 import { avatarUrl, storageUrl } from '../../utils/image';
+import ReportButton from '../../Components/ReportButton';
 
 const T = '#0D9488';
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
@@ -141,6 +142,7 @@ export default function PublicProfile({ profile, authId, isSelf, verifyStatus })
 
                         {/* Action buttons */}
                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                            {!isSelf && <ReportButton type="user" id={profile.id} label="إبلاغ عن الحساب" />}
                             {!isSelf && (
                                 <button onClick={startChat} disabled={chatLoading} style={{
                                     display: 'inline-flex', alignItems: 'center', gap: 8,

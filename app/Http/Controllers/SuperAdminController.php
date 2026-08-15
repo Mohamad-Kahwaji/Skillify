@@ -164,7 +164,7 @@ class SuperAdminController extends Controller
         }
 
         return redirect()->route('super_admin.admins.index')
-                         ->with('success', 'تم إنشاء المشرف بنجاح.');
+            ->with('success', 'تم إنشاء المشرف بنجاح.');
     }
 
     public function assignAdminRole(Request $request, Admin $admin)
@@ -192,7 +192,7 @@ class SuperAdminController extends Controller
         $users = User::withCount(['posts', 'services', 'comments'])
             ->with([
                 'businesses',
-                'services' => fn ($q) => $q->with(['category:id,name', 'subcategory:id,name', 'city:id,name'])->latest(),
+                'services' => fn($q) => $q->with(['category:id,name', 'subcategory:id,name', 'city:id,name'])->latest(),
             ])
             ->latest()
             ->get();
@@ -460,7 +460,7 @@ class SuperAdminController extends Controller
             return back()->with('success', sprintf(
                 'تم التحليل بالذكاء الاصطناعي. نسبة التطابق: %d%% — التوصية: %s',
                 $result['match_score'] ?? 0,
-                match($result['verdict'] ?? '') {
+                match ($result['verdict'] ?? '') {
                     'approved' => '✅ قبول',
                     'rejected' => '❌ رفض',
                     default    => '⚠️ مراجعة يدوية',
@@ -474,8 +474,8 @@ class SuperAdminController extends Controller
     // ── Posts ────────────────────────────────────────────────────────────────────
     public function posts()
     {
-        $posts = Post::with(['user', 'comments.user.businesses', 'comments.replies.user.businesses'])
-            ->withCount(['likes', 'comments'])
+        $posts = Post::with(['user' => fn($user) => $user->withCount('warnings'), 'comments.user.businesses', 'comments.replies.user.businesses'])
+            ->withCount(['likes', 'comments', 'warnings'])
             ->latest()
             ->get();
         return Inertia::render('SuperAdmin/Posts', ['posts' => $posts]);
@@ -514,7 +514,7 @@ class SuperAdminController extends Controller
     // ── Reports ──────────────────────────────────────────────────────────────────
     public function reports()
     {
-        $reports = Report::with('user')->latest()->get();
+        $reports = Report::with(['user', 'reportable'])->latest()->get();
         return Inertia::render('SuperAdmin/Reports', ['reports' => $reports]);
     }
 
@@ -525,7 +525,7 @@ class SuperAdminController extends Controller
             ->withCount(['posts', 'services', 'comments'])
             ->with([
                 'businesses',
-                'services' => fn ($q) => $q->with(['category:id,name', 'subcategory:id,name', 'city:id,name'])->latest(),
+                'services' => fn($q) => $q->with(['category:id,name', 'subcategory:id,name', 'city:id,name'])->latest(),
             ])
             ->latest()
             ->get();
@@ -576,5 +576,4 @@ class SuperAdminController extends Controller
         $cities = City::orderBy('name')->get();
         return Inertia::render('SuperAdmin/Cities', ['cities' => $cities]);
     }
-
 }

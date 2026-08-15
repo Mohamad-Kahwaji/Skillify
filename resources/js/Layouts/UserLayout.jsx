@@ -4,6 +4,7 @@ import { storageUrl } from '../utils/image';
 
 const NAV = [
     { href: '/user/dashboard',       icon: 'ti-home',           label: 'الرئيسية' },
+    { href: '/user/explore',         icon: 'ti-compass',         label: 'استكشاف' },
     { href: '/user/services',        icon: 'ti-briefcase',      label: 'الخدمات' },
     { href: '/user/my-services',     icon: 'ti-tool',           label: 'خدماتي' },
     { href: '/user/community-posts', icon: 'ti-users',          label: 'المجتمع' },

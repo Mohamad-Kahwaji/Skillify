@@ -12,8 +12,8 @@ class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with(['user', 'comments.user.businesses', 'comments.replies.user.businesses'])
-            ->withCount(['likes', 'comments'])
+        $posts = Post::with(['user' => fn($user) => $user->withCount('warnings'), 'comments.user.businesses', 'comments.replies.user.businesses'])
+            ->withCount(['likes', 'comments', 'warnings'])
             ->latest()
             ->get();
         return Inertia::render('Admin/Posts', ['posts' => $posts]);
@@ -31,9 +31,13 @@ class PostController extends Controller
 
     public function showmypost()
     {
-        $posts       = Post::with('activeType')->where('user_id', auth('users')->id())->latest()->get();
+        $authId      = auth('users')->id();
+        $posts       = Post::with(['user.businesses', 'activeType', 'comments.user.businesses', 'comments.replies.user.businesses', 'likes'])
+            ->where('user_id', $authId)
+            ->latest()
+            ->get();
         $activeTypes = ActiveType::orderBy('id')->get(['id', 'name']);
-        return Inertia::render('User/Posts', ['posts' => $posts, 'activeTypes' => $activeTypes]);
+        return Inertia::render('User/Posts', ['posts' => $posts, 'activeTypes' => $activeTypes, 'authId' => $authId]);
     }
 
     public function communityPosts()

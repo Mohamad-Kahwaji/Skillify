@@ -1,6 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import SuperAdminLayout from '../../Layouts/SuperAdminLayout';
+import WarningButton from '../../Components/WarningButton';
+import PasswordConfirmModal from '../../Components/PasswordConfirmModal';
 
 const AV_COLORS = ['#6D28D9','#0D9488','#2563EB','#D97706','#DC2626','#0891B2','#7C3AED','#059669'];
 
@@ -149,6 +151,7 @@ function PostCard({ post, index, onDelete, onDeleteComment }) {
                             {timeAgo(post.created_at)}
                         </span>
                     </div>
+                    <WarningButton type="post" id={post.id} actionPrefix="/super-admin/moderation" />
                     {/* Delete */}
                     <button onClick={() => onDelete(post.id)} title="حذف المنشور" style={{
                         width: 32, height: 32, borderRadius: 8, border: '1px solid #FEE2E2',
@@ -215,6 +218,8 @@ function PostCard({ post, index, onDelete, onDeleteComment }) {
                             <span><strong style={{ color: '#0F172A' }}>{Number(post.views).toLocaleString()}</strong> مشاهدة</span>
                         </div>
                     )}
+                    {(post.warnings_count ?? 0) > 0 && <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#B45309' }}><i className="ti ti-alert-triangle" /><strong>{post.warnings_count}</strong> تحذير</div>}
+                    {(post.user?.warnings_count ?? 0) > 0 && <div style={{ fontSize: 11, color: '#92400E' }}>للحساب: {post.user.warnings_count} تحذير</div>}
                     {post.post_date && (
                         <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#94A3B8' }}>
                             <i className="ti ti-calendar" style={{ fontSize: 13 }} />
@@ -240,6 +245,7 @@ function PostCard({ post, index, onDelete, onDeleteComment }) {
 export default function Posts({ posts }) {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [deleteId, setDeleteId] = useState(null);
 
     const filtered = (posts ?? []).filter(p => {
         const matchSearch = `${p.title ?? ''} ${p.description ?? ''} ${p.user?.first_name ?? ''} ${p.user?.last_name ?? ''}`.toLowerCase().includes(search.toLowerCase());
@@ -254,10 +260,8 @@ export default function Posts({ posts }) {
         archived:  (posts ?? []).filter(p => p.status === 'archived').length,
     };
 
-    const destroy = (id) => {
-        if (!confirm('حذف هذا المنشور نهائياً؟')) return;
-        router.delete(`/super-admin/posts/${id}`, { preserveScroll: true });
-    };
+    const destroy = id => setDeleteId(id);
+    const confirmDelete = password => new Promise(resolve => router.delete(`/super-admin/posts/${deleteId}`, { data: { current_password: password }, preserveScroll: true, onFinish: () => { setDeleteId(null); resolve(); } }));
 
     const destroyComment = (id) => {
         if (!confirm('حذف هذا التعليق نهائياً؟')) return;
@@ -317,6 +321,7 @@ export default function Posts({ posts }) {
                     ))}
                 </div>
             )}
+            <PasswordConfirmModal open={!!deleteId} title="حذف المنشور" description="سيُحذف المنشور نهائياً. أدخل كلمة مرور السوبر أدمن للمتابعة." onClose={() => setDeleteId(null)} onConfirm={confirmDelete} />
         </SuperAdminLayout>
     );
 }

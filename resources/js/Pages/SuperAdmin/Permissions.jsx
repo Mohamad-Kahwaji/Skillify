@@ -79,6 +79,7 @@ const INPUT = {
 export default function Permissions({ permissions, guards }) {
     const [showCreate,  setShowCreate]  = useState(false);
     const [search,      setSearch]      = useState('');
+    const [moduleSearch, setModuleSearch] = useState('');
     const [activeGuard, setActiveGuard] = useState('all');
     const [expandedGuards, setExpandedGuards] = useState({});
     const { data, setData, post, processing, errors, reset } = useForm({ name: '', guard_name: 'admins' });
@@ -107,19 +108,24 @@ export default function Permissions({ permissions, guards }) {
     /* apply search + guard filter */
     const filtered = useMemo(() => {
         const q = search.trim().toLowerCase();
+        const moduleQuery = moduleSearch.trim().toLowerCase();
         return Object.fromEntries(
             Object.entries(byGuard)
-                .map(([g, perms]) => [g, perms.filter(p =>
-                    (activeGuard === 'all' || g === activeGuard) &&
-                    (!q || p.name.toLowerCase().includes(q))
-                )])
+                .map(([g, perms]) => [g, perms.filter(p => {
+                    const { module } = parsePerm(p.name);
+                    const moduleLabel = (MODULE_LABELS[module] ?? module).toLowerCase();
+                    return (activeGuard === 'all' || g === activeGuard) &&
+                        (!q || p.name.toLowerCase().includes(q)) &&
+                        (!moduleQuery || module.toLowerCase().includes(moduleQuery) || moduleLabel.includes(moduleQuery));
+                })])
                 .filter(([, perms]) => perms.length > 0)
         );
-    }, [byGuard, search, activeGuard]);
+    }, [byGuard, search, moduleSearch, activeGuard]);
 
     const totalFiltered = Object.values(filtered).reduce((s, p) => s + p.length, 0);
 
     const toggleGuard = (g) => setExpandedGuards(prev => ({ ...prev, [g]: !prev[g] }));
+    const setAllGuards = (expanded) => setExpandedGuards(Object.fromEntries(guardKeys.map(g => [g, expanded])));
 
     return (
         <SuperAdminLayout title="الصلاحيات">
@@ -145,6 +151,20 @@ export default function Permissions({ permissions, guards }) {
                     <i className={`ti ${showCreate ? 'ti-x' : 'ti-plus'}`} />
                     {showCreate ? 'إلغاء' : 'صلاحية جديدة'}
                 </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 10 }}>
+                {[
+                    { label: 'إجمالي الصلاحيات', value: allPerms.length, icon: 'ti-key', color: '#7C3AED', bg: '#F5F3FF' },
+                    { label: 'الحراس المستخدمون', value: guardKeys.length, icon: 'ti-shield-check', color: '#2563EB', bg: '#EFF6FF' },
+                    { label: 'الوحدات', value: new Set(allPerms.map(p => parsePerm(p.name).module)).size, icon: 'ti-layout-grid', color: '#0D9488', bg: '#F0FDFA' },
+                    { label: 'نتائج العرض', value: totalFiltered, icon: 'ti-filter', color: '#D97706', bg: '#FFFBEB' },
+                ].map(stat => (
+                    <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 15px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: 14, boxShadow: '0 4px 14px rgba(15,23,42,.035)' }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: stat.bg, color: stat.color, fontSize: 17 }}><i className={`ti ${stat.icon}`} /></div>
+                        <div><div style={{ fontSize: 20, fontWeight: 900, color: '#1E1B4B', lineHeight: 1 }}>{stat.value}</div><div style={{ fontSize: 10.5, color: '#94A3B8', marginTop: 4 }}>{stat.label}</div></div>
+                    </div>
+                ))}
             </div>
 
             {/* ─── Create form ──────────────────────────────────── */}
@@ -181,10 +201,14 @@ export default function Permissions({ permissions, guards }) {
             )}
 
             {/* ─── Filter bar ───────────────────────────────────── */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: 10, background: 'rgba(255,255,255,.75)', border: '1px solid #E2E8F0', borderRadius: 16 }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
                     <i className="ti ti-search" style={{ position: 'absolute', top: '50%', right: 12, transform: 'translateY(-50%)', fontSize: 15, color: '#94A3B8', pointerEvents: 'none' }} />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث في الصلاحيات..." style={{ ...INPUT, paddingRight: 38 }} />
+                </div>
+                <div style={{ position: 'relative', flex: 0.7, minWidth: 170 }}>
+                    <i className="ti ti-layout-grid" style={{ position: 'absolute', top: '50%', right: 12, transform: 'translateY(-50%)', fontSize: 15, color: '#94A3B8', pointerEvents: 'none' }} />
+                    <input value={moduleSearch} onChange={e => setModuleSearch(e.target.value)} placeholder="بحث داخل الوحدات..." style={{ ...INPUT, paddingRight: 38 }} />
                 </div>
                 {[{ key: 'all', label: `الكل (${allPerms.length})`, color: '#1E1B4B', bg: '#EEF2FF', border: '#C7D2FE', icon: 'ti-apps' },
                   ...guardKeys.map(g => { const c = GUARD_CFG[g] ?? DEFAULT_CFG; return { key: g, label: `${c.label} (${(byGuard[g] ?? []).length})`, ...c }; })
@@ -200,12 +224,17 @@ export default function Permissions({ permissions, guards }) {
                         <i className={`ti ${tab.icon}`} style={{ fontSize: 13 }} />{tab.label}
                     </button>
                 ))}
+                <div style={{ display: 'flex', gap: 6, marginRight: 'auto' }}>
+                    <button type="button" onClick={() => setAllGuards(true)} title="فتح كل الأقسام" style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid #C7D2FE', background: '#EEF2FF', color: '#4F46E5', cursor: 'pointer' }}><i className="ti ti-chevrons-down" /></button>
+                    <button type="button" onClick={() => setAllGuards(false)} title="طي كل الأقسام" style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid #E2E8F0', background: '#fff', color: '#64748B', cursor: 'pointer' }}><i className="ti ti-chevrons-up" /></button>
+                </div>
             </div>
 
-            {(search || activeGuard !== 'all') && (
+            {(search || moduleSearch || activeGuard !== 'all') && (
                 <div style={{ fontSize: 12, color: '#94A3B8' }}>
                     عرض <strong style={{ color: '#1E1B4B' }}>{totalFiltered}</strong> صلاحية
                     {search && <> تطابق "<strong style={{ color: '#7C3AED' }}>{search}</strong>"</>}
+                    {moduleSearch && <> ضمن الوحدة "<strong style={{ color: '#0D9488' }}>{moduleSearch}</strong>"</>}
                 </div>
             )}
 
@@ -247,7 +276,7 @@ export default function Permissions({ permissions, guards }) {
                                     const modLabel = MODULE_LABELS[mod] ?? mod;
                                     return (
                                         <div key={mod} style={{
-                                            display: 'grid', gridTemplateColumns: '200px 1fr auto',
+                                            display: 'grid', gridTemplateColumns: '200px 1fr',
                                             alignItems: 'center', gap: 16, padding: '13px 22px',
                                             minWidth: 560,
                                             borderBottom: mi < moduleKeys.length - 1 ? '0.5px solid rgba(0,0,0,0.05)' : 'none',
@@ -267,44 +296,20 @@ export default function Permissions({ permissions, guards }) {
                                                 </div>
                                             </div>
 
-                                            {/* Action badges */}
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                            {/* Action badges with inline delete controls */}
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                                                 {modPerms.map(p => {
                                                     const { action } = parsePerm(p.name);
                                                     const ac = ACTION_CFG[action] ?? DEFAULT_ACTION;
                                                     return (
-                                                        <div key={p.id} style={{
-                                                            display: 'inline-flex', alignItems: 'center', gap: 4,
-                                                            padding: '3px 9px', borderRadius: 20,
-                                                            background: ac.bg, color: ac.color,
-                                                            fontSize: 11, fontWeight: 700,
-                                                            border: `1px solid ${ac.bg}`,
-                                                            transition: 'all 0.12s',
-                                                        }}>
-                                                            <i className={`ti ${ac.icon}`} style={{ fontSize: 11 }} />
-                                                            {ac.label ?? action}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-
-                                            {/* Delete buttons */}
-                                            <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                                                {modPerms.map(p => {
-                                                    const { action } = parsePerm(p.name);
-                                                    const ac = ACTION_CFG[action] ?? DEFAULT_ACTION;
-                                                    return (
-                                                        <button key={p.id} onClick={() => destroy(p.id, p.name)} title={`حذف: ${p.name}`} style={{
-                                                            width: 26, height: 26, borderRadius: 7, border: '1px solid #FEE2E2',
-                                                            background: '#FFF5F5', color: '#DC2626',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            cursor: 'pointer', fontSize: 12, flexShrink: 0, transition: 'all 0.12s',
-                                                        }}
-                                                            onMouseEnter={e => { e.currentTarget.style.background = '#FEE2E2'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-                                                            onMouseLeave={e => { e.currentTarget.style.background = '#FFF5F5'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                                        <div key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 5px 4px 8px', borderRadius: 10, background: ac.bg, color: ac.color, fontSize: 11, fontWeight: 700, border: `1px solid ${ac.bg}`, transition: 'transform .12s, box-shadow .12s' }}
+                                                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 10px rgba(15,23,42,.08)'; }}
+                                                            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                                                         >
-                                                            <i className="ti ti-trash" />
-                                                        </button>
+                                                            <i className={`ti ${ac.icon}`} style={{ fontSize: 11 }} />
+                                                            <span>{ac.label ?? action}</span>
+                                                            <button type="button" onClick={() => destroy(p.id, p.name)} title={`حذف: ${p.name}`} style={{ width: 20, height: 20, borderRadius: 6, border: 'none', background: 'rgba(255,255,255,.62)', color: ac.color, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 11 }}><i className="ti ti-trash" /></button>
+                                                        </div>
                                                     );
                                                 })}
                                             </div>

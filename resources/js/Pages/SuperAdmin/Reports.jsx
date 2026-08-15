@@ -5,6 +5,7 @@ const AV = ['#7C3AED','#0D9488','#2563EB','#D97706','#DC2626','#0891B2'];
 
 export default function Reports({ reports }) {
     const all = reports ?? [];
+    const targetLabel = report => report.post_id ? 'منشور' : report.reportable_type?.split('\\').pop() === 'Service' ? 'خدمة' : report.reportable_type?.split('\\').pop() === 'Business' ? 'حساب أعمال' : report.reportable_type?.split('\\').pop() === 'User' ? 'حساب مستخدم' : 'محتوى';
     return (
         <SuperAdminLayout title="البلاغات">
             <Head title="البلاغات — Skillify" />
@@ -37,11 +38,9 @@ export default function Reports({ reports }) {
                                 <span><i className="ti ti-mail" style={{ marginLeft: 4 }} />{r.user?.email}</span>
                                 <span><i className="ti ti-clock" style={{ marginLeft: 4 }} />{new Date(r.created_at).toLocaleDateString('ar', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                             </div>
-                            {r.post_id && (
-                                <Link href={`/admin/reports/post/${r.post_id}`} style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#7C3AED', background: '#F5F3FF', border: '1px solid #DDD6FE', padding: '3px 10px', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
-                                    <i className="ti ti-eye" style={{ fontSize: 11 }} /> عرض المنشور المرتبط
-                                </Link>
-                            )}
+                            <Link href={`/super-admin/reports/${r.id}/details`} style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#7C3AED', background: '#F5F3FF', border: '1px solid #DDD6FE', padding: '3px 10px', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
+                                <i className="ti ti-eye" style={{ fontSize: 11 }} /> عرض تفاصيل {targetLabel(r)}
+                            </Link>
                         </div>
                         <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 11px', borderRadius: 20, background: '#FEF2F2', color: '#B91C1C', border: '1px solid #FECACA', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                             <i className="ti ti-flag" style={{ fontSize: 10 }} /> بلاغ

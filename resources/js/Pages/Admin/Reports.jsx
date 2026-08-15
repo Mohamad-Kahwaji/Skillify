@@ -4,6 +4,7 @@ import AdminLayout, { C } from '../../Layouts/AdminLayout';
 const AV = ['#0EA5E9','#8B5CF6','#F59E0B','#10B981','#EF4444','#EC4899'];
 
 export default function Reports({ reports }) {
+    const targetLabel = report => report.post_id ? 'منشور' : report.reportable_type?.split('\\').pop() === 'Service' ? 'خدمة' : report.reportable_type?.split('\\').pop() === 'Business' ? 'حساب أعمال' : report.reportable_type?.split('\\').pop() === 'User' ? 'حساب مستخدم' : 'محتوى';
     return (
         <AdminLayout title="البلاغات">
             <Head title="البلاغات — Skillify" />
@@ -30,11 +31,9 @@ export default function Reports({ reports }) {
                                 من: {r.user?.first_name} {r.user?.last_name} ·{' '}
                                 {new Date(r.created_at).toLocaleDateString('ar', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </div>
-                            {r.post_id && (
-                                <Link href={`/admin/reports/post/${r.post_id}`} style={{ fontSize: 11, color: C.primary, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 6, background: C.infoBg, padding: '3px 9px', borderRadius: 6, fontWeight: 500 }}>
-                                    <i className="ti ti-eye" /> عرض المنشور المرتبط
-                                </Link>
-                            )}
+                            <Link href={`/admin/reports/${r.id}/details`} style={{ fontSize: 11, color: C.primary, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 6, background: C.infoBg, padding: '3px 9px', borderRadius: 6, fontWeight: 500 }}>
+                                <i className="ti ti-eye" /> عرض تفاصيل {targetLabel(r)}
+                            </Link>
                         </div>
                         <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: C.dangerBg, color: C.dangerText, border: `1px solid ${C.dangerBorder}`, display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                             <i className="ti ti-flag" style={{ fontSize: 10 }} /> بلاغ

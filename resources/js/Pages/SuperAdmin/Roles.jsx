@@ -275,6 +275,8 @@ function PermPicker({ availablePerms, selectedIds, onToggle }) {
 export default function Roles({ roles, permissions, guards }) {
     const [showCreate, setShowCreate] = useState(false);
     const [editId,     setEditId]     = useState(null);
+    const [search,     setSearch]     = useState('');
+    const [activeGuard, setActiveGuard] = useState('all');
 
     const createForm = useForm({ name: '', guard_name: 'admins', permissions: [] });
     const editForm   = useForm({ name: '', permissions: [] });
@@ -316,6 +318,18 @@ export default function Roles({ roles, permissions, guards }) {
         return acc;
     }, {}), [roles]);
 
+    const filteredByGuard = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        return Object.fromEntries(Object.entries(byGuard).map(([guard, guardRoles]) => [guard, guardRoles.filter(role => {
+            const permissionText = (role.permissions ?? []).map(permission => permission.name).join(' ');
+            return (activeGuard === 'all' || activeGuard === guard)
+                && (!query || `${role.name} ${guard} ${permissionText}`.toLowerCase().includes(query));
+        })]).filter(([, guardRoles]) => guardRoles.length));
+    }, [byGuard, search, activeGuard]);
+
+    const filteredRoleCount = Object.values(filteredByGuard).reduce((count, guardRoles) => count + guardRoles.length, 0);
+    const permissionCount = (roles ?? []).reduce((count, role) => count + (role.permissions?.length ?? 0), 0);
+
     const editingRole = editId ? (roles ?? []).find(r => r.id === editId) : null;
 
     return (
@@ -340,6 +354,20 @@ export default function Roles({ roles, permissions, guards }) {
                     <i className={`ti ${showCreate ? 'ti-x' : 'ti-plus'}`} />
                     {showCreate ? 'إلغاء' : 'دور جديد'}
                 </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 10 }}>
+                {[
+                    { label: 'إجمالي الأدوار', value: (roles ?? []).length, icon: 'ti-key', color: '#7C3AED', bg: '#F5F3FF' },
+                    { label: 'الأدوار المعروضة', value: filteredRoleCount, icon: 'ti-filter', color: '#2563EB', bg: '#EFF6FF' },
+                    { label: 'الحراس', value: Object.keys(byGuard).length, icon: 'ti-shield-check', color: '#0D9488', bg: '#F0FDFA' },
+                    { label: 'إسنادات الصلاحيات', value: permissionCount, icon: 'ti-lock', color: '#D97706', bg: '#FFFBEB' },
+                ].map(stat => (
+                    <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 15px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: 14, boxShadow: '0 4px 14px rgba(15,23,42,.035)' }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: stat.bg, color: stat.color, fontSize: 17 }}><i className={`ti ${stat.icon}`} /></div>
+                        <div><div style={{ fontSize: 20, fontWeight: 900, color: '#1E1B4B', lineHeight: 1 }}>{stat.value}</div><div style={{ fontSize: 10.5, color: '#94A3B8', marginTop: 4 }}>{stat.label}</div></div>
+                    </div>
+                ))}
             </div>
 
             {/* ─── Create form ─── */}
@@ -413,14 +441,26 @@ export default function Roles({ roles, permissions, guards }) {
                 </div>
             )}
 
-            {/* ─── Roles list ─── */}
-            {!(roles ?? []).length ? (
-                <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 16, padding: '72px 24px', textAlign: 'center', color: '#94A3B8' }}>
-                    <i className="ti ti-key" style={{ fontSize: 52, display: 'block', opacity: 0.12, marginBottom: 14 }} />
-                    <div style={{ fontSize: 15, fontWeight: 600, color: '#64748B', marginBottom: 6 }}>لا توجد أدوار بعد</div>
-                    <p style={{ fontSize: 13 }}>أنشئ أول دور من الأعلى.</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: 10, background: 'rgba(255,255,255,.75)', border: '1px solid #E2E8F0', borderRadius: 16 }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
+                    <i className="ti ti-search" style={{ position: 'absolute', top: '50%', right: 12, transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none' }} />
+                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="ابحث باسم الدور أو الصلاحية..." style={{ ...INPUT, paddingRight: 38 }} />
                 </div>
-            ) : Object.entries(byGuard).map(([guard, guardRoles]) => {
+                {[{ key: 'all', label: `كل الأدوار (${(roles ?? []).length})`, icon: 'ti-apps', color: '#4F46E5', bg: '#EEF2FF' }, ...Object.keys(byGuard).map(guard => { const cfg = GUARD_CFG[guard] ?? DEFAULT_CFG; return { key: guard, label: `${cfg.label} (${byGuard[guard].length})`, icon: cfg.icon, color: cfg.color, bg: cfg.bg }; })].map(tab => (
+                    <button key={tab.key} type="button" onClick={() => setActiveGuard(tab.key)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '8px 13px', borderRadius: 22, border: `1px solid ${activeGuard === tab.key ? tab.color : '#E2E8F0'}`, background: activeGuard === tab.key ? tab.bg : '#fff', color: activeGuard === tab.key ? tab.color : '#64748B', fontSize: 11.5, fontWeight: activeGuard === tab.key ? 800 : 500, cursor: 'pointer', fontFamily: "'Cairo','Inter',sans-serif" }}><i className={`ti ${tab.icon}`} />{tab.label}</button>
+                ))}
+            </div>
+
+            {(search || activeGuard !== 'all') && <div style={{ fontSize: 12, color: '#94A3B8' }}>عرض <strong style={{ color: '#1E1B4B' }}>{filteredRoleCount}</strong> دور {search && <>مطابق لـ "<strong style={{ color: '#7C3AED' }}>{search}</strong>"</>}</div>}
+
+            {/* ─── Roles list ─── */}
+            {!(roles ?? []).length || !filteredRoleCount ? (
+                <div style={{ background: '#fff', border: '0.5px solid rgba(0,0,0,0.07)', borderRadius: 16, padding: '72px 24px', textAlign: 'center', color: '#94A3B8' }}>
+                    <i className={roles?.length ? 'ti ti-search-off' : 'ti ti-key'} style={{ fontSize: 52, display: 'block', opacity: 0.12, marginBottom: 14 }} />
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#64748B', marginBottom: 6 }}>{roles?.length ? 'لا توجد نتائج مطابقة' : 'لا توجد أدوار بعد'}</div>
+                    <p style={{ fontSize: 13 }}>{roles?.length ? 'جرّب تغيير البحث أو الحارس المحدد.' : 'أنشئ أول دور من الأعلى.'}</p>
+                </div>
+            ) : Object.entries(filteredByGuard).map(([guard, guardRoles]) => {
                 const cfg = GUARD_CFG[guard] ?? DEFAULT_CFG;
                 return (
                     <div key={guard}>

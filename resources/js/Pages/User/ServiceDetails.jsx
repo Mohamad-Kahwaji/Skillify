@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
 import { avatarUrl, storageUrl } from '../../utils/image';
+import ReportButton from '../../Components/ReportButton';
 
 const T = '#0D9488';
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
@@ -108,6 +109,7 @@ export default function ServiceDetails({ service, authId }) {
                     {/* Title + tags + price */}
                     <div style={{ background: '#fff', border: '1px solid #F1F5F9', borderRadius: 16, padding: '22px 24px' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+                            <ReportButton type="service" id={service.id} label="إبلاغ عن الخدمة" />
                             <div style={{ flex: 1 }}>
                                 <div style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', lineHeight: 1.2, marginBottom: 10 }}>{service.name}</div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>

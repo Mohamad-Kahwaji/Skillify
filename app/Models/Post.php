@@ -32,6 +32,11 @@ class Post extends Model
         return $this->hasMany(PostLike::class);
     }
 
+    public function warnings()
+    {
+        return $this->morphMany(ModerationWarning::class, 'warningable');
+    }
+
     public function isLikedBy(int $userId): bool
     {
         return $this->likes()->where('user_id', $userId)->exists();

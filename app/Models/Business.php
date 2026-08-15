@@ -25,25 +25,30 @@ class Business extends Model
         return $this->hasMany(BusinessGallery::class, 'business_id')->latest();
     }
 
+    public function warnings()
+    {
+        return $this->morphMany(ModerationWarning::class, 'warningable');
+    }
+
     public function distanceTo(User $other): float
-{
-    // خذ الموقع الصح لكل مستخدم
-    $lat1 = $this->location['latitude'];
-    $lng1 = $this->location['longitude'];
-    $lat2 = $other->location['latitude'];
-    $lng2 = $other->location['longitude'];
+    {
+        // خذ الموقع الصح لكل مستخدم
+        $lat1 = $this->location['latitude'];
+        $lng1 = $this->location['longitude'];
+        $lat2 = $other->location['latitude'];
+        $lng2 = $other->location['longitude'];
 
-    $earthRadius = 6371;
+        $earthRadius = 6371;
 
-    $dLat = deg2rad($lat2 - $lat1);
-    $dLng = deg2rad($lng2 - $lng1);
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
 
-    $a = sin($dLat / 2) * sin($dLat / 2) +
-         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-         sin($dLng / 2) * sin($dLng / 2);
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLng / 2) * sin($dLng / 2);
 
-    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
-    return round($earthRadius * $c, 2);
-}
+        return round($earthRadius * $c, 2);
+    }
 }

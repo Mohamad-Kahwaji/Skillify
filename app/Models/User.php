@@ -59,11 +59,11 @@ class User extends Authenticatable
             return null;
         }
 
-        if (str_starts_with($this->profile_photo, ['http://', 'https://'])) {
+        if (str_starts_with($this->profile_photo, 'http://') || str_starts_with($this->profile_photo, 'https://')) {
             return $this->profile_photo;
         }
 
-        if (str_starts_with($this->profile_photo, ['/'])) {
+        if (str_starts_with($this->profile_photo, '/')) {
             return asset($this->profile_photo);
         }
 
@@ -111,6 +111,11 @@ class User extends Authenticatable
     public function services()
     {
         return $this->hasMany(Service::class);
+    }
+
+    public function warnings()
+    {
+        return $this->morphMany(ModerationWarning::class, 'warningable');
     }
 
     /**

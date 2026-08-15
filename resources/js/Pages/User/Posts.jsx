@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState, useRef } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
+import { PostCard as DetailedPostCard } from './AllPosts';
 
 const T = '#0D9488';
 
@@ -70,7 +71,7 @@ function PostCard({ post, onDelete }) {
     );
 }
 
-export default function Posts({ posts, activeTypes }) {
+export default function Posts({ posts, activeTypes, authId }) {
     const [showForm, setShowForm]     = useState(false);
     const [imgPreview, setImgPreview] = useState(null);
     const fileRef                     = useRef(null);
@@ -274,7 +275,7 @@ export default function Posts({ posts, activeTypes }) {
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {posts.map(p => <PostCard key={p.id} post={p} />)}
+                    {posts.map(p => <DetailedPostCard key={p.id} post={p} authId={authId} />)}
                 </div>
             )}
         </UserLayout>

@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
 import { avatarUrl } from '../../utils/image';
+import ReportButton from '../../Components/ReportButton';
 
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
 
@@ -180,6 +181,7 @@ function PostCard({ post, authId }) {
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#94A3B8' }}>
                         <i className="ti ti-message-circle" /> {commentCount}
                     </span>
+                    <ReportButton type="post" id={post.id} compact />
                 </div>
             </div>
 

@@ -8,9 +8,20 @@ use App\Models\City;
 class Service extends Model
 {
     protected $fillable = [
-        'user_id', 'business_id', 'name', 'description',
-        'category_id', 'subcategory_id', 'city_id', 'latitude', 'longitude', 'image',
-        'price', 'price_type', 'is_active', 'status',
+        'user_id',
+        'business_id',
+        'name',
+        'description',
+        'category_id',
+        'subcategory_id',
+        'city_id',
+        'latitude',
+        'longitude',
+        'image',
+        'price',
+        'price_type',
+        'is_active',
+        'status',
     ];
 
     protected $casts = ['is_active' => 'boolean'];
@@ -38,5 +49,10 @@ class Service extends Model
     public function city()
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function warnings()
+    {
+        return $this->morphMany(ModerationWarning::class, 'warningable');
     }
 }

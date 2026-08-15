@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Services\GeminiIdentityService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +21,92 @@ class BusinessController extends Controller
     {
         $businesses = Business::withTrashed()->with('user')->latest()->get();
         return Inertia::render('Admin/Workers', ['businesses' => $businesses]);
+    }
+
+    public function explore(Request $request)
+    {
+        $myId = Auth::guard('users')->id();
+        $query = Business::with([
+            'user.identityVerification',
+            'user.services' => fn($services) => $services
+                ->where('status', 'approved')
+                ->where('is_active', true)
+                ->latest()
+                ->limit(1),
+            'gallery',
+        ])
+            ->where('status', 'active')
+            ->where('user_id', '!=', $myId);
+
+        if ($request->filled('q')) {
+            $term = trim($request->q);
+            $query->where(function ($businesses) use ($term) {
+                $businesses->where('name', 'like', "%{$term}%")
+                    ->orWhere('name_job', 'like', "%{$term}%")
+                    ->orWhere('activity', 'like', "%{$term}%")
+                    ->orWhere('description', 'like', "%{$term}%")
+                    ->orWhere('city', 'like', "%{$term}%")
+                    ->orWhereHas('user', fn($users) => $users
+                        ->where('first_name', 'like', "%{$term}%")
+                        ->orWhere('last_name', 'like', "%{$term}%")
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$term}%"]));
+            });
+        }
+
+        if ($request->filled('city')) {
+            $city = $request->city;
+            $query->where(fn($businesses) => $businesses
+                ->where('city', $city)
+                ->orWhereHas('user', fn($users) => $users->where('city', $city)));
+        }
+
+        $lat = $request->input('lat');
+        $lng = $request->input('lng');
+        if (is_numeric($lat) && is_numeric($lng)) {
+            $latitude = (float) $lat;
+            $longitude = (float) $lng;
+            $items = $query->latest()->get()->map(function (Business $business) use ($latitude, $longitude) {
+                $business->distance_km = $this->calculateDistanceKm($business, $latitude, $longitude);
+                return $business;
+            })->sortBy(fn(Business $business) => $business->distance_km ?? PHP_FLOAT_MAX)->values();
+            $page = max((int) $request->input('page', 1), 1);
+            $perPage = 12;
+            $businesses = new LengthAwarePaginator(
+                $items->forPage($page, $perPage),
+                $items->count(),
+                $perPage,
+                $page,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+        } else {
+            $businesses = $query->latest()->paginate(12)->withQueryString();
+        }
+
+        $cities = \App\Models\User::whereHas('businesses', fn($businesses) => $businesses->where('status', 'active'))
+            ->whereNotNull('city')
+            ->where('city', '!=', '')
+            ->distinct()
+            ->orderBy('city')
+            ->pluck('city');
+
+        return Inertia::render('User/Explore', [
+            'businesses' => $businesses,
+            'cities'     => $cities,
+            'filters'    => $request->only(['q', 'city', 'lat', 'lng']),
+        ]);
+    }
+
+    protected function calculateDistanceKm(Business $business, float $latitude, float $longitude): ?float
+    {
+        $businessLatitude = is_numeric($business->latitude) ? (float) $business->latitude : $business->user?->latitude;
+        $businessLongitude = is_numeric($business->longitude) ? (float) $business->longitude : $business->user?->longitude;
+        if (!is_numeric($businessLatitude) || !is_numeric($businessLongitude)) return null;
+
+        $dLat = deg2rad($latitude - $businessLatitude);
+        $dLng = deg2rad($longitude - $businessLongitude);
+        $a = sin($dLat / 2) ** 2
+            + cos(deg2rad($businessLatitude)) * cos(deg2rad($latitude)) * sin($dLng / 2) ** 2;
+        return round(6371 * (2 * atan2(sqrt($a), sqrt(1 - $a))), 2);
     }
 
     public function show(int $id)

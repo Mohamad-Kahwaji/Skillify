@@ -49,16 +49,29 @@ class ServiceController extends Controller
             ->where('is_active', true);
 
         if ($request->filled('q')) {
-            $q = $request->q;
-            $query->where(fn($s) => $s->where('name', 'like', "%$q%")->orWhere('description', 'like', "%$q%"));
+            $q = trim($request->q);
+            $query->where(function ($s) use ($q) {
+                $s->where('name', 'like', "%{$q}%")
+                    ->orWhere('description', 'like', "%{$q}%")
+                    ->orWhereHas('category', fn($c) => $c->where('name', 'like', "%{$q}%"))
+                    ->orWhereHas('subcategory', fn($c) => $c->where('name', 'like', "%{$q}%"))
+                    ->orWhereHas('city', fn($c) => $c->where('name', 'like', "%{$q}%"))
+                    ->orWhereHas('user', fn($u) => $u->where('first_name', 'like', "%{$q}%")
+                        ->orWhere('last_name', 'like', "%{$q}%")
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$q}%"]));
+            });
         }
         if ($request->filled('city'))       $query->where('city_id', $request->city);
         if ($request->filled('category'))   $query->where('category_id', $request->category);
         if ($request->filled('price_type')) $query->where('price_type', $request->price_type);
+        if ($request->boolean('verified_only')) {
+            $query->whereHas('user.identityVerification', fn($verification) => $verification->where('status', 'approved'));
+        }
 
         $lat = $request->input('lat');
         $lng = $request->input('lng');
         $radius = $request->input('radius');
+        $sort = $request->input('sort', 'nearest');
 
         if (is_numeric($lat) && is_numeric($lng)) {
             $latitude = (float) $lat;
@@ -76,7 +89,16 @@ class ServiceController extends Controller
                 );
             }
 
-            $items = $items->sortBy(fn(Service $service) => $service->distance_km ?? PHP_FLOAT_MAX)->values();
+            if ($sort === 'price_low') {
+                $items = $items->sortBy(fn(Service $service) => (float) $service->price)->values();
+            } elseif ($sort === 'price_high') {
+                $items = $items->sortByDesc(fn(Service $service) => (float) $service->price)->values();
+            } elseif ($sort === 'newest') {
+                $items = $items->sortByDesc(fn(Service $service) => $service->created_at?->timestamp ?? 0)->values();
+            } else {
+                $items = $items->sortBy(fn(Service $service) => $service->distance_km ?? PHP_FLOAT_MAX)->values();
+            }
+
             $page = $request->input('page', 1);
             $perPage = 12;
             $paginated = new LengthAwarePaginator(
@@ -88,7 +110,12 @@ class ServiceController extends Controller
             );
             $services = $paginated;
         } else {
-            $services = $query->latest()->paginate(12)->withQueryString();
+            $services = $query->when($sort === 'price_low', fn($q) => $q->orderBy('price', 'asc'))
+                ->when($sort === 'price_high', fn($q) => $q->orderBy('price', 'desc'))
+                ->when($sort === 'newest', fn($q) => $q->latest())
+                ->when($sort === 'nearest', fn($q) => $q->latest())
+                ->paginate(12)
+                ->withQueryString();
         }
 
         $cities     = City::orderBy('name')->get(['id', 'name']);
@@ -98,7 +125,7 @@ class ServiceController extends Controller
             'services'   => $services,
             'cities'     => $cities,
             'categories' => $categories,
-            'filters'    => $request->only(['q', 'city', 'category', 'price_type', 'lat', 'lng', 'radius']),
+            'filters'    => $request->only(['q', 'city', 'category', 'price_type', 'lat', 'lng', 'radius', 'sort', 'verified_only']),
             'authId'     => $myId,
         ]);
     }

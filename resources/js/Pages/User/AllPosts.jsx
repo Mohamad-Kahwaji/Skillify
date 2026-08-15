@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
 import { avatarUrl } from '../../utils/image';
+import ReportButton from '../../Components/ReportButton';
 
 const AV_COLORS = ['#0D9488','#3B82F6','#8B5CF6','#F59E0B','#EF4444','#EC4899','#0F766E'];
 
@@ -106,7 +107,7 @@ function CommentItem({ comment, postId, onReplyAdded, depth = 0 }) {
     );
 }
 
-function PostCard({ post, authId }) {
+export function PostCard({ post, authId }) {
     const author  = post.user;
     const initial = (author?.first_name ?? 'U')[0].toUpperCase();
     const color   = AV_COLORS[(author?.id ?? 0) % 7];
@@ -175,6 +176,7 @@ function PostCard({ post, authId }) {
                 <div style={{ display: 'flex', gap: 12 }}>
                     <span style={{ fontSize: 11, color: '#94A3B8', display: 'inline-flex', alignItems: 'center', gap: 4 }}><i className="ti ti-eye" /> {post.views ?? 0}</span>
                     <span style={{ fontSize: 11, color: '#94A3B8', display: 'inline-flex', alignItems: 'center', gap: 4 }}><i className="ti ti-message-circle" /> {commentCount}</span>
+                    <ReportButton type="post" id={post.id} compact />
                 </div>
             </div>
 
