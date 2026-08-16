@@ -246,6 +246,7 @@ export default function Posts({ posts }) {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [deleteId, setDeleteId] = useState(null);
+    const [deleteError, setDeleteError] = useState('');
 
     const filtered = (posts ?? []).filter(p => {
         const matchSearch = `${p.title ?? ''} ${p.description ?? ''} ${p.user?.first_name ?? ''} ${p.user?.last_name ?? ''}`.toLowerCase().includes(search.toLowerCase());
@@ -260,8 +261,8 @@ export default function Posts({ posts }) {
         archived:  (posts ?? []).filter(p => p.status === 'archived').length,
     };
 
-    const destroy = id => setDeleteId(id);
-    const confirmDelete = password => new Promise(resolve => router.delete(`/super-admin/posts/${deleteId}`, { data: { current_password: password }, preserveScroll: true, onFinish: () => { setDeleteId(null); resolve(); } }));
+    const destroy = id => { setDeleteError(''); setDeleteId(id); };
+    const confirmDelete = password => new Promise(resolve => router.delete(`/super-admin/posts/${deleteId}`, { data: { current_password: password }, preserveScroll: true, onSuccess: () => setDeleteId(null), onError: errors => setDeleteError(errors?.current_password ?? 'كلمة المرور غير صحيحة.'), onFinish: resolve }));
 
     const destroyComment = (id) => {
         if (!confirm('حذف هذا التعليق نهائياً؟')) return;
@@ -321,7 +322,7 @@ export default function Posts({ posts }) {
                     ))}
                 </div>
             )}
-            <PasswordConfirmModal open={!!deleteId} title="حذف المنشور" description="سيُحذف المنشور نهائياً. أدخل كلمة مرور السوبر أدمن للمتابعة." onClose={() => setDeleteId(null)} onConfirm={confirmDelete} />
+            <PasswordConfirmModal open={!!deleteId} title="حذف المنشور" description="سيُحذف المنشور نهائياً. أدخل كلمة مرور السوبر أدمن للمتابعة." error={deleteError} onClose={() => setDeleteId(null)} onConfirm={confirmDelete} />
         </SuperAdminLayout>
     );
 }

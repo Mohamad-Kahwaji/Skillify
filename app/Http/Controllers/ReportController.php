@@ -88,6 +88,13 @@ class ReportController extends Controller
         }
 
         $owner = $target instanceof User ? $target : $target->user;
+        $userProfile = $owner?->load([
+            'identityVerification',
+            'businesses.gallery',
+            'services.category',
+            'services.subcategory',
+            'services.city',
+        ]);
         $warnings = $owner
             ? ModerationWarning::where('user_id', $owner->id)->latest()->limit(50)->get()
             : collect();
@@ -100,6 +107,7 @@ class ReportController extends Controller
             'report' => $report,
             'target' => $target,
             'targetType' => $type,
+            'userProfile' => $userProfile,
             'warnings' => $warnings,
         ]);
     }

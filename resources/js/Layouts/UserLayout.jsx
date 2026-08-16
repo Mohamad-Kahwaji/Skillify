@@ -1,17 +1,17 @@
 import { Link, usePage, router } from '@inertiajs/react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { storageUrl } from '../utils/image';
 
 const NAV = [
     { href: '/user/dashboard',       icon: 'ti-home',           label: 'الرئيسية' },
-    { href: '/user/explore',         icon: 'ti-compass',         label: 'استكشاف' },
-    { href: '/user/services',        icon: 'ti-briefcase',      label: 'الخدمات' },
-    { href: '/user/my-services',     icon: 'ti-tool',           label: 'خدماتي' },
+    { href: '/user/explore',         icon: 'ti-compass',         label: 'استكشاف', permission: 'explore.view' },
+    { href: '/user/services',        icon: 'ti-briefcase',      label: 'الخدمات', permission: 'services.browse' },
+    { href: '/user/my-services',     icon: 'ti-tool',           label: 'خدماتي', permission: 'my_services.view' },
     { href: '/user/community-posts', icon: 'ti-users',          label: 'المجتمع' },
-    { href: '/user/conversations',   icon: 'ti-message-circle', label: 'الرسائل' },
-    { href: '/user/notifications',   icon: 'ti-bell',           label: 'الإشعارات' },
-    { href: '/user/posts',           icon: 'ti-file-text',      label: 'منشوراتي' },
-    { href: '/user/profile',         icon: 'ti-user-edit',      label: 'ملفي الشخصي' },
+    { href: '/user/conversations',   icon: 'ti-message-circle', label: 'الرسائل', permission: 'chat.view' },
+    { href: '/user/notifications',   icon: 'ti-bell',           label: 'الإشعارات', permission: 'notifications.view' },
+    { href: '/user/posts',           icon: 'ti-file-text',      label: 'منشوراتي', permission: 'posts.view_own' },
+    { href: '/user/profile',         icon: 'ti-user-edit',      label: 'ملفي الشخصي', permission: 'profile.view' },
     { href: '/about',                icon: 'ti-info-circle',    label: 'من نحن' },
 ];
 
@@ -49,6 +49,9 @@ function LiveToast({ payload, onClose }) {
 export default function UserLayout({ children, title = 'الرئيسية' }) {
     const { auth, flash, badges, platform } = usePage().props;
     const user = auth?.user;
+    const permissions = user?.permissions ?? [];
+    const can = permission => !permission || permissions.includes('*') || permissions.includes(permission);
+    const visibleNav = NAV.filter(item => can(item.permission));
     const [menuOpen,    setMenuOpen]    = useState(false);
     const [liveToast,   setLiveToast]   = useState(null);
     const [unreadNotif, setUnreadNotif] = useState(badges?.unread_notifications ?? 0);
@@ -56,9 +59,40 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
     const [notifPerm,   setNotifPerm]   = useState(() =>
         typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
     );
+    const countedNotificationIds = useRef(new Set());
     const currentPath = window.location.pathname;
 
     useEffect(() => { setUnreadNotif(badges?.unread_notifications ?? 0); }, [badges?.unread_notifications]);
+
+    useEffect(() => {
+        const syncUnreadCount = event => {
+            if (typeof event.detail?.count === 'number') {
+                setUnreadNotif(Math.max(0, event.detail.count));
+            }
+        };
+        window.addEventListener('skillify:notifications-changed', syncUnreadCount);
+        return () => window.removeEventListener('skillify:notifications-changed', syncUnreadCount);
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        const syncFromServer = async () => {
+            try {
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+                const response = await fetch('/user/notifications/unread', {
+                    headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
+                });
+                if (!response.ok) return;
+                const payload = await response.json();
+                if (!cancelled) setUnreadNotif(Math.max(0, Number(payload.unread_count) || 0));
+            } catch (_) {
+            }
+        };
+
+        syncFromServer();
+        const interval = setInterval(syncFromServer, 15000);
+        return () => { cancelled = true; clearInterval(interval); };
+    }, [user?.id]);
 
     // Close the mobile nav whenever the route changes
     useEffect(() => {
@@ -124,6 +158,9 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
         const channel = window.Echo.private(`users.${user.id}.notifications`);
 
         const handleNotification = (payload) => {
+            const notificationId = payload.id ?? payload.notification?.id;
+            if (notificationId && countedNotificationIds.current.has(notificationId)) return;
+            if (notificationId) countedNotificationIds.current.add(notificationId);
             setLiveToast({ title: payload.title, message: payload.message ?? '' });
             setUnreadNotif(v => v + 1);
             setTimeout(() => setLiveToast(null), 6000);
@@ -176,7 +213,7 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
 
                 {/* Nav — desktop */}
                 <nav style={{ alignItems: 'center', gap: 2, overflowX: 'auto', flexShrink: 1 }} className="hidden lg:flex">
-                    {NAV.map(({ href, icon, label }) => {
+                    {visibleNav.map(({ href, icon, label }) => {
                         const active = currentPath === href || currentPath.startsWith(href + '/');
                         const isBell = href === '/user/notifications';
                         return (
@@ -252,7 +289,7 @@ export default function UserLayout({ children, title = 'الرئيسية' }) {
                     <div onClick={() => setNavOpen(false)} className="lg:hidden fixed inset-0 z-[80] bg-black/30" style={{ top: 60 }} />
                     <nav className="lg:hidden fixed inset-x-0 z-[85] bg-white overflow-y-auto" style={{ top: 60, maxHeight: 'calc(100vh - 60px)', borderBottom: '0.5px solid rgba(0,0,0,0.07)', boxShadow: '0 12px 24px rgba(0,0,0,0.08)' }}>
                         <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            {NAV.map(({ href, icon, label }) => {
+                            {visibleNav.map(({ href, icon, label }) => {
                                 const active = currentPath === href || currentPath.startsWith(href + '/');
                                 const isBell = href === '/user/notifications';
                                 return (

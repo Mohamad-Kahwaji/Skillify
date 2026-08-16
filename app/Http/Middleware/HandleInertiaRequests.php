@@ -52,6 +52,7 @@ class HandleInertiaRequests extends Middleware
                     'phone'      => $user->phone,
                     'profile_photo' => $user->profile_photo,
                     'profile_photo_url' => $user->profile_photo_url,
+                    'permissions' => $user->getAllPermissions()->pluck('name')->values(),
                 ] : null,
                 'admin' => $admin ? [
                     'id'         => $admin->id,
@@ -59,12 +60,14 @@ class HandleInertiaRequests extends Middleware
                     'last_name'  => $admin->last_name,
                     'email'      => $admin->email,
                     'role'       => $admin->role,
+                    'permissions' => $admin->getAllPermissions()->pluck('name')->values(),
                 ] : ($superAdmin ? [
                     'id'         => $superAdmin->id,
                     'first_name' => $superAdmin->first_name ?? 'Super',
                     'last_name'  => $superAdmin->last_name  ?? 'Admin',
                     'email'      => $superAdmin->email,
                     'role'       => 'super_admin',
+                    'permissions' => ['*'],
                 ] : null),
             ],
             'flash' => [

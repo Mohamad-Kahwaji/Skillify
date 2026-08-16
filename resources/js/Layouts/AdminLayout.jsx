@@ -134,35 +134,35 @@ const NAV_GROUPS = [
     {
         label: 'إدارة المستخدمين',
         items: [
-            { href: '/admin/users',                  icon: 'ti-users',        label: 'المستخدمون' },
-            { href: '/admin/workers',                icon: 'ti-briefcase',    label: 'المزودون / الأعمال', pendingBadge: true },
-            { href: '/admin/identity-verifications', icon: 'ti-id-badge',     label: 'توثيق الهوية' },
-            { href: '/admin/blocked',                icon: 'ti-ban',          label: 'المحظورون' },
+            { href: '/admin/users',                  icon: 'ti-users',        label: 'المستخدمون', permission: 'users.view' },
+            { href: '/admin/workers',                icon: 'ti-briefcase',    label: 'المزودون / الأعمال', permission: 'businesses.view', pendingBadge: true },
+            { href: '/admin/identity-verifications', icon: 'ti-id-badge',     label: 'توثيق الهوية', permission: 'verifications.view' },
+            { href: '/admin/blocked',                icon: 'ti-ban',          label: 'المحظورون', permission: 'blocked.view' },
         ],
     },
     {
         label: 'المحتوى',
         items: [
-            { href: '/admin/services',  icon: 'ti-layout-grid',  label: 'الخدمات' },
-            { href: '/admin/posts',     icon: 'ti-file-text',    label: 'المنشورات' },
-            { href: '/admin/reports',   icon: 'ti-flag',         label: 'البلاغات' },
-            { href: '/admin/ads',       icon: 'ti-speakerphone', label: 'الإعلانات' },
+            { href: '/admin/services',  icon: 'ti-layout-grid',  label: 'الخدمات', permission: 'services.view' },
+            { href: '/admin/posts',     icon: 'ti-file-text',    label: 'المنشورات', permission: 'posts.view_all' },
+            { href: '/admin/reports',   icon: 'ti-flag',         label: 'البلاغات', permission: 'reports.view' },
+            { href: '/admin/ads',       icon: 'ti-speakerphone', label: 'الإعلانات', permission: 'ads.view' },
         ],
     },
     {
         label: 'الإعدادات',
         items: [
-            { href: '/admin/categories',             icon: 'ti-tag',      label: 'الفئات' },
-            { href: '/admin/subcategories',          icon: 'ti-tags',     label: 'الفئات الفرعية' },
-            { href: '/admin/active-types',           icon: 'ti-activity', label: 'أنواع النشاط' },
-            { href: '/admin/active-type-businesses', icon: 'ti-building', label: 'أنواع الأعمال' },
-            { href: '/admin/cities',                 icon: 'ti-map-pin',  label: 'المدن' },
+            { href: '/admin/categories',             icon: 'ti-tag',      label: 'الفئات', permission: 'categories.view' },
+            { href: '/admin/subcategories',          icon: 'ti-tags',     label: 'الفئات الفرعية', permission: 'subcategories.view' },
+            { href: '/admin/active-types',           icon: 'ti-activity', label: 'أنواع النشاط', permission: 'active_types.view' },
+            { href: '/admin/active-type-businesses', icon: 'ti-building', label: 'أنواع الأعمال', permission: 'active_type_businesses.view' },
+            { href: '/admin/cities',                 icon: 'ti-map-pin',  label: 'المدن', permission: 'cities.view' },
         ],
     },
     {
         label: 'النظام',
         items: [
-            { href: '/admin/notifications', icon: 'ti-bell', label: 'الإشعارات', notifBadge: true },
+            { href: '/admin/notifications', icon: 'ti-bell', label: 'الإشعارات', permission: 'notifications.view', notifBadge: true },
         ],
     },
 ];
@@ -172,6 +172,9 @@ export default function AdminLayout({ children, title }) {
     const { auth, flash, badges } = usePage().props;
     const current = typeof window !== 'undefined' ? window.location.pathname : '';
     const admin   = auth?.admin;
+    const permissions = admin?.permissions ?? [];
+    const can = permission => !permission || permissions.includes('*') || permissions.includes(permission);
+    const visibleGroups = NAV_GROUPS.map(group => ({ ...group, items: group.items.filter(item => can(item.permission)) })).filter(group => group.items.length);
 
     const [pendingBiz,  setPendingBiz]  = useState(badges?.pending_businesses   ?? 0);
     const [unreadNotif, setUnreadNotif] = useState(badges?.unread_notifications  ?? 0);
@@ -263,7 +266,7 @@ export default function AdminLayout({ children, title }) {
 
                 {/* Nav */}
                 <nav className="admin-sidebar-nav" style={{ flex: 1, overflowY: 'auto', padding: '10px 10px', scrollbarWidth: 'none' }}>
-                    {NAV_GROUPS.map((group) => (
+                    {visibleGroups.map((group) => (
                         <div key={group.label} className="admin-sidebar-group" style={{ marginBottom: 6 }}>
                             <div className="admin-sidebar-group-label" style={{ fontSize: 9, fontWeight: 700, color: '#475569', letterSpacing: 1, textTransform: 'uppercase', padding: '10px 10px 4px' }}>
                                 {group.label}
@@ -311,7 +314,7 @@ export default function AdminLayout({ children, title }) {
 
                 {/* Footer */}
                 <div className="admin-sidebar-footer" style={{ padding: '12px 14px', borderTop: `1px solid ${C.sidebarBorder}` }}>
-                    <Link href="/admin/profile" className="admin-sidebar-account" style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 8, textDecoration: 'none' }}>
+                    {can('profile.view') && <Link href="/admin/profile" className="admin-sidebar-account" style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 8, textDecoration: 'none' }}>
                         <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,#0EA5E9,#0D9488)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
                             {(admin?.first_name ?? 'A')[0].toUpperCase()}
                         </div>
@@ -319,7 +322,7 @@ export default function AdminLayout({ children, title }) {
                             <div style={{ fontSize: 12, fontWeight: 600, color: '#CBD5E1' }}>{admin?.first_name ?? 'المشرف'}</div>
                             <div style={{ fontSize: 10, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{admin?.email ?? ''}</div>
                         </div>
-                    </Link>
+                    </Link>}
                     <form method="POST" action="/admin/logout" style={{ margin: 0 }}>
                         <input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]')?.content ?? ''} />
                         <button type="submit" className="admin-sidebar-logout" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', fontSize: 11, padding: '5px 10px', borderRadius: 6, width: '100%', fontWeight: 500 }}>
@@ -371,12 +374,12 @@ export default function AdminLayout({ children, title }) {
                             )}
                         </Link>
 
-                        <Link href="/admin/profile" style={{ fontSize: 12, color: C.textMuted, display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
+                        {can('profile.view') && <Link href="/admin/profile" style={{ fontSize: 12, color: C.textMuted, display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
                             <div style={{ width: 26, height: 26, borderRadius: 8, background: 'linear-gradient(135deg,#0EA5E9,#0D9488)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
                                 {(admin?.first_name ?? 'A')[0].toUpperCase()}
                             </div>
                             <span className="hidden md:inline">{admin?.first_name ?? 'المشرف'}</span>
-                        </Link>
+                        </Link>}
                     </div>
                 </header>
 

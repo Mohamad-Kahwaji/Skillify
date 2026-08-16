@@ -83,7 +83,7 @@ export default function Login() {
                                         type="tel"
                                         value={data.phone}
                                         onChange={e => setData('phone', e.target.value)}
-                                        placeholder="05xxxxxxxx"
+                                        placeholder="09xxxxxxxx"
                                         className={`w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] transition-all placeholder:text-gray-300 ${errors.phone ? 'border-red-400' : 'border-gray-200'}`}
                                     />
                                 </div>

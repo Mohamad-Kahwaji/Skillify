@@ -111,16 +111,27 @@ function PostCard({ post, authId }) {
     const author  = post.user;
     const initial = (author?.first_name ?? 'U')[0].toUpperCase();
     const color   = AV_COLORS[(author?.id ?? 0) % 7];
-    const liked   = post.likes?.some(l => l.user_id == authId);
-    const [likes, setLikes]             = useState(post.likes?.length ?? 0);
+    const liked   = Boolean(post.is_liked);
+    const [likes, setLikes]             = useState(post.likes_count ?? 0);
     const [isLiked, setIsLiked]         = useState(liked);
     const [showComments, setShowComments] = useState(false);
-    const [comments, setComments]       = useState(post.comments ?? []);
-    const [commentCount, setCommentCount] = useState(post.comments?.length ?? 0);
+    const [comments, setComments]       = useState([]);
+    const [commentsLoaded, setCommentsLoaded] = useState(false);
+    const [commentCount, setCommentCount] = useState(post.comments_count ?? 0);
     const [commentText, setCommentText] = useState('');
     const [submitting, setSubmitting]   = useState(false);
 
     const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    const toggleComments = () => {
+        const next = !showComments;
+        setShowComments(next);
+        if (!next || commentsLoaded) return;
+        fetch(`/user/posts/${post.id}/comments`, { headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf() } })
+            .then(response => response.ok ? response.json() : Promise.reject())
+            .then(data => { setComments(data); setCommentsLoaded(true); })
+            .catch(() => {});
+    };
 
     const toggleLike = () => {
         const next = !isLiked;
@@ -212,7 +223,7 @@ function PostCard({ post, authId }) {
                 }}>
                     <i className={isLiked ? 'ti ti-heart-filled' : 'ti ti-heart'} /> {likes}
                 </button>
-                <button onClick={() => setShowComments(v => !v)} style={{
+                <button onClick={toggleComments} style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
                     padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.12)',
                     background: showComments ? '#F0FDFA' : 'none',
@@ -290,7 +301,8 @@ function buildFeed(posts, ads, authId) {
 }
 
 export default function CommunityPosts({ posts, authId, ads }) {
-    const feed = buildFeed(posts, ads, authId);
+    const postItems = posts?.data ?? [];
+    const feed = buildFeed(postItems, ads, authId);
 
     return (
         <UserLayout title="المجتمع">
@@ -299,7 +311,7 @@ export default function CommunityPosts({ posts, authId, ads }) {
                 <div style={{ fontSize: 20, fontWeight: 600, color: '#0F172A' }}>منشورات المجتمع</div>
                 <div style={{ fontSize: 13, color: '#475569', marginTop: 2 }}>اطلع على ما يشاركه المجتمع</div>
             </div>
-            {!posts?.length ? (
+            {!postItems.length ? (
                 <div style={{ textAlign: 'center', padding: '60px 24px', color: '#94A3B8' }}>
                     <i className="ti ti-news-off" style={{ fontSize: 48, display: 'block', marginBottom: 12, opacity: 0.3 }} />
                     <p style={{ fontSize: 14 }}>لا توجد منشورات في المجتمع بعد.</p>
@@ -307,6 +319,12 @@ export default function CommunityPosts({ posts, authId, ads }) {
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     {feed.map(item => <div key={item.key}>{item.node}</div>)}
+                    {(posts?.next_page_url || posts?.prev_page_url) && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, padding: '8px 0 20px' }}>
+                            {posts.prev_page_url && <Link href={posts.prev_page_url} preserveScroll style={{ padding: '8px 14px', border: '1px solid #E2E8F0', borderRadius: 9, color: '#475569', textDecoration: 'none', fontSize: 12 }}>السابق</Link>}
+                            {posts.next_page_url && <Link href={posts.next_page_url} preserveScroll style={{ padding: '8px 14px', border: '1px solid #0D9488', borderRadius: 9, color: '#0D9488', textDecoration: 'none', fontSize: 12 }}>التالي</Link>}
+                        </div>
+                    )}
                 </div>
             )}
         </UserLayout>

@@ -43,13 +43,21 @@ class PostController extends Controller
     public function communityPosts()
     {
         $authId = auth('users')->id();
-        $posts  = Post::with(['user.businesses', 'comments.user.businesses', 'comments.replies.user.businesses', 'likes'])
+        $posts  = Post::with(['user.businesses'])
+            ->withCount('likes', 'comments')
+            ->withExists(['likes as is_liked' => fn($likes) => $likes->where('user_id', $authId)])
             ->where('user_id', '!=', $authId)
             ->latest()
-            ->get();
+            ->paginate(12)
+            ->withQueryString();
         $ads = Advertisement::active()->inRandomOrder()->get(['id', 'title', 'description', 'image', 'company_name']);
 
         return Inertia::render('User/CommunityPosts', ['posts' => $posts, 'authId' => $authId, 'ads' => $ads]);
+    }
+
+    public function communityComments(Post $post)
+    {
+        return response()->json($post->comments()->with(['user.businesses', 'replies.user.businesses'])->get());
     }
 
     public function storeUserPost(Request $request)

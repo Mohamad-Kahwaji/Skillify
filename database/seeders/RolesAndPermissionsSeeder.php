@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -15,31 +16,73 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // ── Permissions — admins guard ────────────────────────────────────────
         $adminPerms = [
-            'users.view', 'users.activate', 'users.deactivate',
-            'users.delete', 'users.view_no_services',
+            'users.view',
+            'users.activate',
+            'users.deactivate',
+            'users.delete',
+            'users.view_no_services',
 
-            'businesses.view', 'businesses.approve', 'businesses.reject',
-            'businesses.delete', 'businesses.show',
+            'businesses.view',
+            'businesses.approve',
+            'businesses.reject',
+            'businesses.delete',
+            'businesses.show',
+            'businesses.pending',
 
-            'verifications.view', 'verifications.approve', 'verifications.reject',
+            'verifications.view',
+            'verifications.approve',
+            'verifications.reject',
+            'verifications.pending',
+            'verifications.analyse',
 
-            'posts.view_all', 'posts.delete',
+            'posts.view_all',
+            'posts.delete',
             'reports.view',
+            'reports.details',
+            'reports.warn',
 
-            'ads.view', 'ads.create', 'ads.edit', 'ads.delete',
+            'ads.view',
+            'ads.create',
+            'ads.edit',
+            'ads.delete',
 
-            'categories.view', 'categories.create', 'categories.edit', 'categories.delete',
-            'subcategories.view', 'subcategories.create', 'subcategories.edit', 'subcategories.delete',
+            'categories.view',
+            'categories.create',
+            'categories.edit',
+            'categories.delete',
+            'subcategories.view',
+            'subcategories.create',
+            'subcategories.edit',
+            'subcategories.delete',
 
-            'active_types.view', 'active_types.create', 'active_types.delete',
-            'active_type_businesses.view', 'active_type_businesses.create', 'active_type_businesses.delete',
+            'active_types.view',
+            'active_types.create',
+            'active_types.delete',
+            'active_type_businesses.view',
+            'active_type_businesses.create',
+            'active_type_businesses.delete',
 
-            'cities.view', 'cities.create', 'cities.edit', 'cities.delete',
+            'cities.view',
+            'cities.create',
+            'cities.edit',
+            'cities.delete',
 
-            'services.view', 'services.toggle', 'services.delete',
+            'services.view',
+            'services.toggle',
+            'services.delete',
+            'services.approve',
+            'services.reject',
+            'services.pending',
 
-            'blocked.view', 'blocked.create', 'blocked.delete',
+            'blocked.view',
+            'blocked.create',
+            'blocked.delete',
             'employees.view',
+            'profile.view',
+            'profile.update',
+            'notifications.view',
+            'notifications.read',
+            'notifications.notify',
         ];
 
         foreach ($adminPerms as $perm) {
@@ -48,7 +91,9 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // ── Permissions — super_admins guard (all admin perms + own perms) ───
         $superAdminPerms = array_merge($adminPerms, [
-            'admins.view', 'admins.create', 'admins.delete',
+            'admins.view',
+            'admins.create',
+            'admins.delete',
         ]);
         foreach ($superAdminPerms as $perm) {
             Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'super_admins']);
@@ -56,13 +101,29 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // ── Permissions — users guard ─────────────────────────────────────────
         $userPerms = [
-            'profile.view', 'profile.update',
-            'business.create', 'business.update',
-            'my_services.view', 'my_services.create', 'my_services.edit',
-            'my_services.delete', 'my_services.view_status',
-            'posts.create', 'posts.view_own',
-            'explore.view', 'services.browse',
-            'chat.view', 'messages.send',
+            'profile.view',
+            'profile.update',
+            'business.create',
+            'business.update',
+            'my_services.view',
+            'my_services.create',
+            'my_services.edit',
+            'my_services.delete',
+            'my_services.view_status',
+            'posts.create',
+            'posts.view_own',
+            'posts.delete_own',
+            'comments.delete_own',
+            'business.gallery.manage',
+            'explore.view',
+            'services.browse',
+            'chat.view',
+            'messages.send',
+            'notifications.view',
+            'notifications.read',
+            'notifications.delete',
+            'identity.view',
+            'identity.create',
         ];
 
         foreach ($userPerms as $perm) {
@@ -88,8 +149,13 @@ class RolesAndPermissionsSeeder extends Seeder
         $verifier->syncPermissions(
             Permission::where('guard_name', 'admins')
                 ->whereIn('name', [
-                    'businesses.view', 'businesses.approve', 'businesses.reject', 'businesses.show',
-                    'verifications.view', 'verifications.approve', 'verifications.reject',
+                    'businesses.view',
+                    'businesses.approve',
+                    'businesses.reject',
+                    'businesses.show',
+                    'verifications.view',
+                    'verifications.approve',
+                    'verifications.reject',
                 ])
                 ->get()
         );
@@ -99,14 +165,22 @@ class RolesAndPermissionsSeeder extends Seeder
         $support->syncPermissions(
             Permission::where('guard_name', 'admins')
                 ->whereIn('name', [
-                    'users.view', 'users.view_no_services',
-                    'businesses.view', 'businesses.show',
+                    'users.view',
+                    'users.view_no_services',
+                    'businesses.view',
+                    'businesses.show',
                     'verifications.view',
-                    'posts.view_all', 'reports.view',
-                    'ads.view', 'categories.view', 'subcategories.view',
-                    'active_types.view', 'active_type_businesses.view',
-                    'cities.view', 'services.view',
-                    'blocked.view', 'employees.view',
+                    'posts.view_all',
+                    'reports.view',
+                    'ads.view',
+                    'categories.view',
+                    'subcategories.view',
+                    'active_types.view',
+                    'active_type_businesses.view',
+                    'cities.view',
+                    'services.view',
+                    'blocked.view',
+                    'employees.view',
                 ])
                 ->get()
         );
@@ -128,6 +202,10 @@ class RolesAndPermissionsSeeder extends Seeder
         // business_owner: كل صلاحيات المستخدم
         $bizOwner = Role::firstOrCreate(['name' => 'business_owner', 'guard_name' => 'users']);
         $bizOwner->syncPermissions(Permission::where('guard_name', 'users')->get());
+
+        User::query()->with('businesses')->doesntHave('roles')->get()->each(function (User $user) {
+            $user->assignRole($user->businesses?->status === 'active' ? 'business_owner' : 'user');
+        });
 
         $this->command->info('✓ Roles & Permissions seeded.');
     }

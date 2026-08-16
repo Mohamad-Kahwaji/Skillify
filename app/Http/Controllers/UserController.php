@@ -13,22 +13,22 @@ use Inertia\Inertia;
 class UserController extends Controller
 {
     public function getDistance($userid)
-{
-    $currentUser = auth('users')->user();
-    $otherUser   = User::findOrFail($userid);
+    {
+        $currentUser = auth('users')->user();
+        $otherUser   = User::findOrFail($userid);
 
-    $distance = $currentUser->distanceTo($otherUser);
+        $distance = $currentUser->distanceTo($otherUser);
 
-    return response()->json([
-        'distance' => $distance . ' km',
-    ]);
-}
+        return response()->json([
+            'distance' => $distance . ' km',
+        ]);
+    }
     public function store(Request $request)
     {
         $user = auth('users')->user();
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
-            'middle_namae'=>'required|string',
+            'middle_namae' => 'required|string',
             'last_name' => 'required|string|max:255',
             'email' => 'nullable|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
@@ -43,14 +43,13 @@ class UserController extends Controller
         User::create($validated);
 
         return redirect()->route('users.index')->with('success', 'User created successfully.');
-
     }
     public function allusers()
     {
         $users = User::withCount(['posts', 'services', 'comments'])
             ->with([
                 'businesses',
-                'services' => fn ($q) => $q->with(['category:id,name', 'subcategory:id,name', 'city:id,name'])->latest(),
+                'services' => fn($q) => $q->with(['category:id,name', 'subcategory:id,name', 'city:id,name'])->latest(),
             ])
             ->latest()
             ->get();
@@ -68,27 +67,31 @@ class UserController extends Controller
         $user->update(['status' => 'inactive']);
         return back()->with('success', 'User deactivated.');
     }
-    public function services_users(){
-        $users = User::whereNotIn('id', function($query) {
+    public function services_users()
+    {
+        $users = User::whereNotIn('id', function ($query) {
             $query->select('user_id')->from('services');
         })->latest()->get();
         return Inertia::render('Admin/NoServicesUsers', ['users' => $users]);
     }
 
-    public function myservices(){
+    public function myservices()
+    {
         $services = Service::where('user_id', auth('users')->id())
-            ->with(['category','subcategory','city'])
+            ->with(['category', 'subcategory', 'city'])
             ->latest()
             ->get();
         return Inertia::render('User/MyServices', [
             'services'      => $services,
-            'categories'    => Category::orderBy('name')->get(['id','name']),
-            'subcategories' => Subcategory::orderBy('name')->get(['id','name','category_id']),
-            'cities'        => City::orderBy('name')->get(['id','name']),
+            'verificationStatus' => \App\Models\IdentityVerification::where('user_id', auth('users')->id())->latest()->value('status'),
+            'categories'    => Category::orderBy('name')->get(['id', 'name']),
+            'subcategories' => Subcategory::orderBy('name')->get(['id', 'name', 'category_id']),
+            'cities'        => City::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
-    public function status_myservice(){
+    public function status_myservice()
+    {
         return redirect()->route('user.my-services.list', ['filter' => 'pending']);
     }
 
@@ -140,5 +143,4 @@ class UserController extends Controller
             'verifyStatus' => $profile->identityVerification?->status,
         ]);
     }
-
 }

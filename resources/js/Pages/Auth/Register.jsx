@@ -1,10 +1,10 @@
 ﻿import { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-function Field({ label, error, children }) {
+function Field({ label, required = false, error, children }) {
     return (
         <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}{required && <span className="text-red-500 mr-1" aria-label="إجباري">*</span>}</label>
             {children}
             {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
         </div>
@@ -14,7 +14,7 @@ function Field({ label, error, children }) {
 const inputClass = (err) =>
     `w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] transition-all placeholder:text-gray-300 ${err ? 'border-red-400' : 'border-gray-200'}`;
 
-export default function Register() {
+export default function Register({ cities = [] }) {
     const [showPass, setShowPass] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
@@ -69,7 +69,7 @@ export default function Register() {
 
                         {/* Row: first + middle + last name */}
                         <div className="grid grid-cols-3 gap-4">
-                            <Field label="الاسم الأول" error={errors.first_name}>
+                            <Field label="الاسم الأول" required error={errors.first_name}>
                                 <input type="text" value={data.first_name} onChange={e => setData('first_name', e.target.value)}
                                     placeholder="محمد" className={inputClass(errors.first_name)} />
                             </Field>
@@ -77,7 +77,7 @@ export default function Register() {
                                 <input type="text" value={data.middle_name} onChange={e => setData('middle_name', e.target.value)}
                                     placeholder="علي" className={inputClass(errors.middle_name)} />
                             </Field>
-                            <Field label="الاسم الأخير" error={errors.last_name}>
+                            <Field label="الاسم الأخير" required error={errors.last_name}>
                                 <input type="text" value={data.last_name} onChange={e => setData('last_name', e.target.value)}
                                     placeholder="أحمد" className={inputClass(errors.last_name)} />
                             </Field>
@@ -85,7 +85,7 @@ export default function Register() {
 
                         {/* Row: gender + birthdate */}
                         <div className="grid grid-cols-2 gap-4">
-                            <Field label="الجنس" error={errors.gender}>
+                            <Field label="الجنس" required error={errors.gender}>
                                 <select value={data.gender} onChange={e => setData('gender', e.target.value)}
                                     className={inputClass(errors.gender)}>
                                     <option value="">اختر...</option>
@@ -100,17 +100,19 @@ export default function Register() {
                         </div>
 
                         {/* City */}
-                        <Field label="المدينة" error={errors.city}>
-                            <input type="text" value={data.city} onChange={e => setData('city', e.target.value)}
-                                placeholder="دمشق" className={inputClass(errors.city)} />
+                        <Field label="المدينة" required error={errors.city}>
+                            <select value={data.city} onChange={e => setData('city', e.target.value)} className={inputClass(errors.city)}>
+                                <option value="">اختر المدينة</option>
+                                {cities.map(city => <option key={city.id} value={city.name}>{city.name}</option>)}
+                            </select>
                         </Field>
 
                         <div className="h-px bg-gray-100 my-1" />
 
                         {/* Phone */}
-                        <Field label="رقم الهاتف" error={errors.phone}>
+                        <Field label="رقم الهاتف" required error={errors.phone}>
                             <input type="tel" value={data.phone} onChange={e => setData('phone', e.target.value)}
-                                placeholder="05xxxxxxxx" className={inputClass(errors.phone)} />
+                                placeholder="09xxxxxxxx" className={inputClass(errors.phone)} />
                         </Field>
 
                         {/* Email */}
@@ -120,7 +122,7 @@ export default function Register() {
                         </Field>
 
                         {/* Password */}
-                        <Field label="كلمة المرور" error={errors.password}>
+                        <Field label="كلمة المرور" required error={errors.password}>
                             <div className="relative">
                                 <input type={showPass ? 'text' : 'password'} value={data.password}
                                     onChange={e => setData('password', e.target.value)}
@@ -136,7 +138,7 @@ export default function Register() {
                         </Field>
 
                         {/* Confirm Password */}
-                        <Field label="تأكيد كلمة المرور" error={errors.password_confirmation}>
+                        <Field label="تأكيد كلمة المرور" required error={errors.password_confirmation}>
                             <div className="relative">
                                 <input type={showConfirm ? 'text' : 'password'} value={data.password_confirmation}
                                     onChange={e => setData('password_confirmation', e.target.value)}

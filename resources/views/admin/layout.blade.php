@@ -706,7 +706,46 @@
     localStorage.setItem('theme', dark ? 'dark' : 'light');
     applyTheme(dark);
   }
+
+  document.addEventListener('DOMContentLoaded', function () {
+  var pendingDeleteForm = null;
+  var deleteModal = document.getElementById('admin-delete-password-modal');
+  var deletePassword = document.getElementById('admin-delete-password');
+  var closeDeleteModal = function () { pendingDeleteForm = null; deleteModal.style.display = 'none'; deletePassword.value = ''; };
+  document.getElementById('admin-delete-cancel').addEventListener('click', closeDeleteModal);
+  deleteModal.addEventListener('click', function (event) { if (event.target === deleteModal) closeDeleteModal(); });
+  document.getElementById('admin-delete-password-form').addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (!pendingDeleteForm || !deletePassword.value) return;
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'current_password';
+    input.value = deletePassword.value;
+    pendingDeleteForm.appendChild(input);
+    pendingDeleteForm.dataset.passwordConfirmed = 'true';
+    var form = pendingDeleteForm;
+    closeDeleteModal();
+    HTMLFormElement.prototype.submit.call(form);
+  });
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    var method = form.querySelector('input[name="_method"]');
+    if (!method || method.value.toUpperCase() !== 'DELETE' || form.dataset.passwordConfirmed === 'true') return;
+    event.preventDefault();
+    pendingDeleteForm = form;
+    deleteModal.style.display = 'flex';
+    deletePassword.focus();
+  });
+  });
 </script>
+<div id="admin-delete-password-modal" dir="rtl" style="display:none;position:fixed;inset:0;z-index:1100;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.62);backdrop-filter:blur(4px);">
+  <form id="admin-delete-password-form" style="width:100%;max-width:420px;background:#fff;border-radius:18px;padding:22px;box-shadow:0 24px 80px rgba(15,23,42,.3);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:12px;background:#FEF2F2;color:#DC2626;display:inline-flex;align-items:center;justify-content:center;font-size:19px;"><i class="ti ti-shield-lock"></i></div><div><div style="font-size:16px;font-weight:900;color:#1E1B4B;">تأكيد حذف العنصر</div><div style="font-size:11px;color:#94A3B8;">إجراء أمني مطلوب</div></div></div>
+    <p style="font-size:12px;color:#64748B;line-height:1.7;margin:0 0 14px;">سيُحذف هذا العنصر نهائياً. أدخل كلمة المرور الحالية للمتابعة.</p>
+    <input id="admin-delete-password" type="password" required placeholder="كلمة المرور الحالية" autocomplete="current-password" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #CBD5E1;border-radius:10px;font-family:inherit;font-size:13px;outline:none;">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;"><button id="admin-delete-cancel" type="button" style="padding:9px 15px;border-radius:9px;border:1px solid #CBD5E1;background:#fff;color:#475569;cursor:pointer;font-family:inherit;">إلغاء</button><button type="submit" style="padding:9px 17px;border-radius:9px;border:0;background:#DC2626;color:#fff;cursor:pointer;font-family:inherit;font-weight:800;">تأكيد الحذف</button></div>
+  </form>
+</div>
 @vite(['resources/js/app.js'])
 @stack('scripts')
 @yield('scripts')

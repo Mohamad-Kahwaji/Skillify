@@ -239,6 +239,7 @@ export default function Posts({ posts }) {
     const [search, setSearch]       = useState('');
     const [statusFilter, setFilter] = useState('all');
     const [deleteId, setDeleteId] = useState(null);
+    const [deleteError, setDeleteError] = useState('');
 
     const all = posts ?? [];
 
@@ -255,8 +256,8 @@ export default function Posts({ posts }) {
         archived:  all.filter(p => p.status === 'archived').length,
     };
 
-    const destroy = id => setDeleteId(id);
-    const confirmDelete = password => new Promise(resolve => router.delete(`/admin/posts/${deleteId}`, { data: { current_password: password }, preserveScroll: true, onFinish: () => { setDeleteId(null); resolve(); } }));
+    const destroy = id => { setDeleteError(''); setDeleteId(id); };
+    const confirmDelete = password => new Promise(resolve => router.delete(`/admin/posts/${deleteId}`, { data: { current_password: password }, preserveScroll: true, onSuccess: () => setDeleteId(null), onError: errors => setDeleteError(errors?.current_password ?? 'كلمة المرور غير صحيحة.'), onFinish: resolve }));
 
     const destroyComment = (id) => {
         if (!confirm('حذف هذا التعليق نهائياً؟')) return;
@@ -319,7 +320,7 @@ export default function Posts({ posts }) {
                     ))}
                 </div>
             )}
-            <PasswordConfirmModal open={!!deleteId} title="حذف المنشور" description="سيُحذف المنشور نهائياً. أدخل كلمة مرور الأدمن للمتابعة." onClose={() => setDeleteId(null)} onConfirm={confirmDelete} />
+            <PasswordConfirmModal open={!!deleteId} title="حذف المنشور" description="سيُحذف المنشور نهائياً. أدخل كلمة مرور الأدمن للمتابعة." error={deleteError} onClose={() => setDeleteId(null)} onConfirm={confirmDelete} />
         </AdminLayout>
     );
 }

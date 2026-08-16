@@ -153,10 +153,12 @@ class SuperAdminController extends Controller
 
             if (count($selected) === count($allPerms)) {
                 // Full role assigned — standard
+                $admin->syncPermissions([]);
                 $admin->assignRole($role);
             } elseif (count($selected) > 0) {
                 // Partial — assign direct permissions only (no role)
-                $admin->givePermissionTo(
+                $admin->syncRoles([]);
+                $admin->syncPermissions(
                     \Spatie\Permission\Models\Permission::whereIn('id', $selected)->get()
                 );
             }
@@ -171,6 +173,7 @@ class SuperAdminController extends Controller
     {
         $request->validate(['role_id' => 'required|exists:roles,id']);
         $role = Role::find($request->role_id);
+        $admin->syncPermissions([]);
         $admin->syncRoles([$role]);
         return back()->with('success', 'تم تعيين الدور بنجاح.');
     }
@@ -178,6 +181,7 @@ class SuperAdminController extends Controller
     public function revokeAdminRole(Admin $admin)
     {
         $admin->syncRoles([]);
+        $admin->syncPermissions([]);
         return back()->with('success', 'تم سحب الأدوار.');
     }
 

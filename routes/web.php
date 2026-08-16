@@ -49,9 +49,10 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
     // Profile
-    Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
+    Route::get('/profile', [AdminController::class, 'profile'])->name('profile')
+        ->middleware('permission:profile.view');
     Route::put('/profile', [AdminController::class, 'updateProfile'])->name('profile.update')
-        ->middleware('confirm_admin_password');
+        ->middleware(['permission:profile.update', 'confirm_admin_password']);
 
     // Users
     Route::get('/users',                    [UserController::class,  'allusers'])->name('users.index')
@@ -76,25 +77,32 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
         ->middleware('permission:businesses.approve');
     Route::patch('/workers/{business}/reject', [AdminController::class, 'businessto_rejected'])->name('workers.reject')
         ->middleware('permission:businesses.reject');
-    Route::patch('/workers/{business}/pending', [AdminController::class, 'businessto_pending'])->name('workers.pending');
+    Route::patch('/workers/{business}/pending', [AdminController::class, 'businessto_pending'])->name('workers.pending')
+        ->middleware('permission:businesses.pending');
     Route::delete('/workers/{id}',       [BusinessController::class, 'destroy'])->name('workers.destroy')
         ->middleware(['permission:businesses.delete', 'confirm_admin_password']);
 
     // Service moderation (merged into /services)
-    Route::patch('/services/{service}/approve', [AdminController::class, 'serviceto_approve'])->name('services.approve');
-    Route::patch('/services/{service}/reject',  [AdminController::class, 'serviceto_rejected'])->name('services.reject');
-    Route::patch('/services/{service}/pending', [AdminController::class, 'serviceto_pending'])->name('services.pending');
+    Route::patch('/services/{service}/approve', [AdminController::class, 'serviceto_approve'])->name('services.approve')
+        ->middleware('permission:services.approve');
+    Route::patch('/services/{service}/reject',  [AdminController::class, 'serviceto_rejected'])->name('services.reject')
+        ->middleware('permission:services.reject');
+    Route::patch('/services/{service}/pending', [AdminController::class, 'serviceto_pending'])->name('services.pending')
+        ->middleware('permission:services.pending');
 
     // Identity Verifications
     Route::get('/identity-verifications',                            [IdentityVerificationController::class, 'adminIndex'])->name('identity.index')
         ->middleware('permission:verifications.view');
-    Route::post('/identity-verifications/analyse-all',               [IdentityVerificationController::class, 'analyseAll'])->name('identity.analyse-all');
+    Route::post('/identity-verifications/analyse-all',               [IdentityVerificationController::class, 'analyseAll'])->name('identity.analyse-all')
+        ->middleware('permission:verifications.analyse');
     Route::patch('/identity-verifications/{verification}/approve',   [IdentityVerificationController::class, 'approve'])->name('identity.approve')
         ->middleware('permission:verifications.approve');
     Route::patch('/identity-verifications/{verification}/reject',    [IdentityVerificationController::class, 'reject'])->name('identity.reject')
         ->middleware('permission:verifications.reject');
-    Route::patch('/identity-verifications/{verification}/pending',   [IdentityVerificationController::class, 'resetToPending'])->name('identity.pending');
-    Route::post('/identity-verifications/{verification}/analyse-ai', [IdentityVerificationController::class, 'analyseWithAi'])->name('identity.analyse');
+    Route::patch('/identity-verifications/{verification}/pending',   [IdentityVerificationController::class, 'resetToPending'])->name('identity.pending')
+        ->middleware('permission:verifications.pending');
+    Route::post('/identity-verifications/{verification}/analyse-ai', [IdentityVerificationController::class, 'analyseWithAi'])->name('identity.analyse')
+        ->middleware('permission:verifications.analyse');
 
     // Posts
     Route::get('/posts',         [PostController::class, 'index'])->name('posts.index')
@@ -108,9 +116,11 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::get('/reports',           [ReportController::class, 'index'])->name('reports.index')
         ->middleware('permission:reports.view');
     Route::get('/reports/{id}/details', [ReportController::class, 'details'])->name('reports.details')
-        ->middleware('permission:reports.view');
+        ->middleware('permission:reports.details');
     Route::post('/reports/{id}/warn', [ReportController::class, 'warn'])->name('reports.warn')
-        ->middleware('permission:reports.view');
+        ->middleware('permission:reports.warn');
+    Route::post('/moderation/{type}/{id}/warn', [ReportController::class, 'warnTarget'])->name('moderation.warn')
+        ->middleware('permission:reports.warn');
     Route::post('/moderation/{type}/{id}/warn', [ReportController::class, 'warnTarget'])->name('moderation.warn')
         ->middleware('permission:reports.view');
     Route::delete('/reports/{id}/target', [ReportController::class, 'deleteTarget'])->name('reports.target.delete')
@@ -128,7 +138,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::put('/ads/{id}',      [AdvertisementController::class, 'update'])->name('ads.update')
         ->middleware('permission:ads.edit');
     Route::delete('/ads/{id}',   [AdvertisementController::class, 'destroy'])->name('ads.delete')
-        ->middleware('permission:ads.delete');
+        ->middleware(['permission:ads.delete', 'confirm_admin_password']);
 
     // Categories
     Route::get('/categories',            [CategoryController::class, 'index'])->name('categories.index')
@@ -140,7 +150,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::put('/categories/{id}',       [CategoryController::class, 'update'])->name('categories.update')
         ->middleware('permission:categories.edit');
     Route::delete('/categories/{id}',    [CategoryController::class, 'destroy'])->name('categories.destroy')
-        ->middleware('permission:categories.delete');
+        ->middleware(['permission:categories.delete', 'confirm_admin_password']);
 
     // Subcategories
     Route::get('/subcategories',           [SubcategoryController::class, 'index'])->name('subcategories.index')
@@ -152,7 +162,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::put('/subcategories/{id}',      [SubcategoryController::class, 'update'])->name('subcategories.update')
         ->middleware('permission:subcategories.edit');
     Route::delete('/subcategories/{id}',   [SubcategoryController::class, 'destroy'])->name('subcategories.destroy')
-        ->middleware('permission:subcategories.delete');
+        ->middleware(['permission:subcategories.delete', 'confirm_admin_password']);
 
     // Active Types
     Route::get('/active-types',          [ActiveTypeController::class, 'index'])->name('active_types.index')
@@ -162,7 +172,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::patch('/active-types/{id}',   [ActiveTypeController::class, 'update'])->name('active_types.update')
         ->middleware('permission:active_types.create');
     Route::delete('/active-types/{id}',  [ActiveTypeController::class, 'destroy'])->name('active_types.destroy')
-        ->middleware('permission:active_types.delete');
+        ->middleware(['permission:active_types.delete', 'confirm_admin_password']);
 
     // Active Type Businesses
     Route::get('/active-type-businesses',          [ActiveTypebusinessController::class, 'index'])->name('active_typebusinesses.index')
@@ -172,7 +182,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::patch('/active-type-businesses/{id}',   [ActiveTypebusinessController::class, 'update'])->name('active_typebusinesses.update')
         ->middleware('permission:active_type_businesses.create');
     Route::delete('/active-type-businesses/{id}',  [ActiveTypebusinessController::class, 'destroy'])->name('active_typebusinesses.destroy')
-        ->middleware('permission:active_type_businesses.delete');
+        ->middleware(['permission:active_type_businesses.delete', 'confirm_admin_password']);
 
     // Cities
     Route::get('/cities',            [AdminCityController::class, 'index'])->name('cities.index')
@@ -186,7 +196,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
     Route::put('/cities/{id}',       [AdminCityController::class, 'update'])->name('cities.update')
         ->middleware('permission:cities.edit');
     Route::delete('/cities/{id}',    [AdminCityController::class, 'destroy'])->name('cities.destroy')
-        ->middleware('permission:cities.delete');
+        ->middleware(['permission:cities.delete', 'confirm_admin_password']);
 
     // Services
     Route::get('/services',                [ServiceController::class, 'index'])->name('services.index')
@@ -203,10 +213,14 @@ Route::prefix('admin')->name('admin.')->middleware('auth_admin')->group(function
         ->middleware('permission:blocked.view');
 
     // Notifications
-    Route::get('/notifications',              [AdminController::class, 'notifications'])->name('notifications.index');
-    Route::patch('/notifications/read-all',   [AdminController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
-    Route::patch('/notifications/{id}/read',  [AdminController::class, 'markNotificationRead'])->name('notifications.read');
-    Route::post('/notifications/notify-user', [NotificationController::class, 'notifyUser'])->name('notifications.notify-user');
+    Route::get('/notifications',              [AdminController::class, 'notifications'])->name('notifications.index')
+        ->middleware('permission:notifications.view');
+    Route::patch('/notifications/read-all',   [AdminController::class, 'markAllNotificationsRead'])->name('notifications.read-all')
+        ->middleware('permission:notifications.read');
+    Route::patch('/notifications/{id}/read',  [AdminController::class, 'markNotificationRead'])->name('notifications.read')
+        ->middleware('permission:notifications.read');
+    Route::post('/notifications/notify-user', [NotificationController::class, 'notifyUser'])->name('notifications.notify-user')
+        ->middleware('permission:notifications.notify');
 });
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -237,13 +251,15 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     // Permissions
     Route::get('/permissions',                 [RolePermissionController::class, 'permissions'])->name('permissions.index');
     Route::post('/permissions',                [RolePermissionController::class, 'storePermission'])->name('permissions.store');
-    Route::delete('/permissions/{permission}', [RolePermissionController::class, 'destroyPermission'])->name('permissions.destroy');
+    Route::delete('/permissions/{permission}', [RolePermissionController::class, 'destroyPermission'])->name('permissions.destroy')
+        ->middleware('confirm_admin_password:super_admins');
 
     // Roles
     Route::get('/roles',           [RolePermissionController::class, 'roles'])->name('roles.index');
     Route::post('/roles',          [RolePermissionController::class, 'storeRole'])->name('roles.store');
     Route::put('/roles/{role}',    [RolePermissionController::class, 'updateRole'])->name('roles.update');
-    Route::delete('/roles/{role}', [RolePermissionController::class, 'destroyRole'])->name('roles.destroy');
+    Route::delete('/roles/{role}', [RolePermissionController::class, 'destroyRole'])->name('roles.destroy')
+        ->middleware('confirm_admin_password:super_admins');
 
     // Notifications
     Route::get('/notifications',               [SuperAdminController::class, 'notifications'])->name('notifications.index');
@@ -287,13 +303,15 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::post('/ads',              [SuperAdminController::class, 'storeAd'])->name('ads.store');
     Route::put('/ads/{ad}',          [SuperAdminController::class, 'updateAd'])->name('ads.update');
     Route::patch('/ads/{ad}/toggle', [SuperAdminController::class, 'toggleAd'])->name('ads.toggle');
-    Route::delete('/ads/{ad}',       [SuperAdminController::class, 'destroyAd'])->name('ads.destroy');
+    Route::delete('/ads/{ad}',       [SuperAdminController::class, 'destroyAd'])->name('ads.destroy')
+        ->middleware('confirm_admin_password:super_admins');
 
     // Posts
     Route::get('/posts',             [SuperAdminController::class, 'posts'])->name('posts.index');
     Route::delete('/posts/{post}',   [SuperAdminController::class, 'destroyPost'])->name('posts.destroy')
         ->middleware('confirm_admin_password:super_admins');
-    Route::delete('/comments/{comment}', [CommentController::class, 'adminDestroy'])->name('comments.destroy');
+    Route::delete('/comments/{comment}', [CommentController::class, 'adminDestroy'])->name('comments.destroy')
+        ->middleware('confirm_admin_password:super_admins');
 
     // Identity Verifications
     Route::get('/identity-verifications',                              [SuperAdminController::class, 'identityVerifications'])->name('identity.index');
@@ -318,31 +336,36 @@ Route::prefix('super-admin')->name('super_admin.')->middleware('auth_super_admin
     Route::get('/categories',           [SuperAdminController::class, 'categories'])->name('categories.index');
     Route::post('/categories',          [CategoryController::class,   'store'])->name('categories.store');
     Route::put('/categories/{id}',      [CategoryController::class,   'update'])->name('categories.update');
-    Route::delete('/categories/{id}',   [CategoryController::class,   'destroy'])->name('categories.destroy');
+    Route::delete('/categories/{id}',   [CategoryController::class,   'destroy'])->name('categories.destroy')
+        ->middleware('confirm_admin_password:super_admins');
 
     // Subcategories
     Route::get('/subcategories',        [SuperAdminController::class,  'subcategories'])->name('subcategories.index');
     Route::post('/subcategories',       [SubcategoryController::class, 'store'])->name('subcategories.store');
     Route::put('/subcategories/{id}',   [SubcategoryController::class, 'update'])->name('subcategories.update');
-    Route::delete('/subcategories/{id}', [SubcategoryController::class, 'destroy'])->name('subcategories.destroy');
+    Route::delete('/subcategories/{id}', [SubcategoryController::class, 'destroy'])->name('subcategories.destroy')
+        ->middleware('confirm_admin_password:super_admins');
 
     // Active Types
     Route::get('/active-types',         [SuperAdminController::class, 'activeTypes'])->name('active_types.index');
     Route::post('/active-types',        [ActiveTypeController::class, 'store'])->name('active_types.store');
     Route::patch('/active-types/{id}',  [ActiveTypeController::class, 'update'])->name('active_types.update');
-    Route::delete('/active-types/{id}', [ActiveTypeController::class, 'destroy'])->name('active_types.destroy');
+    Route::delete('/active-types/{id}', [ActiveTypeController::class, 'destroy'])->name('active_types.destroy')
+        ->middleware('confirm_admin_password:super_admins');
 
     // Active Type Businesses
     Route::get('/active-type-businesses',         [SuperAdminController::class,       'activeTypeBusinesses'])->name('active_typebusinesses.index');
     Route::post('/active-type-businesses',        [ActiveTypebusinessController::class, 'store'])->name('active_typebusinesses.store');
     Route::patch('/active-type-businesses/{id}',  [ActiveTypebusinessController::class, 'update'])->name('active_typebusinesses.update');
-    Route::delete('/active-type-businesses/{id}', [ActiveTypebusinessController::class, 'destroy'])->name('active_typebusinesses.destroy');
+    Route::delete('/active-type-businesses/{id}', [ActiveTypebusinessController::class, 'destroy'])->name('active_typebusinesses.destroy')
+        ->middleware('confirm_admin_password:super_admins');
 
     // Cities
     Route::get('/cities',           [SuperAdminController::class, 'cities'])->name('cities.index');
     Route::post('/cities',          [AdminCityController::class,  'store'])->name('cities.store');
     Route::put('/cities/{id}',      [AdminCityController::class,  'update'])->name('cities.update');
-    Route::delete('/cities/{id}',   [AdminCityController::class,  'destroy'])->name('cities.destroy');
+    Route::delete('/cities/{id}',   [AdminCityController::class,  'destroy'])->name('cities.destroy')
+        ->middleware('confirm_admin_password:super_admins');
 });
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -354,8 +377,10 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     Route::get('/dashboard', [UserDashboardController::class, 'dashboard'])->name('dashboard');
 
     // Profile
-    Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
-    Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile')
+        ->middleware('permission:profile.view');
+    Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update')
+        ->middleware('permission:profile.update');
     Route::post('/password/verify', [UserDashboardController::class, 'verifyPassword'])->name('password.verify')
         ->middleware('confirm_admin_password:users');
     Route::put('/password', [UserDashboardController::class, 'updatePassword'])->name('password.update')
@@ -374,16 +399,20 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
         ->middleware('permission:business.update');
 
     // Business Gallery
-    Route::post('/business/gallery',                           [BusinessGalleryController::class, 'store'])->name('business.gallery.store');
-    Route::delete('/business/gallery/{gallery}',               [BusinessGalleryController::class, 'destroy'])->name('business.gallery.destroy');
-    Route::patch('/business/gallery/{gallery}/caption',        [BusinessGalleryController::class, 'updateCaption'])->name('business.gallery.caption');
+    Route::post('/business/gallery',                           [BusinessGalleryController::class, 'store'])->name('business.gallery.store')
+        ->middleware('permission:business.gallery.manage');
+    Route::delete('/business/gallery/{gallery}',               [BusinessGalleryController::class, 'destroy'])->name('business.gallery.destroy')
+        ->middleware('permission:business.gallery.manage');
+    Route::patch('/business/gallery/{gallery}/caption',        [BusinessGalleryController::class, 'updateCaption'])->name('business.gallery.caption')
+        ->middleware('permission:business.gallery.manage');
 
     // My Services (read)
-    Route::get('/my-services', [UserController::class, 'myservices'])->name('my-services');
+    Route::get('/my-services', [UserController::class, 'myservices'])->name('my-services')
+        ->middleware('permission:my_services.view');
 
     // My Services (write) — requires active business account
     Route::post('/my-services',        [ServiceController::class, 'createService'])->name('my-services.store')
-        ->middleware(['has_business', 'permission:my_services.create']);
+        ->middleware(['has_business', 'verified_identity', 'permission:my_services.create']);
     Route::put('/my-services/{id}',    [UserDashboardController::class, 'updateService'])->name('my-services.update')
         ->middleware(['has_business', 'permission:my_services.edit']);
     Route::delete('/my-services/{id}', [UserDashboardController::class, 'destroyService'])->name('my-services.destroy')
@@ -401,24 +430,29 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     Route::get('/my-services-status', [UserController::class, 'status_myservice'])->name('my-services.status');
 
     // Identity Verification
-    Route::get('/identity-verification',  [IdentityVerificationController::class, 'show'])->name('identity.show');
-    Route::post('/identity-verification', [IdentityVerificationController::class, 'store'])->name('identity.store');
+    Route::get('/identity-verification',  [IdentityVerificationController::class, 'show'])->name('identity.show')
+        ->middleware('permission:identity.view');
+    Route::post('/identity-verification', [IdentityVerificationController::class, 'store'])->name('identity.store')
+        ->middleware('permission:identity.create');
 
     // Posts & Ads
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
     Route::get('/posts',           [PostController::class,     'showmypost'])->name('posts');
     Route::get('/all-posts',       [PostController::class,     'allUserPosts'])->name('all-posts');
     Route::get('/community-posts', [PostController::class,     'communityPosts'])->name('community-posts');
+    Route::get('/posts/{post}/comments', [PostController::class, 'communityComments'])->name('posts.comments.index');
     Route::get('/ads',             [AdvertisementController::class, 'userAds'])->name('ads');
 
     // Posts (user CRUD)
     Route::post('/posts',                        [PostController::class,     'storeUserPost'])->name('posts.store');
-    Route::delete('/posts/{id}',                 [PostController::class,     'destroyUserPost'])->name('posts.destroy');
+    Route::delete('/posts/{id}',                 [PostController::class,     'destroyUserPost'])->name('posts.destroy')
+        ->middleware('permission:posts.delete_own');
 
     // Likes & Comments
     Route::post('/posts/{post}/like',            [PostLikeController::class, 'toggle'])->name('posts.like');
     Route::post('/posts/{post}/comments',        [CommentController::class,  'store'])->name('posts.comments.store');
-    Route::delete('/comments/{comment}',         [CommentController::class,  'destroy'])->name('comments.destroy');
+    Route::delete('/comments/{comment}',         [CommentController::class,  'destroy'])->name('comments.destroy')
+        ->middleware('permission:comments.delete_own');
 
     // Conversations & Chat
     Route::get('/conversations',          [UserDashboardController::class, 'conversations'])->name('conversations');
@@ -431,12 +465,17 @@ Route::prefix('user')->name('user.')->middleware('auth_user')->group(function ()
     Route::get('/messages/{conversationId}',            [MessageController::class, 'index'])->name('messages.index');
 
     // Notifications
-    Route::get('/notifications',              [NotificationController::class, 'userPage'])->name('notifications.index');
+    Route::get('/notifications',              [NotificationController::class, 'userPage'])->name('notifications.index')
+        ->middleware('permission:notifications.view');
     Route::get('/notifications/data',         [NotificationController::class, 'index'])->name('notifications.data');
-    Route::get('/notifications/unread',       [NotificationController::class, 'unread'])->name('notifications.unread');
-    Route::patch('/notifications/{id}/read',  [NotificationController::class, 'markAsread'])->name('notifications.read');
-    Route::patch('/notifications/read-all',   [NotificationController::class, 'makeAllread'])->name('notifications.read-all');
-    Route::delete('/notifications/{id}',      [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::get('/notifications/unread',       [NotificationController::class, 'unread'])->name('notifications.unread')
+        ->middleware('permission:notifications.read');
+    Route::patch('/notifications/{id}/read',  [NotificationController::class, 'markAsread'])->name('notifications.read')
+        ->middleware('permission:notifications.read');
+    Route::patch('/notifications/read-all',   [NotificationController::class, 'makeAllread'])->name('notifications.read-all')
+        ->middleware('permission:notifications.read');
+    Route::delete('/notifications/{id}',      [NotificationController::class, 'destroy'])->name('notifications.destroy')
+        ->middleware('permission:notifications.delete');
 
     // FCM push token registration
     Route::post('/fcm-token', [FcmTokenController::class, 'store'])->name('fcm.token');

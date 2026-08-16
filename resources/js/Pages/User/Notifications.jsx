@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import UserLayout from '../../Layouts/UserLayout';
 
 const TYPE_MAP = {
@@ -99,6 +99,12 @@ export default function Notifications({ notifications, unreadCount }) {
     const [unread, setUnread]     = useState(unreadCount ?? 0);
     const [filter, setFilter]     = useState('all');
 
+    const syncLayoutBadge = count => window.dispatchEvent(new CustomEvent('skillify:notifications-changed', { detail: { count } }));
+
+    useEffect(() => {
+        syncLayoutBadge(unreadCount ?? 0);
+    }, [unreadCount]);
+
     const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
     const markRead = (id) => {
@@ -107,7 +113,11 @@ export default function Notifications({ notifications, unreadCount }) {
             headers: { 'X-CSRF-TOKEN': csrf(), 'Accept': 'application/json' },
         }).then(() => {
             setItems(prev => prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
-            setUnread(v => Math.max(0, v - 1));
+            setUnread(v => {
+                const next = Math.max(0, v - 1);
+                syncLayoutBadge(next);
+                return next;
+            });
         });
     };
 
@@ -118,6 +128,7 @@ export default function Notifications({ notifications, unreadCount }) {
         }).then(() => {
             setItems(prev => prev.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
             setUnread(0);
+            syncLayoutBadge(0);
         });
     };
 
@@ -128,7 +139,13 @@ export default function Notifications({ notifications, unreadCount }) {
         }).then(() => {
             const n = items.find(x => x.id === id);
             setItems(prev => prev.filter(x => x.id !== id));
-            if (n && !n.read_at) setUnread(v => Math.max(0, v - 1));
+            if (n && !n.read_at) {
+                setUnread(v => {
+                    const next = Math.max(0, v - 1);
+                    syncLayoutBadge(next);
+                    return next;
+                });
+            }
         });
     };
 

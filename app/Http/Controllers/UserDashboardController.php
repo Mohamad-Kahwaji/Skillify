@@ -108,7 +108,7 @@ class UserDashboardController extends Controller
             'middle_name'   => 'nullable|string|max:60',
             'last_name'     => 'required|string|max:60',
             'phone'         => 'required|string|max:20',
-            'city'          => 'required|string|max:60',
+            'city'          => 'required|string|exists:cities,name',
             'gender'        => 'required|in:male,female',
             'birthdate'     => 'required|date',
             'profile_photo' => 'nullable|image|max:2048',

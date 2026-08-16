@@ -27,15 +27,6 @@ class UserMiddleware
             return redirect()->route('user.login')->withErrors(['account' => 'حسابك موقوف، تواصل مع الدعم.']);
         }
 
-        // Auto-assign default role if user has none
-        if ($user->roles->isEmpty()) {
-            try {
-                $user->syncBusinessRole();
-            } catch (\Exception $e) {
-                // Roles not seeded yet — continue without assigning
-            }
-        }
-
         Auth::setDefaultDriver('users');
         return $next($request);
     }

@@ -387,13 +387,20 @@ function EmptyState({ filter, onAdd }) {
     );
 }
 
-export default function MyServices({ services = [], categories = [], subcategories = [], cities = [] }) {
+export default function MyServices({ services = [], categories = [], subcategories = [], cities = [], verificationStatus }) {
     const { flash } = usePage().props;
     const [filter, setFilter]         = useState('all');
     const [showCreate, setShowCreate] = useState(false);
     const [editService, setEditService] = useState(null);
     const [toast, setToast]           = useState(flash?.success || flash?.error || null);
     const toastType                   = flash?.success ? 'success' : 'error';
+    const openCreate = () => {
+        if (verificationStatus !== 'approved') {
+            setToast('يجب توثيق هويتك أولًا حتى تتمكن من إنشاء خدمة.');
+            return;
+        }
+        setShowCreate(true);
+    };
 
     useEffect(() => {
         if (!toast) return;
@@ -450,7 +457,7 @@ export default function MyServices({ services = [], categories = [], subcategori
                         {counts.all === 0 ? 'لم تضف أي خدمات بعد' : `إجمالي ${counts.all} خدمة مدرجة في ملفك`}
                     </p>
                 </div>
-                <button onClick={() => setShowCreate(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '12px 24px', border: 'none', borderRadius: 13, cursor: 'pointer', background: 'linear-gradient(135deg,#0D9488,#0F766E)', color: '#fff', fontSize: 13.5, fontWeight: 700, fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(13,148,136,.35)', transition: 'all .18s' }}
+                <button onClick={openCreate} style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '12px 24px', border: 'none', borderRadius: 13, cursor: 'pointer', background: 'linear-gradient(135deg,#0D9488,#0F766E)', color: '#fff', fontSize: 13.5, fontWeight: 700, fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(13,148,136,.35)', transition: 'all .18s' }}
                     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,148,136,.45)'; }}
                     onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(13,148,136,.35)'; }}>
                     <i className="ti ti-plus" style={{ fontSize: 16 }} /> إضافة خدمة
@@ -499,7 +506,7 @@ export default function MyServices({ services = [], categories = [], subcategori
 
             {/* Grid */}
             {!filtered.length
-                ? <EmptyState filter={filter} onAdd={() => setShowCreate(true)} />
+                ? <EmptyState filter={filter} onAdd={openCreate} />
                 : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(272px,1fr))', gap: 18 }}>
                         {filtered.map(s => <ServiceCard key={s.id} service={s} onEdit={setEditService} />)}
