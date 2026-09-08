@@ -25,8 +25,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Force HTTPS in production (Railway)
         if ($this->app->environment('production')) {
-            URL::forceScheme('https');
-        }
+        URL::forceScheme('https');
+        URL::forceRootUrl(config('app.url'));
+    }
 
         // Super admins bypass all permission/gate checks unconditionally.
         Gate::before(function ($user, string $_ability) {
