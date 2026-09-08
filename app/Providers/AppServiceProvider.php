@@ -11,7 +11,7 @@ use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\ServiceProvider;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
