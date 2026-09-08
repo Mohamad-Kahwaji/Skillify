@@ -11,18 +11,23 @@ use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+        //
+    }
 
     public function boot(): void
     {
-        if (str_starts_with(config('app.url'), 'https')) {
-URL::forceScheme('https');
-}
+        // Force HTTPS in production (Railway)
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         // Super admins bypass all permission/gate checks unconditionally.
         Gate::before(function ($user, string $_ability) {
             if ($user instanceof SuperAdmin) {
@@ -32,7 +37,9 @@ URL::forceScheme('https');
 
         // Synchronous broadcast channel — broadcasts to Reverb without queue worker.
         app(ChannelManager::class)->extend('sync_broadcast', function ($app) {
-            return new SyncBroadcastChannel($app->make(Broadcaster::class));
+            return new SyncBroadcastChannel(
+                $app->make(Broadcaster::class)
+            );
         });
 
         // FCM push notification channel.
@@ -41,7 +48,7 @@ URL::forceScheme('https');
         });
 
         // Register AFTER the framework's booted() callback so our route overwrites it.
-        // (Routes are indexed by method+URI — last one registered wins.)
+        // Routes are indexed by method+URI — last one registered wins.
         $this->app->booted(function () {
             Route::post('/broadcasting/auth', function (Request $request) {
                 $channel = $request->input('channel_name', '');
@@ -64,25 +71,38 @@ URL::forceScheme('https');
 
                 \Log::info('[BroadcastAuth] Auth result', [
                     'channel' => $channel,
-                    'authed'  => $authed ? get_class($authed) . '#' . $authed->id : 'NULL',
+                    'authed'  => $authed
+                        ? get_class($authed) . '#' . $authed->id
+                        : 'NULL',
                 ]);
 
-                if (!$authed) abort(403);
+                if (!$authed) {
+                    abort(403);
+                }
+
                 $request->setUserResolver(fn () => $authed);
 
                 try {
                     $response = Broadcast::auth($request);
-                    \Log::info('[BroadcastAuth] Success', ['channel' => $channel]);
+
+                    \Log::info('[BroadcastAuth] Success', [
+                        'channel' => $channel,
+                    ]);
+
                     return $response;
                 } catch (\Throwable $e) {
                     \Log::error('[BroadcastAuth] Broadcast::auth failed', [
                         'channel' => $channel,
                         'error'   => $e->getMessage(),
                     ]);
+
                     throw $e;
                 }
-            })->middleware('web')
-              ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class);
+            })
+            ->middleware('web')
+            ->withoutMiddleware(
+                \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class
+            );
         });
     }
 }
