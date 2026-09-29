@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('email')->nullable();
             $table->string('password');
-            $table->date('birthdate');
+            $table->date('birthdate')->nullable();
             $table->string('gender');
             $table->enum('status', ['inactive', 'active'])->default('active');
             $table->string('city');

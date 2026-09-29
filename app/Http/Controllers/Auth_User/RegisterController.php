@@ -35,7 +35,7 @@ class RegisterController extends Controller
             'birthdate'   => 'nullable|date|before:today',
         ]);
 
-        $data['email'] = $data['email'] ?: null;
+        //$data['email'] = $data['email'] ?: null;
 
         $user = User::create([
             ...$data,

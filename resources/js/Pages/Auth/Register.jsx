@@ -93,7 +93,7 @@ export default function Register({ cities = [] }) {
                                     <option value="female">أنثى</option>
                                 </select>
                             </Field>
-                            <Field label="تاريخ الميلاد (اختياري)" error={errors.birthdate}>
+                            <Field label="تاريخ الميلاد " error={errors.birthdate}>
                                 <input type="date" value={data.birthdate} onChange={e => setData('birthdate', e.target.value)}
                                     className={inputClass(errors.birthdate)} />
                             </Field>

@@ -320,7 +320,7 @@
           <label class="form-label">Phone Number</label>
           <div class="input-wrap">
             <i class="ti ti-phone"></i>
-            <input type="text" name="phone" placeholder="07xxxxxxxx" value="{{ old('phone') }}" required autocomplete="tel">
+            <input type="text" name="phone" placeholder="09xxxxxxxx" value="{{ old('phone') }}" required autocomplete="tel">
           </div>
           @error('phone')<div class="field-error">{{ $message }}</div>@enderror
         </div>
