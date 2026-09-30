@@ -32,7 +32,7 @@ class UserController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'nullable|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'birthdate' => 'required|date',
+            'birthdate' => 'nullable|date',
             'gender' => 'required|in:male,female,other',
             'city' => 'required|string|max:255',
             'latitude' => 'nullable|numeric',

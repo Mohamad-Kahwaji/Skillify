@@ -8,8 +8,7 @@ use Illuminate\Support\Facades\Storage;
 class GeminiIdentityService
 {
     private string $apiKey;
-    private array $models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-flash-latest'];
-
+private array $models = ['gemini-3.1-pro-preview', 'gemini-3.5-flash', 'gemini-2.5-flash'];
     public function __construct()
     {
         $this->apiKey = config('services.gemini.key', '');
@@ -21,6 +20,7 @@ class GeminiIdentityService
      */
     public function analyse(\App\Models\IdentityVerification $verification): array
     {
+        set_time_limit(120);
         if (empty($this->apiKey)) {
             throw new \RuntimeException('GEMINI_API_KEY غير مضبوط في ملف .env');
         }
@@ -132,6 +132,7 @@ PROMPT
      */
     public function analyseProfilePhoto(\Illuminate\Http\UploadedFile $file): array
     {
+        set_time_limit(120);
         if (empty($this->apiKey)) {
             throw new \RuntimeException('GEMINI_API_KEY غير مضبوط في ملف .env');
         }
